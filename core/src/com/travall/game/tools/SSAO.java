@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.GLFrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.graphics.glutils.GLFrameBuffer.FrameBufferBuilder;
 import com.badlogic.gdx.utils.Disposable;
 
 public class SSAO implements Disposable {
@@ -17,14 +16,13 @@ public class SSAO implements Disposable {
 	FrameBuffer fbo;
 	
 	final ShaderProgram ssaoShaderProgram;
-	final FrameBufferBuilder frameBufferBuilder;
 	final TextureRegion textureRegion;
 	final Camera camera;
 	
 	public SSAO(Camera camera) {
 		this.camera = camera;
 		textureRegion = new TextureRegion();
-		frameBufferBuilder = new GLFrameBuffer.FrameBufferBuilder(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		GLFrameBuffer.FrameBufferBuilder frameBufferBuilder = new GLFrameBuffer.FrameBufferBuilder(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		frameBufferBuilder.addDepthTextureAttachment(GL30.GL_DEPTH_COMPONENT, GL30.GL_UNSIGNED_SHORT);
 		frameBufferBuilder.addColorTextureAttachment(GL30.GL_RGBA8, GL30.GL_RGBA, GL30.GL_UNSIGNED_BYTE);
 		fbo = frameBufferBuilder.build();
