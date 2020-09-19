@@ -5,7 +5,6 @@ import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.*;
-import com.travall.game.tiles.Tile;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
