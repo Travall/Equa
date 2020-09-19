@@ -18,7 +18,6 @@ import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.math.collision.Ray;
-import com.travall.game.tiles.Tile;
 
 public class CameraController extends GestureDetector {
     public int rotateButton = Buttons.LEFT;
@@ -31,7 +30,6 @@ public class CameraController extends GestureDetector {
     public static boolean active = true;
     public Camera camera;
     protected int button = -1;
-    public Tile[][][] tiles;
     int tileHeight = 0;
 
     private float startX, startY;
