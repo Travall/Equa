@@ -6,7 +6,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
@@ -14,9 +13,6 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.*;
-import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.graphics.glutils.GLFrameBuffer;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.math.collision.Ray;
@@ -29,6 +25,7 @@ import com.travall.game.tiles.BlocksList;
 import com.travall.game.tiles.Grass;
 import com.travall.game.tools.CameraController;
 import com.travall.game.tools.FirstPersonCameraController;
+import com.travall.game.tools.SSAO;
 import com.travall.game.tools.Skybox;
 
 public class Main extends ApplicationAdapter {
@@ -53,6 +50,7 @@ public class Main extends ApplicationAdapter {
     int xChunks = mapWidth/chunkSizeX;
     int zChunks = mapLength/chunkSizeZ;
 
+    final Ray ray = new Ray();
     final Vector3 rayPos = new Vector3();
     final Vector3 rayDir = new Vector3();
     final Vector3 rayIntersection = new Vector3();
@@ -73,8 +71,7 @@ public class Main extends ApplicationAdapter {
 
     float y = 0;
 
-    FrameBuffer fbo;
-    ShaderProgram ssaoShaderProgram;
+    SSAO ssao;
     SpriteBatch spriteBatch;
     Texture crosshair;
 
@@ -145,14 +142,7 @@ public class Main extends ApplicationAdapter {
 
         player = new Player(new Vector3(starting.x - 0.5f,starting.y + 3,starting.z - 0.5f));
 
-        GLFrameBuffer.FrameBufferBuilder frameBufferBuilder = new GLFrameBuffer.FrameBufferBuilder(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        frameBufferBuilder.addDepthTextureAttachment(GL30.GL_DEPTH_COMPONENT, GL30.GL_UNSIGNED_SHORT);
-        frameBufferBuilder.addColorTextureAttachment(GL30.GL_RGBA8, GL30.GL_RGBA, GL30.GL_UNSIGNED_BYTE);
-        fbo = frameBufferBuilder.build();
-
-        ssaoShaderProgram = new ShaderProgram(Gdx.files.internal("Shaders/vertex.vs").readString(),Gdx.files.internal("Shaders/fragment.fs").readString());
-        Gdx.app.log("ShaderTest", ssaoShaderProgram.getLog());
-
+        ssao = new SSAO(camera);
 
         spriteBatch = new SpriteBatch();
 
@@ -166,7 +156,7 @@ public class Main extends ApplicationAdapter {
     public void render () {
         update();
 
-        fbo.begin();
+        ssao.begin();
         modelBatch.begin(camera);
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
@@ -179,26 +169,11 @@ public class Main extends ApplicationAdapter {
         modelBatch.render(picker);
 //        modelBatch.render(player.instance,environment);
         modelBatch.end();
-        fbo.end();
-
-        Texture diffuseText = fbo.getTextureAttachments().get(1);
-        Texture depthText = fbo.getTextureAttachments().get(0);
-
-        ssaoShaderProgram.begin();
-        depthText.bind(1);
-        diffuseText.bind(0);
-        ssaoShaderProgram.setUniformi("depthText", 1);
-        ssaoShaderProgram.setUniformf("camerarange", camera.near, camera.far);
-        ssaoShaderProgram.setUniformf("screensize", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        ssaoShaderProgram.end();
+        ssao.end();
 
 //        spriteBatch.setShader(ssaoShaderProgram);
         spriteBatch.begin();
-        spriteBatch.disableBlending();
-        TextureRegion textureRegion = new TextureRegion(diffuseText);
-        textureRegion.flip(false, true);
-        spriteBatch.draw(textureRegion, 0, 0);
-        spriteBatch.enableBlending();
+        ssao.render(spriteBatch);
         spriteBatch.draw(crosshair,(Gdx.graphics.getWidth() / 2) - 8, (Gdx.graphics.getHeight() / 2) - 8);
         spriteBatch.end();
         spriteBatch.setShader(null);
@@ -247,13 +222,8 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void resize(int width, int height) {
-        fbo.dispose();
-        spriteBatch.getProjectionMatrix().setToOrtho2D(0,0,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-        GLFrameBuffer.FrameBufferBuilder frameBufferBuilder = new GLFrameBuffer.FrameBufferBuilder(width, height);
-        frameBufferBuilder.addDepthTextureAttachment(GL30.GL_DEPTH_COMPONENT32F, GL30.GL_FLOAT);
-        frameBufferBuilder.addColorTextureAttachment(GL30.GL_RGBA8, GL30.GL_RGBA, GL30.GL_UNSIGNED_BYTE);
-        fbo = frameBufferBuilder.build();
-
+        spriteBatch.getProjectionMatrix().setToOrtho2D(0,0,width,height);
+        ssao.resize(width, height);
         camera.viewportWidth = width;
         camera.viewportHeight = height;
         camera.update();
@@ -261,9 +231,7 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void dispose () {
-
-        fbo.dispose();
-        ssaoShaderProgram.dispose();
+        ssao.dispose();
         spriteBatch.dispose();
         crosshair.dispose();
 
@@ -312,9 +280,9 @@ public class Main extends ApplicationAdapter {
     }
 
     private void cameraRaycast() {
-        Ray ray = camera.getPickRay(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
-        rayPos.set(ray.origin);
-        rayDir.set(ray.direction).scl(0.1f);
+        ray.set(camera.position, camera.direction);
+        rayPos.set(camera.position);
+        rayDir.set(camera.direction).scl(0.1f);
 
 
         for (int steps = 0; steps < 800; steps++) {

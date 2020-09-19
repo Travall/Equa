@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Interpolation;
@@ -220,9 +221,11 @@ public class MapGenerator {
         modelBuilder.begin();
         Texture text = new Texture("Tiles/unknown.png");
         Material mat = new Material(TextureAttribute.createDiffuse(text));
+        VertexAttributes attributes = MeshBuilder.createAttributes(VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates);
+        
 //		mat.set(IntAttribute.createCullFace(GL20.GL_NONE));
 
-        MeshPartBuilder mpb = modelBuilder.part("top", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates,mat);
+        MeshPartBuilder mpb = modelBuilder.part("top", GL20.GL_TRIANGLES, attributes, mat);
 
         //top
         mpb.setUVRange(new TextureRegion(text,16,16,16,16));
@@ -233,7 +236,7 @@ public class MapGenerator {
         Vector3 normal = new Vector3(0,1,0);
         mpb.rect(first,second,third,fourth,normal);
 
-        mpb = modelBuilder.part("bottom", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates,mat);
+        mpb = modelBuilder.part("bottom", GL20.GL_TRIANGLES, attributes, mat);
 
         //bottom
         mpb.setUVRange(new TextureRegion(text,16,48,16,16));
@@ -244,7 +247,7 @@ public class MapGenerator {
         normal.set(0,-1,0);
         mpb.rect(first,second,third,fourth,normal);
 
-        mpb = modelBuilder.part("1", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates,mat);
+        mpb = modelBuilder.part("1", GL20.GL_TRIANGLES, attributes, mat);
 
         mpb.setUVRange(new TextureRegion(text,16,32,16,16));
         first.set(0,0,0);
@@ -254,7 +257,7 @@ public class MapGenerator {
         normal.set(0,0,-1);
         mpb.rect(fourth,first,second,third,normal);
 
-        mpb = modelBuilder.part("2", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates,mat);
+        mpb = modelBuilder.part("2", GL20.GL_TRIANGLES, attributes, mat);
 
         mpb.setUVRange(new TextureRegion(text,0,16,16,16));
         first.set(0,1f,1);
@@ -264,7 +267,7 @@ public class MapGenerator {
         normal.set(-1,0,0);
         mpb.rect(fourth,first,second,third,normal);
 
-        mpb = modelBuilder.part("3", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates,mat);
+        mpb = modelBuilder.part("3", GL20.GL_TRIANGLES, attributes, mat);
 
         mpb.setUVRange(new TextureRegion(text,16,0,16,16));
         first.set(0,1f,1);
@@ -274,7 +277,7 @@ public class MapGenerator {
         normal.set(0,0,1);
         mpb.rect(fourth,first,second,third,normal);
 
-        mpb = modelBuilder.part("4", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates,mat);
+        mpb = modelBuilder.part("4", GL20.GL_TRIANGLES, attributes, mat);
 
         TextureRegion textureRegion = new TextureRegion(text,32,16,16,16);
         textureRegion.flip(true,false);
