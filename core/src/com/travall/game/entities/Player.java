@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
@@ -17,7 +16,9 @@ import com.travall.game.generation.MapGenerator;
 public class Player {
     public ModelInstance instance;
     BoundingBox boundingBox = new BoundingBox();
-    Vector3 temp = new Vector3();
+    Vector3 temp1 = new Vector3();
+    Vector3 temp2 = new Vector3();
+    BoundingBox boundingBoxTemp = new BoundingBox();
     Vector3 velocity = new Vector3();
     Vector3 acceleration = new Vector3();
 
@@ -60,13 +61,13 @@ public class Player {
 
             instance.transform.translate(x/parts,0,0);
 
-            instance.transform.getTranslation(temp);
+            instance.transform.getTranslation(temp1);
 
-            int px = Math.round(temp.x);
-            int py = Math.round(temp.y);
-            int pz = Math.round(temp.z);
+            int px = MathUtils.round(temp1.x);
+            int py = MathUtils.round(temp1.y);
+            int pz = MathUtils.round(temp1.z);
 
-            BoundingBox bintersector = instance.calculateBoundingBox(new BoundingBox()).mul(instance.transform);
+            BoundingBox bintersector = instance.calculateBoundingBox(boundingBoxTemp).mul(instance.transform);
 
             if(around(mapGenerator,px,py,pz,bintersector)) moveX = false;
 
@@ -79,13 +80,13 @@ public class Player {
 
             instance.transform.translate(0, y/parts, 0);
 
-            instance.transform.getTranslation(temp);
+            instance.transform.getTranslation(temp1);
 
-            px = Math.round(temp.x);
-            py = Math.round(temp.y);
-            pz = Math.round(temp.z);
+            px = MathUtils.round(temp1.x);
+            py = MathUtils.round(temp1.y);
+            pz = MathUtils.round(temp1.z);
 
-            bintersector = instance.calculateBoundingBox(new BoundingBox()).mul(instance.transform);
+            bintersector = instance.calculateBoundingBox(boundingBoxTemp).mul(instance.transform);
 
             if (around(mapGenerator, px, py, pz, bintersector)) moveY = false;
 
@@ -98,13 +99,13 @@ public class Player {
 
             instance.transform.translate(0, 0, z/parts);
 
-            instance.transform.getTranslation(temp);
+            instance.transform.getTranslation(temp1);
 
-            px = Math.round(temp.x);
-            py = Math.round(temp.y);
-            pz = Math.round(temp.z);
+            px = MathUtils.round(temp1.x);
+            py = MathUtils.round(temp1.y);
+            pz = MathUtils.round(temp1.z);
 
-            bintersector = instance.calculateBoundingBox(new BoundingBox()).mul(instance.transform);
+            bintersector = instance.calculateBoundingBox(boundingBoxTemp).mul(instance.transform);
 
             if (around(mapGenerator, px, py, pz, bintersector)) moveZ = false;
 
@@ -118,23 +119,21 @@ public class Player {
 
     boolean intersects(MapGenerator mapGenerator, int x, int y, int z, BoundingBox bintersector) {
         boolean exists = mapGenerator.blockExists(x,y,z);
-        temp.set(x,y,z);
-        return exists && boundingBox.set(temp.cpy(),temp.add(1,1,1)).intersects(bintersector);
+        temp2.set(temp1.set(x,y,z)).add(1, 1, 1);
+        return exists && boundingBox.set(temp1,temp2).intersects(bintersector);
     }
 
 
     boolean around(MapGenerator mapGenerator, int x, int y, int z, BoundingBox bintersector) {
-        boolean maybe = false;
         for(int xx = x - 1; xx <= x + 1; xx++) {
             for(int yy = y - 2; yy <= y + 2; yy++) {
                 for(int zz = z - 1; zz <= z + 1; zz++) {
                     if(intersects(mapGenerator,xx,yy,zz,bintersector)) {
-                        maybe = true;
+                    	return true;
                     }
                 }
             }
         }
-
-        return maybe;
+        return false;
     }
 }
