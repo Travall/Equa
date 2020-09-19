@@ -55,7 +55,7 @@ public class SSAO implements Disposable {
 		textureRegion.flip(false, true);
 	}
 	
-	public void render(SpriteBatch spriteBatch) {
+	public void draw(SpriteBatch spriteBatch) {
 		spriteBatch.disableBlending();
 		spriteBatch.draw(textureRegion, 0, 0);
 		spriteBatch.enableBlending();

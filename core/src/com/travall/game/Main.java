@@ -173,7 +173,7 @@ public class Main extends ApplicationAdapter {
 
 //        spriteBatch.setShader(ssaoShaderProgram);
         spriteBatch.begin();
-        ssao.render(spriteBatch);
+        ssao.draw(spriteBatch);
         spriteBatch.draw(crosshair,(Gdx.graphics.getWidth() / 2) - 8, (Gdx.graphics.getHeight() / 2) - 8);
         spriteBatch.end();
         spriteBatch.setShader(null);
