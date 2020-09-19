@@ -1,4 +1,4 @@
-package com.travall.game.tiles;
+package com.travall.game.blocks;
 
 import com.badlogic.gdx.graphics.Texture;
 
