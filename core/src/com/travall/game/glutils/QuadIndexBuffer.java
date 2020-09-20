@@ -1,7 +1,7 @@
 package com.travall.game.glutils;
 
 import static com.badlogic.gdx.Gdx.gl;
-import static com.badlogic.gdx.graphics.GL20.*;
+import static com.badlogic.gdx.graphics.GL30.*;
 
 import java.nio.ShortBuffer;
 
