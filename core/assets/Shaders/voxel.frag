@@ -14,7 +14,6 @@ varying LOWP float v_shade;
 varying LOWP float v_light;
 varying MEDIUM vec2 v_texCoords;
 
-// data[sideLight&Ambiant, source-light, skylight] 
 void main()
 {
 	LOWP vec4 pix = texture2D(u_texture, v_texCoords);
