@@ -17,8 +17,8 @@ public final class QuadIndexBuffer
 
 	/** Installation of the index buffer and upload it to the GPU. */
 	public static void ints() {
+		// Temporally buffer - will get cleaned by JVM at the end of this constructor.
 		final ShortBuffer buffer = BufferUtils.newShortBuffer(maxVertex);
-		buffer.position(0);
 		
 		// Indexing so it can reuse the same vertex to make up a quad.
 		for (int i = 0, v = 0; i < maxVertex; i += 6, v += 4) { 

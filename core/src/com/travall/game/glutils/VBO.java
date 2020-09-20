@@ -20,7 +20,7 @@ public final class VBO implements Disposable
 	final ByteBuffer buffer;
 	final int glDraw;
 	int bufferHandle;
-	boolean isDirty, isBound, isBufferBound;
+	boolean isBound;
 	
 	public int vaoHandle;
 	
@@ -34,27 +34,19 @@ public final class VBO implements Disposable
 	
 	public void setVertices(float[] vertices, int offset, int count) {
 		BufferUtils.copy(vertices, buffer, count, offset);
-		if (isBound) {
-			isDirty = false;
-			isBufferBound = true;
-			gl30.glBindBuffer(GL_ARRAY_BUFFER, bufferHandle);
-			gl30.glBufferData(GL_ARRAY_BUFFER, buffer.limit(), buffer, glDraw);
-		} else isDirty = true;
+		if (!isBound) gl30.glBindVertexArray(vaoHandle);
+		gl30.glBindBuffer(GL_ARRAY_BUFFER, bufferHandle);
+		gl30.glBufferData(GL_ARRAY_BUFFER, buffer.limit(), buffer, glDraw);
 	}
 
 	public void bind() {
 		gl30.glBindVertexArray(vaoHandle);
-		if (isDirty) {
-			isBufferBound = true;
-			gl30.glBindBuffer(GL_ARRAY_BUFFER, bufferHandle);
-			gl30.glBufferData(GL_ARRAY_BUFFER, buffer.limit(), buffer, glDraw);
-			isDirty = false;
-		}
+		isBound = true;
 	}
 	
 	public void unbind() {
-		gl30.glBindVertexArray(0);
-		isBufferBound = false;
+		//gl30.glBindVertexArray(0); // Try to uncomment this line if there a graphic issues, or add the gl30.glBindVertexArray(0) at the end of the rendering.
+		isBound = false;
 	}
 
 	/** Upload to GPU. */

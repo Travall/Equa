@@ -34,8 +34,8 @@ public class ChunkMesh implements Disposable
 		count = (verts.size / byteSize) * 6;
 	}
 	
-	// For future optimizion.
-	public int getVAOhandel() {
+	// For future optimization.
+	public int getVAOhandle() {
 		return vbo.vaoHandle;
 	}
 

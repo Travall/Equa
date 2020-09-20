@@ -35,9 +35,14 @@ public final class VoxelTerrain {
 	public static ShaderProgram shaderProgram;
 	public static int[] locations;
 	
+	public static ByteBuffer BUFFER;
+	
 	public static void ints() {
 		shaderProgram = new ShaderProgram(files.internal("Shaders/voxel.vert"), files.internal("Shaders/voxel.frag"));
 		locations = Utils.locateAttributes(shaderProgram, attributes);
+		
+		// 2,359,296 bytes of data, or 2.36MB.
+		BUFFER = BufferUtils.newUnsafeByteBuffer(QuadIndexBuffer.maxVertex*byteSize);
 	}
 	
 	/** Begins the shader. */
@@ -54,10 +59,7 @@ public final class VoxelTerrain {
 	public static void dispose() {
 		shaderProgram.dispose();
 		BufferUtils.disposeUnsafeByteBuffer(BUFFER);
-	}
-	
-	// 2,359,296 bytes of data, or 2.36MB.
-	public static final ByteBuffer BUFFER = BufferUtils.newUnsafeByteBuffer(QuadIndexBuffer.maxVertex*byteSize);
+	}	
 	
 	public final static VertContext context = new VertContext() {
 		public VertexAttributes getAttrs() {
