@@ -4,11 +4,15 @@ import static com.badlogic.gdx.Gdx.files;
 import static com.badlogic.gdx.graphics.glutils.ShaderProgram.POSITION_ATTRIBUTE;
 import static com.badlogic.gdx.graphics.glutils.ShaderProgram.TEXCOORD_ATTRIBUTE;
 
+import java.nio.ByteBuffer;
+
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.utils.BufferUtils;
+import com.travall.game.glutils.QuadIndexBuffer;
 import com.travall.game.glutils.VertContext;
 
 // Needs update comments after attribute change.
@@ -49,7 +53,11 @@ public final class VoxelTerrain {
 	
 	public static void dispose() {
 		shaderProgram.dispose();
+		BufferUtils.disposeUnsafeByteBuffer(BUFFER);
 	}
+	
+	// 2,359,296 bytes of data, or 2.36MB.
+	public static final ByteBuffer BUFFER = BufferUtils.newUnsafeByteBuffer(QuadIndexBuffer.maxVertex*byteSize);
 	
 	public final static VertContext context = new VertContext() {
 		public VertexAttributes getAttrs() {
