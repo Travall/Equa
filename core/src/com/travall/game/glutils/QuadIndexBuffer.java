@@ -6,14 +6,14 @@ import static com.badlogic.gdx.graphics.GL30.*;
 import java.nio.ShortBuffer;
 
 import com.badlogic.gdx.utils.BufferUtils;
-import com.badlogic.gdx.utils.Disposable;
 
 /** This QuadIndexBuffer intention to render meshes with "quads" instead of triangles. GL30 only. */
-public class QuadIndexBuffer implements Disposable {
+public final class QuadIndexBuffer {
 	
-	final int bufferHandle;
+	static int bufferHandle;
 
-	public QuadIndexBuffer() {
+	/** Installation of the index buffer and upload it to the GPU. */
+	public static void ints() {
 		final int maxVertex = 98304; // 98304 is a maximum vertex size as possible.
 		final ShortBuffer buffer = BufferUtils.newShortBuffer(maxVertex);
 		buffer.position(0);
@@ -38,12 +38,12 @@ public class QuadIndexBuffer implements Disposable {
 	}
 	
 	/** Attach it to the current VAO. */
-	public void attach() {
+	public static void attach() {
 		gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferHandle);
 	}
 	
-	@Override
-	public void dispose() {
+	/** Delete the index buffer from GPU. */
+	public static void dispose() {
 		gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		gl.glDeleteBuffer(bufferHandle);
 	}
