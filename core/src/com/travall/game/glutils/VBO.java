@@ -45,7 +45,7 @@ public final class VBO implements Disposable
 	}
 	
 	public void unbind() {
-		//gl30.glBindVertexArray(0); // Try to uncomment this line if there a graphic issues, or add the gl30.glBindVertexArray(0) at the end of the rendering.
+		//gl30.glBindVertexArray(0); // Try to uncomment this line if there a graphic issues, or add the Gdx.gl30.glBindVertexArray(0) at the end of the rendering.
 		isBound = false;
 	}
 
@@ -91,6 +91,7 @@ public final class VBO implements Disposable
 		tmpHandle.clear();
 		tmpHandle.put(vaoHandle);
 		tmpHandle.flip();
+		gl30.glBindVertexArray(0);
 		gl30.glDeleteVertexArrays(1, tmpHandle);
 	}
 }

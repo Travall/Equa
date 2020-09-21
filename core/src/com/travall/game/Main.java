@@ -23,6 +23,7 @@ import com.travall.game.blocks.BlocksList;
 import com.travall.game.tools.FirstPersonCameraController;
 import com.travall.game.tools.SSAO;
 import com.travall.game.tools.Skybox;
+import com.travall.game.tools.VoxelTerrain;
 
 public class Main extends ApplicationAdapter {
     PerspectiveCamera camera;
@@ -145,7 +146,8 @@ public class Main extends ApplicationAdapter {
         Gdx.input.setCursorCatched(true);
 
         crosshair = new Texture("crosshair.png");
-
+        
+        VoxelTerrain.ints();
     }
 
     @Override
@@ -234,6 +236,7 @@ public class Main extends ApplicationAdapter {
         modelBatch.dispose();
         assetManager.dispose();
         VisUI.dispose();
+        VoxelTerrain.dispose();
     }
 
     private int nearestChunk(int i,int chunkSize) {

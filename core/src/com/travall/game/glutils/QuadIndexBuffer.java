@@ -10,18 +10,18 @@ import com.badlogic.gdx.utils.BufferUtils;
 /** This QuadIndexBuffer intention to render meshes with "quads" instead of triangles. GL30 only. */
 public final class QuadIndexBuffer 
 {
-	/** 98304 is a maximum vertex size as possible. */
-	public static final int maxVertex = 98304;
+	public static final int maxIndex  = 98304;
+	public static final int maxVertex = (maxIndex/6)*4;
 	
 	static int bufferHandle;
 
 	/** Installation of the index buffer and upload it to the GPU. */
 	public static void ints() {
 		// Temporally buffer - will get cleaned by JVM at the end of this constructor.
-		final ShortBuffer buffer = BufferUtils.newShortBuffer(maxVertex);
+		final ShortBuffer buffer = BufferUtils.newShortBuffer(maxIndex);
 		
 		// Indexing so it can reuse the same vertex to make up a quad.
-		for (int i = 0, v = 0; i < maxVertex; i += 6, v += 4) { 
+		for (int i = 0, v = 0; i < maxIndex; i += 6, v += 4) { 
 			buffer.put((short)v);
 			buffer.put((short)(v+1));
 			buffer.put((short)(v+2));

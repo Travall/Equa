@@ -15,6 +15,8 @@ public class ChunkMesh implements Disposable
 	private final VBO vbo;
 	private final int byteSize;
 	private int count;
+	
+	private boolean isEmpty;
 
 	public ChunkMesh(ByteBuffer buffer, FloatArray verts, VertContext context, int glDraw) {
 		byteSize = context.getAttrs().vertexSize;
@@ -24,14 +26,24 @@ public class ChunkMesh implements Disposable
 	}
 	
 	public void render() {
+		if (isEmpty) return;
 		vbo.bind();
 		Gdx.gl.glDrawElements(GL30.GL_TRIANGLES, count, GL30.GL_UNSIGNED_SHORT, 0);
 		vbo.unbind();
 	}
 	
 	public void setVertices(FloatArray verts) {
+		if (verts.isEmpty()) {
+			isEmpty = true;
+			return;
+		}
 		vbo.setVertices(verts.items, 0, verts.size);
 		count = (verts.size / byteSize) * 6;
+		isEmpty = false;
+	}
+	
+	public boolean isEmpty() {
+		return isEmpty;
 	}
 	
 	// For future optimization.

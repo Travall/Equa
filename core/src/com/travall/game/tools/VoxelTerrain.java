@@ -18,7 +18,7 @@ import com.travall.game.glutils.VertContext;
 // Needs update comments after attribute change.
 /** The static class contains vertex attributes and shader */
 public final class VoxelTerrain {
-	// Data[sideLight&Ambiant, source-light, skylight, unused]
+	// Data[sideLight&Ambiant, source-light, sunlight, unused]
 	/** 3 Position, 4 Data (Packed into 1 float) and 2 TextureCoordinates [x,y,z,d,u,v] */
 	public static final VertexAttributes attributes = new VertexAttributes(
 			 	new VertexAttribute(Usage.Position, 3, POSITION_ATTRIBUTE),
@@ -41,8 +41,10 @@ public final class VoxelTerrain {
 		shaderProgram = new ShaderProgram(files.internal("Shaders/voxel.vert"), files.internal("Shaders/voxel.frag"));
 		locations = Utils.locateAttributes(shaderProgram, attributes);
 		
-		// 2,359,296 bytes of data, or 2.36MB.
+		// 1,572,864 bytes of data, or 1.57MB.
 		BUFFER = BufferUtils.newUnsafeByteBuffer(QuadIndexBuffer.maxVertex*byteSize);
+		
+		QuadIndexBuffer.ints();
 	}
 	
 	/** Begins the shader. */
@@ -59,6 +61,7 @@ public final class VoxelTerrain {
 	public static void dispose() {
 		shaderProgram.dispose();
 		BufferUtils.disposeUnsafeByteBuffer(BUFFER);
+		QuadIndexBuffer.dispose();
 	}	
 	
 	public final static VertContext context = new VertContext() {
