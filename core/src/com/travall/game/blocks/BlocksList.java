@@ -1,6 +1,6 @@
 package com.travall.game.blocks;
 
-import com.badlogic.gdx.graphics.Texture;
+import com.travall.game.tools.UltimateTexture;
 
 import java.util.HashMap;
 
@@ -16,7 +16,7 @@ public class BlocksList {
 
     HashMap<Short,Block> types = new HashMap<>();
 
-    public BlocksList(Texture ultimate) {
+    public BlocksList(UltimateTexture ultimate) {
         types.put(Bedrock,new Bedrock(ultimate));
         types.put(Stone,new Stone(ultimate));
         types.put(Dirt,new Dirt(ultimate));

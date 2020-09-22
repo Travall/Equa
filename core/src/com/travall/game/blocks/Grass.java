@@ -1,14 +1,13 @@
 package com.travall.game.blocks;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.travall.game.tools.AtlasInfo;
+import com.travall.game.tools.BlockTextures;
+import com.travall.game.tools.UltimateTexture;
 
 public class Grass extends Block {
     public static boolean transparent = false;
-    public static AtlasInfo atlasInfo = new AtlasInfo(96,0,48,64);
 
-    public Grass(Texture ultimate) {
-        super(ultimate, transparent, atlasInfo);
+    public Grass(UltimateTexture ultimate) {
+    	super(transparent, new BlockTextures(ultimate.createRegion(3, 0), ultimate.createRegion(2, 0), ultimate.createRegion(1, 0)));
     }
 }
 

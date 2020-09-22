@@ -48,7 +48,7 @@ public class ChunkMesh implements Disposable
 	
 	// For future optimization.
 	public int getVAOhandle() {
-		return vbo.vaoHandle;
+		return vbo.getVAOhandle();
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package com.travall.game.entities;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
@@ -13,7 +15,8 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.travall.game.generation.MapGenerator;
 
-public class Player {
+public class Player 
+{
     public ModelInstance instance;
     BoundingBox boundingBox = new BoundingBox();
     Vector3 temp1 = new Vector3();
@@ -21,6 +24,9 @@ public class Player {
     BoundingBox boundingBoxTemp = new BoundingBox();
     Vector3 velocity = new Vector3();
     Vector3 acceleration = new Vector3();
+    
+    public boolean onGround;
+    public int jumpTimer = 0;
 
     public Player(Vector3 position) {
         ModelBuilder modelBuilder = new ModelBuilder();
@@ -54,6 +60,7 @@ public class Player {
         boolean moveX = true;
         boolean moveY = true;
         boolean moveZ = true;
+        onGround = false;
 
         int parts = 20;
 
@@ -91,11 +98,10 @@ public class Player {
             if (around(mapGenerator, px, py, pz, bintersector)) moveY = false;
 
             if (!moveY) {
+            	onGround = true;
                 instance.transform.translate(0, -y/parts, 0);
                 this.velocity.y = 0;
             }
-
-
 
             instance.transform.translate(0, 0, z/parts);
 

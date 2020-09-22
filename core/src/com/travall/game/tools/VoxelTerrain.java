@@ -6,6 +6,7 @@ import static com.badlogic.gdx.graphics.glutils.ShaderProgram.TEXCOORD_ATTRIBUTE
 
 import java.nio.ByteBuffer;
 
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -51,6 +52,7 @@ public final class VoxelTerrain {
 	public static void begin(Camera cam) {
 		shaderProgram.begin();
 		shaderProgram.setUniformMatrix("u_projTrans", cam.combined);
+		shaderProgram.setUniformf("sunLightIntensity", 0f); // 1f for full sun light.
 	}
 	
 	/** End the shader. */

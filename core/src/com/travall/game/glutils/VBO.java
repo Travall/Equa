@@ -3,7 +3,9 @@ package com.travall.game.glutils;
 import static com.badlogic.gdx.Gdx.gl30;
 import static com.badlogic.gdx.graphics.GL30.GL_ARRAY_BUFFER;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.badlogic.gdx.graphics.VertexAttribute;
@@ -16,19 +18,22 @@ public final class VBO implements Disposable
 {
 	private final static IntBuffer tmpHandle = BufferUtils.newIntBuffer(1);
 	
-	final VertContext context;
-	final ByteBuffer buffer;
+	final Buffer buffer;
 	final int glDraw;
-	int bufferHandle;
+	int bufferHandle, vaoHandle;
 	boolean isBound;
 	
-	public int vaoHandle;
-	
 	public VBO(ByteBuffer buffer, VertContext context, int glDraw, boolean usingQuadIndex) {
-		this.context = context;
 		this.glDraw = glDraw;
 		this.buffer = buffer;
-		upload(usingQuadIndex);
+		upload(context, usingQuadIndex);
+		gl30.glBindVertexArray(0);
+	}
+	
+	public VBO(FloatBuffer buffer, VertContext context, int glDraw, boolean usingQuadIndex) {
+		this.glDraw = glDraw;
+		this.buffer = buffer;
+		upload(context, usingQuadIndex);
 		gl30.glBindVertexArray(0);
 	}
 	
@@ -36,7 +41,8 @@ public final class VBO implements Disposable
 		BufferUtils.copy(vertices, buffer, count, offset);
 		if (!isBound) gl30.glBindVertexArray(vaoHandle);
 		gl30.glBindBuffer(GL_ARRAY_BUFFER, bufferHandle);
-		gl30.glBufferData(GL_ARRAY_BUFFER, buffer.limit(), buffer, glDraw);
+		gl30.glBufferData(GL_ARRAY_BUFFER, 0, buffer, glDraw);
+		if (!isBound) gl30.glBindVertexArray(0);
 	}
 
 	public void bind() {
@@ -49,17 +55,15 @@ public final class VBO implements Disposable
 		isBound = false;
 	}
 
-	/** Upload to GPU. */
-	private void upload(boolean usingQuadIndex) 
+	/** Upload to GPU. 
+	 * @param context */
+	private void upload(VertContext context, boolean usingQuadIndex) 
 	{
 		// Create the VAO handle.
 		tmpHandle.clear();
 		gl30.glGenVertexArrays(1, tmpHandle);
 		vaoHandle = tmpHandle.get();
 		gl30.glBindVertexArray(vaoHandle);
-		
-		// Attach QuadIndexBuffer to the current VAO for quad rendering.
-		if (usingQuadIndex)	QuadIndexBuffer.attach();
 		
 		// Create the buffer handle.
 		bufferHandle = gl30.glGenBuffer();
@@ -68,7 +72,7 @@ public final class VBO implements Disposable
 		gl30.glBindBuffer(GL_ARRAY_BUFFER, bufferHandle);
 		
 		// Upload the data.
-		gl30.glBufferData(GL_ARRAY_BUFFER, buffer.limit(), buffer, glDraw);
+		gl30.glBufferData(GL_ARRAY_BUFFER, 0, buffer, glDraw);
 		
 		// Enable vertex attributes and set the pointers.
 		final VertexAttributes attributes = context.getAttrs();
@@ -81,6 +85,13 @@ public final class VBO implements Disposable
 			context.getShader().setVertexAttribute(location, attribute.numComponents, attribute.type, 
 					attribute.normalized, attributes.vertexSize, attribute.offset);
 		}
+		
+		// Attach QuadIndexBuffer to the current VAO for quad rendering.
+		if (usingQuadIndex)	QuadIndexBuffer.attach();
+	}
+	
+	public int getVAOhandle() {
+		return vaoHandle;
 	}
 
 	@Override
@@ -91,7 +102,6 @@ public final class VBO implements Disposable
 		tmpHandle.clear();
 		tmpHandle.put(vaoHandle);
 		tmpHandle.flip();
-		gl30.glBindVertexArray(0);
 		gl30.glDeleteVertexArrays(1, tmpHandle);
 	}
 }

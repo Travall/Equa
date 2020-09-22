@@ -1,22 +1,24 @@
 package com.travall.game.generation;
 
-import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.ModelCache;
-import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
-import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
-import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
-import com.travall.game.blocks.*;
-import com.travall.game.tools.*;
+import com.badlogic.gdx.utils.Disposable;
+import com.travall.game.blocks.Block;
+import com.travall.game.blocks.BlocksList;
+import com.travall.game.tools.BlockBuilder;
+import com.travall.game.tools.BlockBuilder.VertInfo;
+import com.travall.game.tools.ChunkMesh;
+import com.travall.game.tools.OpenSimplexOctaves;
+import com.travall.game.tools.UltimateTexture;
+import com.travall.game.tools.Utils;
 
 
-public class MapGenerator {
+public class MapGenerator implements Disposable {
     int mapWidth;
     int mapLength;
     int mapHeight;
@@ -24,18 +26,18 @@ public class MapGenerator {
     public short[][][] blocks;
     public byte[][][] lightMap;
     public BlocksList blockList;
-    BlockModel tileModel;
-    ModelCache tileCache;
+    BlockBuilder blockBuilder;
     Vector3 temp = new Vector3();
-    Texture ultimate = new Texture("Tiles/ultimate3.png");
+    public UltimateTexture ultimate;
+	GridPoint3 pos = new GridPoint3();
 
     public MapGenerator(int mapWidth, int mapHeight, int mapLength, int waterLevel) {
         this.mapWidth = mapWidth;
         this.mapHeight = mapHeight;
         this.mapLength = mapLength;
         this.waterLevel = waterLevel;
-        this.tileModel = generateModel();
-        this.tileCache = new ModelCache();
+        this.blockBuilder = new BlockBuilder();
+        this.ultimate = new UltimateTexture(new Texture("Tiles/ultimate3.png"));
         this.blockList = new BlocksList(ultimate);
         generate();
     }
@@ -139,26 +141,24 @@ public class MapGenerator {
     }
 
 
-    public ModelCache generateShell(int indexX, int indexZ,int chunkSizeX, int chunkSizeZ) {
-        tileCache = new ModelCache();
-        tileCache.begin();
+    public ChunkMesh generateShell(int indexX, int indexZ,int chunkSizeX, int chunkSizeZ, ChunkMesh chunkMesh) {
+    	blockBuilder.begin();
         Block block;
         for(int x = indexX; x < indexX + chunkSizeX; x++) {
             for(int y = 0; y < blocks[0].length; y++) {
                 for(int z = indexZ; z < indexZ + chunkSizeZ; z++) {
                     if(blockExists(x,y,z)) {
-                        temp.set(x,y,z);
-
+                        pos.set(x,y,z);
                         block = blockList.get(blocks[x][y][z]);
+                        
+                        if  (!blockExists(x + 1, y, z) || (blockExists(x + 1, y, z) && blockList.get(blocks[x + 1][y][z]).transparent)
+                          || !blockExists(x - 1, y, z) || (blockExists(x - 1, y, z) && blockList.get(blocks[x - 1][y][z]).transparent)
+                          || !blockExists(x, y + 1, z) || (blockExists(x, y + 1, z) && blockList.get(blocks[x][y + 1][z]).transparent)
+                          || !blockExists(x, y - 1, z) || (blockExists(x, y - 1, z) && blockList.get(blocks[x][y - 1][z]).transparent)
+                          || !blockExists(x, y, z + 1) || (blockExists(x, y, z + 1) && blockList.get(blocks[x][y][z + 1]).transparent)
+                          || !blockExists(x, y, z - 1) || (blockExists(x, y, z - 1) && blockList.get(blocks[x][y][z - 1]).transparent)) {
 
-                        boolean blocksTranslucent = block.transparent;
-                        if(!blockExists(x + 1, y, z) || (blockExists(x + 1, y, z) && blockList.get(blocks[x+1][y][z]).transparent)
-                                || !blockExists(x - 1, y, z) || (blockExists(x - 1, y, z) && blockList.get(blocks[x-1][y][z]).transparent)
-                                || !blockExists(x, y + 1, z) || (blockExists(x, y + 1, z) && blockList.get(blocks[x][y + 1][z]).transparent)
-                                || !blockExists(x, y - 1, z) || (blockExists(x, y - 1, z) && blockList.get(blocks[x][y - 1][z]).transparent)
-                                || !blockExists(x, y, z + 1) || (blockExists(x, y, z + 1) && blockList.get(blocks[x][y][z + 1]).transparent)
-                                || !blockExists(x, y, z - 1) || (blockExists(x, y, z - 1) && blockList.get(blocks[x][y][z - 1]).transparent)) {
-
+                        	boolean blocksTranslucent = block.transparent;
                             boolean renderTop = !(blockExists(x, y + 1, z) && (!blockList.get(blocks[x][y + 1][z]).transparent || blocksTranslucent));
                             boolean renderBottom = !(blockExists(x, y - 1, z) && (!blockList.get(blocks[x][y - 1][z]).transparent || blocksTranslucent));
                             boolean render1 = !(blockExists(x, y, z - 1) && (!blockList.get(blocks[x][y][z - 1]).transparent || blocksTranslucent));
@@ -166,127 +166,29 @@ public class MapGenerator {
                             boolean render3 = !(blockExists(x, y, z + 1) && (!blockList.get(blocks[x][y][z + 1]).transparent || blocksTranslucent));
                             boolean render4 = !(blockExists(x + 1, y, z) && (!blockList.get(blocks[x + 1][y][z]).transparent || blocksTranslucent));
 
-                            BlockInstance instance = getModelInstance(block, temp,renderTop,renderBottom,render1,render2,render3,render4,lightMap[x][y][z]);
-
-
-                            tileCache.add(instance);
+                            blockBuilder.buildCube(block, pos,renderTop,renderBottom,render1,render2,render3,render4,lightMap[x][y][z]);
                         }
                     }
                 }
             }
         }
-        tileCache.end();
-
-
-        return tileCache;
+        
+        if (chunkMesh == null) {
+        	return blockBuilder.end(GL20.GL_STREAM_DRAW);
+        }
+        return blockBuilder.end(chunkMesh);
     }
 
     public boolean blockExists(int x, int y, int z) {
         return x >= 0 && x < blocks.length && y >=0 && y < blocks[x].length && z >= 0 && z < blocks[x][y].length && blocks[x][y][z] != 0;
     }
-
-
-    private BlockInstance getModelInstance(Block block, Vector3 position, boolean renderTop, boolean renderBottom, boolean render1, boolean render2, boolean render3, boolean render4, float factor) {
-
-        if(factor == 0) factor = 1;
-        tileModel.materials.first().set(TextureAttribute.createDiffuse(block.texture));
-        tileModel.materials.first().set(ColorAttribute.createDiffuse(factor/8,factor/8,factor/8,1));
-        BlendingAttribute ba = Utils.ba;
-        if(block.transparent) {
-            ba.blended = true;
-        } else {
-            ba.blended = false;
-        }
-        tileModel.materials.first().set(ba);
-
-        tileModel.nodes.first().parts.get(0).enabled = renderTop;
-        tileModel.nodes.first().parts.get(1).enabled = renderBottom;
-        tileModel.nodes.first().parts.get(2).enabled = render1;
-        tileModel.nodes.first().parts.get(3).enabled = render2;
-        tileModel.nodes.first().parts.get(4).enabled = render3;
-        tileModel.nodes.first().parts.get(5).enabled = render4;
-
-        BlockInstance instance = new BlockInstance(tileModel);
-        instance.transform.setTranslation(position.x,position.y,position.z);
-
-        return instance;
+    
+    public Texture getTexture() {
+    	return ultimate.currentTexture;
     }
 
-    private BlockModel generateModel() {
-        BlockModelBuilder modelBuilder = new BlockModelBuilder();
-        modelBuilder.begin();
-        Texture text = new Texture("Tiles/unknown.png");
-        Material mat = new Material(TextureAttribute.createDiffuse(text));
-        VertexAttributes attributes = MeshBuilder.createAttributes(VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates);
-        
-//		mat.set(IntAttribute.createCullFace(GL20.GL_NONE));
-
-        MeshPartBuilder mpb = modelBuilder.part("top", GL20.GL_TRIANGLES, attributes, mat);
-
-        //top
-        mpb.setUVRange(new TextureRegion(text,16,16,16,16));
-        Vector3 first = new Vector3(0,1f,0);
-        Vector3 second = new Vector3(0,1f,1);
-        Vector3 third = new Vector3(1,1f,1);
-        Vector3 fourth = new Vector3(1,1f,0);
-        Vector3 normal = new Vector3(0,1,0);
-        mpb.rect(first,second,third,fourth,normal);
-
-        mpb = modelBuilder.part("bottom", GL20.GL_TRIANGLES, attributes, mat);
-
-        //bottom
-        mpb.setUVRange(new TextureRegion(text,16,48,16,16));
-        first.set(1,0,0);
-        second.set(1,0,1);
-        third.set(0,0,1);
-        fourth.set(0,0,0);
-        normal.set(0,-1,0);
-        mpb.rect(first,second,third,fourth,normal);
-
-        mpb = modelBuilder.part("1", GL20.GL_TRIANGLES, attributes, mat);
-
-        mpb.setUVRange(new TextureRegion(text,16,32,16,16));
-        first.set(0,0,0);
-        second.set(0,1f,0);
-        third.set(1,1f,0);
-        fourth.set(1,0,0);
-        normal.set(0,0,-1);
-        mpb.rect(fourth,first,second,third,normal);
-
-        mpb = modelBuilder.part("2", GL20.GL_TRIANGLES, attributes, mat);
-
-        mpb.setUVRange(new TextureRegion(text,0,16,16,16));
-        first.set(0,1f,1);
-        second.set(0,1f,0);
-        third.set(0,0,0);
-        fourth.set(0,0f,1);
-        normal.set(-1,0,0);
-        mpb.rect(fourth,first,second,third,normal);
-
-        mpb = modelBuilder.part("3", GL20.GL_TRIANGLES, attributes, mat);
-
-        mpb.setUVRange(new TextureRegion(text,16,0,16,16));
-        first.set(0,1f,1);
-        second.set(0,0f,1);
-        third.set(1,0f,1);
-        fourth.set(1,1f,1);
-        normal.set(0,0,1);
-        mpb.rect(fourth,first,second,third,normal);
-
-        mpb = modelBuilder.part("4", GL20.GL_TRIANGLES, attributes, mat);
-
-        TextureRegion textureRegion = new TextureRegion(text,32,16,16,16);
-        textureRegion.flip(true,false);
-        mpb.setUVRange(textureRegion);
-
-        first.set(1,1f,0);
-        second.set(1,1f,1);
-        third.set(1,0f,1);
-        fourth.set(1,0f,0);
-        normal.set(1,0,0);
-
-        mpb.rect(fourth,first,second,third,normal);
-
-        return modelBuilder.end();
-    }
+	@Override
+	public void dispose() {
+		ultimate.dispose();
+	}
 }
