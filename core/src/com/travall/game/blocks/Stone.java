@@ -1,13 +1,12 @@
 package com.travall.game.blocks;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.travall.game.tools.AtlasInfo;
+import com.travall.game.tools.BlockTextures;
+import com.travall.game.tools.UltimateTexture;
 
 public class Stone extends Block {
     public static boolean transparent = false;
-    public static AtlasInfo atlasInfo = new AtlasInfo(192,0,48,64);
 
-    public Stone(Texture ultimate) {
-        super(ultimate, transparent, atlasInfo);
+    public Stone(UltimateTexture ultimate) {
+        super(transparent, new BlockTextures(ultimate.createRegion(1, 1)));
     }
 }

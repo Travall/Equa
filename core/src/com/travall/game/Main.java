@@ -20,9 +20,13 @@ import com.travall.game.entities.Player;
 import com.travall.game.generation.MapGenerator;
 import com.travall.game.blocks.Block;
 import com.travall.game.blocks.BlocksList;
+import com.travall.game.tools.ChunkMesh;
 import com.travall.game.tools.FirstPersonCameraController;
+import com.travall.game.tools.Picker;
 import com.travall.game.tools.SSAO;
 import com.travall.game.tools.Skybox;
+import com.travall.game.tools.UltimateTexture;
+import com.travall.game.tools.VoxelTerrain;
 
 public class Main extends ApplicationAdapter {
     PerspectiveCamera camera;
@@ -30,19 +34,18 @@ public class Main extends ApplicationAdapter {
     ModelBatch modelBatch;
     AssetManager assetManager;
     Environment environment;
-    ModelCache[][] tileCache;
+    ChunkMesh[][] chunkMeshes;
     ModelInstance skyboxInstance;
     DirectionalShadowLight shadowLight;
     ModelBatch shadowBatch;
     MapGenerator mapGenerator;
     ModelInstance shower;
-    ModelInstance picker;
-    int mapWidth = 128;
-    int mapLength = 128;
+    int mapWidth = 256;// changed from 128 to 256
+    int mapLength = 256;
     int mapHeight = 128;
-    int waterLevel = mapHeight/4;
-    int chunkSizeX = 8;
-    int chunkSizeZ = 8;
+    int waterLevel = mapHeight/5; // changed from 4 to 5
+    int chunkSizeX = 16; // changed from 8 to 16
+    int chunkSizeZ = 16;
     int xChunks = mapWidth/chunkSizeX;
     int zChunks = mapLength/chunkSizeZ;
 
@@ -53,6 +56,7 @@ public class Main extends ApplicationAdapter {
     final BoundingBox rayBox = new BoundingBox();
     final Vector3 rayBoxMin = new Vector3();
     final Vector3 rayBoxMax = new Vector3();
+    final Vector3 pickerHit = new Vector3();
 
     Block blockType;
 
@@ -74,8 +78,8 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void create () {
+    	VoxelTerrain.ints(); // Must ints it first.
         assetManager = new AssetManager();
-        tileCache = new ModelCache[xChunks][zChunks];
 
         DefaultShader.Config defaultConfig = new DefaultShader.Config();
         defaultConfig.numDirectionalLights = 2;
@@ -90,21 +94,12 @@ public class Main extends ApplicationAdapter {
         skyboxInstance.transform.scale(500,500,500);
 
         camera = new PerspectiveCamera(90,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-        camera.near = 0.1f;
-        camera.far = 1500f;
+        camera.near = 0.15f; // changed from 0.1f to 0.15f
+        camera.far = 1000f; // changed from 1500f to 1000f
         camera.update();
 
         cameraController = new FirstPersonCameraController(camera);
         Gdx.input.setInputProcessor(cameraController);
-
-        ModelBuilder modelBuilder = new ModelBuilder();
-        Material mat2 = new Material(ColorAttribute.createDiffuse(1,1,1,0.2f));
-        mat2.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
-        Model model2 = modelBuilder.createBox(1.01f, 1.01f, 1.01f,mat2
-                ,
-                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-        picker = new ModelInstance(model2);
-
 
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
@@ -118,12 +113,11 @@ public class Main extends ApplicationAdapter {
 
         shadowBatch = new ModelBatch(new DepthShaderProvider());
 
+        chunkMeshes = new ChunkMesh[xChunks][zChunks];
         mapGenerator = new MapGenerator(mapWidth,mapHeight,mapLength,waterLevel);
-
         for(int x = 0; x < xChunks; x++) {
             for(int z = 0; z < zChunks; z++) {
-                tileCache[x][z] = new ModelCache();
-                tileCache[x][z] = mapGenerator.generateShell(x * chunkSizeX,z * chunkSizeZ,chunkSizeX,chunkSizeZ);
+            	chunkMeshes[x][z] = mapGenerator.generateShell(x * chunkSizeX,z * chunkSizeZ,chunkSizeX,chunkSizeZ, null);
             }
         }
 
@@ -139,37 +133,55 @@ public class Main extends ApplicationAdapter {
         player = new Player(new Vector3(starting.x - 0.5f,starting.y + 3,starting.z - 0.5f));
 
         ssao = new SSAO(camera);
+        ssao.setEnable(false); // Enable or disable the SSAO.
 
         spriteBatch = new SpriteBatch();
 
         Gdx.input.setCursorCatched(true);
-
+        
         crosshair = new Texture("crosshair.png");
-
+        
+        Picker.ints();
     }
 
+    Texture text;
     @Override
     public void render () {
         update();
 
         ssao.begin();
-        modelBatch.begin(camera);
-        Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
+        Gdx.gl.glClearColor(0.6f, 0.6f, 0.6f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        modelBatch.begin(camera);
+        
         modelBatch.render(skyboxInstance);
-        for(int x = 0; x < tileCache.length; x++) {
-            for(int z = 0; z < tileCache[0].length; z++) {
-                modelBatch.render(tileCache[x][z]);
-            }
-        }
-        modelBatch.render(picker);
 //        modelBatch.render(player.instance,environment);
         modelBatch.end();
+        
+        
+        mapGenerator.getTexture().bind();
+        VoxelTerrain.begin(camera);
+        Gdx.gl.glCullFace(GL20.GL_BACK);
+        Gdx.gl.glEnable(GL20.GL_CULL_FACE);
+        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
+        for(int x = 0; x < chunkMeshes.length; x++) {
+            for(int z = 0; z < chunkMeshes[0].length; z++) {
+            	chunkMeshes[x][z].render();
+            }
+        }
+        Gdx.gl30.glBindVertexArray(0);
+        VoxelTerrain.end();
+        Gdx.gl.glDisable(GL20.GL_CULL_FACE);
+        
+        Picker.render(camera, pickerHit);
+        
         ssao.end();
+        Gdx.gl.glDisable(GL20.GL_CULL_FACE);
+        Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
+        ssao.render();
 
 //        spriteBatch.setShader(ssaoShaderProgram);
         spriteBatch.begin();
-        ssao.draw(spriteBatch);
         spriteBatch.draw(crosshair,(Gdx.graphics.getWidth() / 2) - 8, (Gdx.graphics.getHeight() / 2) - 8);
         spriteBatch.end();
         spriteBatch.setShader(null);
@@ -183,10 +195,13 @@ public class Main extends ApplicationAdapter {
         y = -0.15f;
         float speed = 0.025f;
 
-        if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) y = 2f;
-        if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) y = 32f;
+        player.jumpTimer--;
+        if(player.jumpTimer < 0 && player.onGround && Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+        	y = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? 32f : 2f;
+        	player.jumpTimer = 15;
+        }
 
-        float angle = (float)Math.atan2(camera.direction.nor().x,camera.direction.nor().z);
+        float angle = MathUtils.atan2(camera.direction.nor().x,camera.direction.nor().z);
 
 //        player.instance.nodes.first().rotation.set(Vector3.Y,angle);
 //        player.instance.calculateTransforms();
@@ -205,13 +220,13 @@ public class Main extends ApplicationAdapter {
         if(Gdx.input.isKeyPressed(Input.Keys.A)) add.add(temp.scl(-speed));
         if(Gdx.input.isKeyPressed(Input.Keys.D)) add.add(temp.scl(speed));
 
-        if(!add.equals(Vector3.Zero) && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && Gdx.input.isKeyPressed(Input.Keys.W)) cameraController.targetFOV = 110;
-        else cameraController.targetFOV = 90;
+        if(!add.equals(Vector3.Zero) && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && Gdx.input.isKeyPressed(Input.Keys.W)) cameraController.targetFOV = 90; // changed from 110 to 90
+        else cameraController.targetFOV = 80; // changed from 90 to 80
 
         player.applyForce(add);
         player.applyForce(new Vector3(0,y,0));
         player.update(mapGenerator);
-        camera.position.set(player.instance.transform.getTranslation(temp).add(0,0.9f,0));
+        camera.position.set(player.instance.transform.getTranslation(temp).add(0,0.8f,0)); // changed from 0.9f to 0.8f
 
         cameraRaycast();
     }
@@ -230,10 +245,13 @@ public class Main extends ApplicationAdapter {
         ssao.dispose();
         spriteBatch.dispose();
         crosshair.dispose();
+        mapGenerator.dispose();
 
         modelBatch.dispose();
         assetManager.dispose();
         VisUI.dispose();
+        VoxelTerrain.dispose();
+        Picker.dispose();
     }
 
     private int nearestChunk(int i,int chunkSize) {
@@ -241,32 +259,34 @@ public class Main extends ApplicationAdapter {
     }
 
     private void regenerateShell(int x, int z) {
-        tileCache[(nearestChunk(x,chunkSizeX)) / chunkSizeX][(nearestChunk(z,chunkSizeZ)) / chunkSizeZ] = mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ);
+    	ChunkMesh chunkMesh = chunkMeshes[(nearestChunk(x,chunkSizeX)) / chunkSizeX][(nearestChunk(z,chunkSizeZ)) / chunkSizeZ];
+    	chunkMeshes[(nearestChunk(x,chunkSizeX)) / chunkSizeX][(nearestChunk(z,chunkSizeZ)) / chunkSizeZ] =
+    	mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMesh);
 
         System.out.println(x + " : " + z);
 
         if(x % chunkSizeX == 0 && x != 0) {
             int indexX = (nearestChunk(x,chunkSizeX)) / chunkSizeX;
             int indexZ = (nearestChunk(z,chunkSizeZ)) / chunkSizeZ;
-            tileCache[indexX-1][indexZ] = mapGenerator.generateShell(nearestChunk(x-chunkSizeX,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ);
+            chunkMeshes[indexX-1][indexZ] = mapGenerator.generateShell(nearestChunk(x-chunkSizeX,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX-1][indexZ]);
         }
 
         if((x+1) % (chunkSizeX) == 0 && x != mapWidth-1) {
             int indexX = (nearestChunk(x,chunkSizeX)) / chunkSizeX;
             int indexZ = (nearestChunk(z,chunkSizeZ)) / chunkSizeZ;
-            tileCache[indexX+1][indexZ] = mapGenerator.generateShell(nearestChunk(x+chunkSizeX,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ);
+            chunkMeshes[indexX+1][indexZ] = mapGenerator.generateShell(nearestChunk(x+chunkSizeX,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX+1][indexZ]);
         }
 
         if(z % chunkSizeZ == 0 && z != 0) {
             int indexX = (nearestChunk(x,chunkSizeX)) / chunkSizeX;
             int indexZ = (nearestChunk(z,chunkSizeZ)) / chunkSizeZ;
-            tileCache[indexX][indexZ-1] = mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z-chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ);
+            chunkMeshes[indexX][indexZ-1] = mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z-chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX][indexZ-1]);
         }
 
         if((z+1) % (chunkSizeZ) == 0 && z != mapLength-1) {
             int indexX = (nearestChunk(x,chunkSizeX)) / chunkSizeX;
             int indexZ = (nearestChunk(z,chunkSizeZ)) / chunkSizeZ;
-            tileCache[indexX][indexZ+1] = mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z+chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ);
+            chunkMeshes[indexX][indexZ+1] = mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z+chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX][indexZ+1]);
         }
     }
 
@@ -278,7 +298,7 @@ public class Main extends ApplicationAdapter {
     private void cameraRaycast() {
         ray.set(camera.position, camera.direction);
         rayPos.set(camera.position);
-        rayDir.set(camera.direction).scl(0.1f);
+        rayDir.set(camera.direction).scl(0.05f); // changed from 0.1f to 0.05f
 
 
         for (int steps = 0; steps < 800; steps++) {
@@ -287,12 +307,11 @@ public class Main extends ApplicationAdapter {
 
             if (mapGenerator.blockExists((int)rayPos.x,(int)rayPos.y,(int)rayPos.z)) {
                 mouseTilePos = rayPos;
-                rayPos.x = (int)rayPos.x;
-                rayPos.y = (int)rayPos.y;
-                rayPos.z = (int)rayPos.z;
+                rayPos.x = MathUtils.floor(rayPos.x);
+                rayPos.y = MathUtils.floor(rayPos.y);
+                rayPos.z = MathUtils.floor(rayPos.z);
 
-
-                picker.transform.setTranslation(rayPos.x + 0.5f,rayPos.y + 0.5f,rayPos.z + 0.5f);
+                pickerHit.set(rayPos.x, rayPos.y, rayPos.z);
 
                 rayBoxMin.set(rayPos);
                 rayBoxMax.set(rayPos).add(1);
