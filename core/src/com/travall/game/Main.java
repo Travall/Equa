@@ -44,8 +44,8 @@ public class Main extends ApplicationAdapter {
     int mapLength = 256;
     int mapHeight = 128;
     int waterLevel = mapHeight/5; // changed from 4 to 5
-    int chunkSizeX = 16; // changed from 8 to 16
-    int chunkSizeZ = 16;
+    int chunkSizeX = 32; // changed from 8 to 16
+    int chunkSizeZ = 32;
     int xChunks = mapWidth/chunkSizeX;
     int zChunks = mapLength/chunkSizeZ;
 
@@ -258,34 +258,41 @@ public class Main extends ApplicationAdapter {
         return Math.round(i / chunkSize) * chunkSize;
     }
 
+    private void editChunk(int indexX, int indexZ, int x, int z, int addX, int addZ) {
+//        if(addX >= 0 && addZ >= 0) {
+            chunkMeshes[indexX + addX][indexZ + addZ] = mapGenerator.generateShell(nearestChunk(x+chunkSizeX,chunkSizeX),nearestChunk(z+chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX + addX][indexZ + addZ]);
+//        } else if(addX > 0 && addZ < 0) {
+//            chunkMeshes[indexX + addX][indexZ + addZ] = mapGenerator.generateShell(nearestChunk(x+chunkSizeX,chunkSizeX),nearestChunk(z-chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX + addX][indexZ + addZ]);
+//        } else if(addX < 0 && addZ > 0) {
+//            chunkMeshes[indexX + addX][indexZ + addZ] = mapGenerator.generateShell(nearestChunk(x-chunkSizeX,chunkSizeX),nearestChunk(z+chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX + addX][indexZ + addZ]);
+//        } else if(addX < 0 && addZ < 0) {
+//            chunkMeshes[indexX + addX][indexZ + addZ] = mapGenerator.generateShell(nearestChunk(x-chunkSizeX,chunkSizeX),nearestChunk(z-chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX + addX][indexZ + addZ]);
+//        }
+    }
+
     private void regenerateShell(int x, int z) {
     	ChunkMesh chunkMesh = chunkMeshes[(nearestChunk(x,chunkSizeX)) / chunkSizeX][(nearestChunk(z,chunkSizeZ)) / chunkSizeZ];
-    	chunkMeshes[(nearestChunk(x,chunkSizeX)) / chunkSizeX][(nearestChunk(z,chunkSizeZ)) / chunkSizeZ] =
-    	mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMesh);
+    	chunkMeshes[(nearestChunk(x,chunkSizeX)) / chunkSizeX][(nearestChunk(z,chunkSizeZ)) / chunkSizeZ] = mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMesh);
 
         System.out.println(x + " : " + z);
 
+        int indexX = (nearestChunk(x,chunkSizeX)) / chunkSizeX;
+        int indexZ = (nearestChunk(z,chunkSizeZ)) / chunkSizeZ;
+
         if(x % chunkSizeX == 0 && x != 0) {
-            int indexX = (nearestChunk(x,chunkSizeX)) / chunkSizeX;
-            int indexZ = (nearestChunk(z,chunkSizeZ)) / chunkSizeZ;
             chunkMeshes[indexX-1][indexZ] = mapGenerator.generateShell(nearestChunk(x-chunkSizeX,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX-1][indexZ]);
         }
 
         if((x+1) % (chunkSizeX) == 0 && x != mapWidth-1) {
-            int indexX = (nearestChunk(x,chunkSizeX)) / chunkSizeX;
-            int indexZ = (nearestChunk(z,chunkSizeZ)) / chunkSizeZ;
             chunkMeshes[indexX+1][indexZ] = mapGenerator.generateShell(nearestChunk(x+chunkSizeX,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX+1][indexZ]);
         }
 
         if(z % chunkSizeZ == 0 && z != 0) {
-            int indexX = (nearestChunk(x,chunkSizeX)) / chunkSizeX;
-            int indexZ = (nearestChunk(z,chunkSizeZ)) / chunkSizeZ;
             chunkMeshes[indexX][indexZ-1] = mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z-chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX][indexZ-1]);
+
         }
 
         if((z+1) % (chunkSizeZ) == 0 && z != mapLength-1) {
-            int indexX = (nearestChunk(x,chunkSizeX)) / chunkSizeX;
-            int indexZ = (nearestChunk(z,chunkSizeZ)) / chunkSizeZ;
             chunkMeshes[indexX][indexZ+1] = mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z+chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX][indexZ+1]);
         }
     }

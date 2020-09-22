@@ -67,6 +67,7 @@ public class BlockBuilder {
 			boolean render2, boolean render3, boolean render4, float light) {
 		
 		setSrc(light/8f);
+
 		float temp; // For optimization by reduce the converting from integer to float.
 		if (renderTop) { // facing Y+
 			temp = pos.y + 1;

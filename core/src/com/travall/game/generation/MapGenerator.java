@@ -131,8 +131,10 @@ public class MapGenerator implements Disposable {
                                 || !blockExists(xx, yy - 1, zz) || (blockExists(xx, yy - 1, zz) && blockList.get(blocks[xx][yy - 1][zz]).transparent)
                                 || !blockExists(xx, yy, zz + 1) || (blockExists(xx, yy, zz + 1) && blockList.get(blocks[xx][yy][zz + 1]).transparent)
                                 || !blockExists(xx, yy, zz - 1) || (blockExists(xx, yy, zz - 1) && blockList.get(blocks[xx][yy][zz - 1]).transparent)) {
+                            Byte light = (byte) (distance - position.dst(xx,yy,zz));
 
-                            lightMap[xx][yy][zz] =  (byte) (distance - position.dst(xx,yy,zz));
+                            if(light < 0) light = 0;
+                            lightMap[xx][yy][zz] =  light;
                         }
                     }
                 }
