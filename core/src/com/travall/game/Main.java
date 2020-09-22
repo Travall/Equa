@@ -298,8 +298,50 @@ public class Main extends ApplicationAdapter {
     }
 
 
-    private void regenerateShellLighting(int x, int y, int z) {
+    private void regenerateShellLighting(int x, int z) {
+        ChunkMesh chunkMesh = chunkMeshes[(nearestChunk(x,chunkSizeX)) / chunkSizeX][(nearestChunk(z,chunkSizeZ)) / chunkSizeZ];
+        chunkMeshes[(nearestChunk(x,chunkSizeX)) / chunkSizeX][(nearestChunk(z,chunkSizeZ)) / chunkSizeZ] = mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMesh);
 
+        System.out.println(x + " : " + z);
+
+        int indexX = (nearestChunk(x,chunkSizeX)) / chunkSizeX;
+        int indexZ = (nearestChunk(z,chunkSizeZ)) / chunkSizeZ;
+
+        if(x != 0 && indexX -1 >= 0) {
+            chunkMeshes[indexX-1][indexZ] = mapGenerator.generateShell(nearestChunk(x-chunkSizeX,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX-1][indexZ]);
+        }
+
+        if(x != mapWidth-1) {
+            chunkMeshes[indexX+1][indexZ] = mapGenerator.generateShell(nearestChunk(x+chunkSizeX,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX+1][indexZ]);
+        }
+
+        if(z != 0 && indexZ -1 >=0) {
+            chunkMeshes[indexX][indexZ-1] = mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z-chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX][indexZ-1]);
+
+        }
+
+        if(z != mapLength-1 && indexZ + 1 < chunkMeshes[0].length) {
+            chunkMeshes[indexX][indexZ+1] = mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z+chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX][indexZ+1]);
+        }
+
+
+        if(x != mapWidth-1 && z != mapLength-1 && indexX+1 < chunkMeshes.length && indexZ+1 < chunkMeshes[0].length) {
+            chunkMeshes[indexX+1][indexZ+1] = mapGenerator.generateShell(nearestChunk(x+chunkSizeX,chunkSizeX),nearestChunk(z+chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX+1][indexZ+1]);
+        }
+
+
+        if(x != 0 && z != 0 && indexX-1 >= 0 && indexZ-1 >= 0) {
+            chunkMeshes[indexX-1][indexZ-1] = mapGenerator.generateShell(nearestChunk(x-chunkSizeX,chunkSizeX),nearestChunk(z-chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX-1][indexZ-1]);
+        }
+
+
+        if(x != 0 && z != mapLength-1 && indexX-1 >= 0 && indexZ+1 < chunkMeshes[0].length) {
+            chunkMeshes[indexX-1][indexZ+1] = mapGenerator.generateShell(nearestChunk(x-chunkSizeX,chunkSizeX),nearestChunk(z+chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX-1][indexZ+1]);
+        }
+
+        if(x != mapWidth-1 && z != 0 && indexX+1 < chunkMeshes.length && indexZ-1 >=0) {
+            chunkMeshes[indexX+1][indexZ-1] = mapGenerator.generateShell(nearestChunk(x+chunkSizeX,chunkSizeX),nearestChunk(z-chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX+1][indexZ-1]);
+        }
     }
 
     private void cameraRaycast() {
@@ -369,7 +411,7 @@ public class Main extends ApplicationAdapter {
                         if(!mapGenerator.blockExists((int) (rayPos.x),(int) rayPos.y + 1,(int) (rayPos.z)) && (int) rayPos.y + 1 < mapHeight) {
                             mapGenerator.blocks[(int) (rayPos.x)][(int) rayPos.y + 1][(int) (rayPos.z)] = BlocksList.Grass;
                             mapGenerator.placeLight(temp.set((int) (rayPos.x),(int) rayPos.y + 1,(int) (rayPos.z)));
-                            regenerateShell((int) (rayPos.x),(int) (rayPos.z));
+                            regenerateShellLighting((int) (rayPos.x),(int) (rayPos.z));
                         }
                     }
                     if(rayCastFace == 1) {
