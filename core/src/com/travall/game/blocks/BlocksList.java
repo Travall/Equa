@@ -12,6 +12,7 @@ public class BlocksList {
     public static short Grass = 4;
     public static short Sand = 5;
     public static short Water = 6;
+    public static short Gold = 7;
 
 
     HashMap<Short,Block> types = new HashMap<>();
@@ -23,6 +24,7 @@ public class BlocksList {
         types.put(Grass,new Grass(ultimate));
         types.put(Sand,new Sand(ultimate));
         types.put(Water,new Water(ultimate));
+        types.put(Gold,new Gold(ultimate));
     }
 
     public Block get(short id) {
