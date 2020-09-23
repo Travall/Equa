@@ -153,11 +153,9 @@ public class Main extends ApplicationAdapter {
         Gdx.gl.glClearColor(0.6f, 0.6f, 0.6f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         modelBatch.begin(camera);
-        
         modelBatch.render(skyboxInstance);
 //        modelBatch.render(player.instance,environment);
         modelBatch.end();
-        
         
         mapGenerator.getTexture().bind();
         VoxelTerrain.begin(camera);
@@ -166,7 +164,12 @@ public class Main extends ApplicationAdapter {
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
         for(int x = 0; x < chunkMeshes.length; x++) {
             for(int z = 0; z < chunkMeshes[0].length; z++) {
-            	chunkMeshes[x][z].render();
+            	ChunkMesh mesh = chunkMeshes[x][z];
+            	if (mesh == null) continue;
+            	if (mesh.isDirty) {
+            		mapGenerator.generateShell(x*chunkSizeX, z*chunkSizeZ, chunkSizeX, chunkSizeZ, mesh);
+            	}
+            	mesh.render();
             }
         }
         Gdx.gl30.glBindVertexArray(0);
@@ -187,6 +190,7 @@ public class Main extends ApplicationAdapter {
         spriteBatch.setShader(null);
     }
 
+    final Vector3 add = new Vector3(), direction = new Vector3(), noam = new Vector3();
     private void update() {
         camera.fieldOfView = MathUtils.lerp(camera.fieldOfView,cameraController.targetFOV, 0.2f);
         camera.update();
@@ -197,18 +201,18 @@ public class Main extends ApplicationAdapter {
 
         player.jumpTimer--;
         if(player.jumpTimer < 0 && player.onGround && Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-        	y = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? 32f : 2f;
+        	y = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? 6f : 2f;
         	player.jumpTimer = 15;
         }
 
-        float angle = MathUtils.atan2(camera.direction.nor().x,camera.direction.nor().z);
+        noam.set(camera.direction).nor();
+        float angle = MathUtils.atan2(noam.x, noam.z);
 
 //        player.instance.nodes.first().rotation.set(Vector3.Y,angle);
 //        player.instance.calculateTransforms();
 
-        Vector3 direction = new Vector3((float) Math.toDegrees(Math.sin(angle)),0,(float) Math.toDegrees(Math.cos(angle)));
-
-        Vector3 add = new Vector3();
+        direction.set(MathUtils.sin(angle)*60f,0,MathUtils.cos(angle)*60f);
+        add.setZero();
 
         temp.set(direction);
 
@@ -271,77 +275,34 @@ public class Main extends ApplicationAdapter {
     }
 
     private void regenerateShell(int x, int z) {
-    	ChunkMesh chunkMesh = chunkMeshes[(nearestChunk(x,chunkSizeX)) / chunkSizeX][(nearestChunk(z,chunkSizeZ)) / chunkSizeZ];
-    	chunkMeshes[(nearestChunk(x,chunkSizeX)) / chunkSizeX][(nearestChunk(z,chunkSizeZ)) / chunkSizeZ] = mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMesh);
-
+    	final int indexX = (nearestChunk(x,chunkSizeX)) / chunkSizeX;
+        final int indexZ = (nearestChunk(z,chunkSizeZ)) / chunkSizeZ;
+        setMeshDirtyAt(indexX, indexZ);
+    	
         System.out.println(x + " : " + z);
 
-        int indexX = (nearestChunk(x,chunkSizeX)) / chunkSizeX;
-        int indexZ = (nearestChunk(z,chunkSizeZ)) / chunkSizeZ;
-
         if(x % chunkSizeX == 0 && x != 0) {
-            chunkMeshes[indexX-1][indexZ] = mapGenerator.generateShell(nearestChunk(x-chunkSizeX,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX-1][indexZ]);
+        	setMeshDirtyAt(indexX-1, indexZ);
         }
 
         if((x+1) % (chunkSizeX) == 0 && x != mapWidth-1) {
-            chunkMeshes[indexX+1][indexZ] = mapGenerator.generateShell(nearestChunk(x+chunkSizeX,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX+1][indexZ]);
+        	setMeshDirtyAt(indexX+1, indexZ);
         }
 
         if(z % chunkSizeZ == 0 && z != 0) {
-            chunkMeshes[indexX][indexZ-1] = mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z-chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX][indexZ-1]);
-
+        	setMeshDirtyAt(indexX, indexZ-1);
         }
 
         if((z+1) % (chunkSizeZ) == 0 && z != mapLength-1) {
-            chunkMeshes[indexX][indexZ+1] = mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z+chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX][indexZ+1]);
+        	setMeshDirtyAt(indexX, indexZ+1);
         }
     }
-
-
-    private void regenerateShellLighting(int x, int z) {
-        ChunkMesh chunkMesh = chunkMeshes[(nearestChunk(x,chunkSizeX)) / chunkSizeX][(nearestChunk(z,chunkSizeZ)) / chunkSizeZ];
-        chunkMeshes[(nearestChunk(x,chunkSizeX)) / chunkSizeX][(nearestChunk(z,chunkSizeZ)) / chunkSizeZ] = mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMesh);
-
-        System.out.println(x + " : " + z);
-
-        int indexX = (nearestChunk(x,chunkSizeX)) / chunkSizeX;
-        int indexZ = (nearestChunk(z,chunkSizeZ)) / chunkSizeZ;
-
-        if(x != 0 && indexX -1 >= 0) {
-            chunkMeshes[indexX-1][indexZ] = mapGenerator.generateShell(nearestChunk(x-chunkSizeX,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX-1][indexZ]);
-        }
-
-        if(x != mapWidth-1) {
-            chunkMeshes[indexX+1][indexZ] = mapGenerator.generateShell(nearestChunk(x+chunkSizeX,chunkSizeX),nearestChunk(z,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX+1][indexZ]);
-        }
-
-        if(z != 0 && indexZ -1 >=0) {
-            chunkMeshes[indexX][indexZ-1] = mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z-chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX][indexZ-1]);
-
-        }
-
-        if(z != mapLength-1 && indexZ + 1 < chunkMeshes[0].length) {
-            chunkMeshes[indexX][indexZ+1] = mapGenerator.generateShell(nearestChunk(x,chunkSizeX),nearestChunk(z+chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX][indexZ+1]);
-        }
-
-
-        if(x != mapWidth-1 && z != mapLength-1 && indexX+1 < chunkMeshes.length && indexZ+1 < chunkMeshes[0].length) {
-            chunkMeshes[indexX+1][indexZ+1] = mapGenerator.generateShell(nearestChunk(x+chunkSizeX,chunkSizeX),nearestChunk(z+chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX+1][indexZ+1]);
-        }
-
-
-        if(x != 0 && z != 0 && indexX-1 >= 0 && indexZ-1 >= 0) {
-            chunkMeshes[indexX-1][indexZ-1] = mapGenerator.generateShell(nearestChunk(x-chunkSizeX,chunkSizeX),nearestChunk(z-chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX-1][indexZ-1]);
-        }
-
-
-        if(x != 0 && z != mapLength-1 && indexX-1 >= 0 && indexZ+1 < chunkMeshes[0].length) {
-            chunkMeshes[indexX-1][indexZ+1] = mapGenerator.generateShell(nearestChunk(x-chunkSizeX,chunkSizeX),nearestChunk(z+chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX-1][indexZ+1]);
-        }
-
-        if(x != mapWidth-1 && z != 0 && indexX+1 < chunkMeshes.length && indexZ-1 >=0) {
-            chunkMeshes[indexX+1][indexZ-1] = mapGenerator.generateShell(nearestChunk(x+chunkSizeX,chunkSizeX),nearestChunk(z-chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX+1][indexZ-1]);
-        }
+    
+    public void setMeshDirtyAt(int indexX, int indexZ) {
+    	if (indexX < 0 || indexX >= chunkSizeX || indexZ < 0 || indexZ >= chunkSizeZ)
+    		return;
+    	
+    	chunkMeshes[indexX][indexZ].isDirty = true;
     }
 
     private void cameraRaycast() {
@@ -349,18 +310,19 @@ public class Main extends ApplicationAdapter {
         rayPos.set(camera.position);
         rayDir.set(camera.direction).scl(0.05f); // changed from 0.1f to 0.05f
 
-
+        pickerHit.setZero();
         for (int steps = 0; steps < 800; steps++) {
             rayPos.add(rayDir);
 
 
             if (mapGenerator.blockExists((int)rayPos.x,(int)rayPos.y,(int)rayPos.z)) {
                 mouseTilePos = rayPos;
-                rayPos.x = MathUtils.floor(rayPos.x);
-                rayPos.y = MathUtils.floor(rayPos.y);
-                rayPos.z = MathUtils.floor(rayPos.z);
+                int xInt = MathUtils.floor(rayPos.x);
+                int yInt = MathUtils.floor(rayPos.y);
+                int zInt = MathUtils.floor(rayPos.z);
+                rayPos.set(xInt, yInt, zInt);
 
-                pickerHit.set(rayPos.x, rayPos.y, rayPos.z);
+                pickerHit.set(rayPos);
 
                 rayBoxMin.set(rayPos);
                 rayBoxMax.set(rayPos).add(1);
@@ -404,44 +366,45 @@ public class Main extends ApplicationAdapter {
                 }
 
                 if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-                    mapGenerator.blocks[(int) (rayPos.x)][(int) rayPos.y][(int) (rayPos.z)] = 0;
-                    regenerateShell((int) (rayPos.x),(int) (rayPos.z));
+                    mapGenerator.blocks[xInt][yInt][zInt] = 0;
+                    regenerateShell(xInt,zInt);
                 } else if(Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
                     if(rayCastFace == 0) {
-                        if(!mapGenerator.blockExists((int) (rayPos.x),(int) rayPos.y + 1,(int) (rayPos.z)) && (int) rayPos.y + 1 < mapHeight) {
-                            mapGenerator.blocks[(int) (rayPos.x)][(int) rayPos.y + 1][(int) (rayPos.z)] = BlocksList.Grass;
-                            mapGenerator.placeLight(temp.set((int) (rayPos.x),(int) rayPos.y + 1,(int) (rayPos.z)));
-                            regenerateShellLighting((int) (rayPos.x),(int) (rayPos.z));
+                        if(!mapGenerator.blockExists(xInt, yInt+1, zInt) && yInt+1 < mapHeight) {
+                            mapGenerator.blocks[xInt][yInt+1][zInt] = BlocksList.Grass;
+                            regenerateShell(xInt,zInt);
+                            //mapGenerator.placeLight(temp.set((int) (rayPos.x),(int) rayPos.y + 1,(int) (rayPos.z)));
+                            //regenerateShellLighting((int) (rayPos.x),(int) (rayPos.z));
                         }
                     }
                     if(rayCastFace == 1) {
-                        if(!mapGenerator.blockExists((int) (rayPos.x),(int) rayPos.y - 1,(int) (rayPos.z)) && (int) rayPos.y - 1 > 0) {
-                            mapGenerator.blocks[(int) (rayPos.x)][(int) rayPos.y - 1][(int) (rayPos.z)] = BlocksList.Grass;
-                            regenerateShell((int) (rayPos.x),(int) (rayPos.z));
+                        if(!mapGenerator.blockExists(xInt,yInt-1,zInt) && yInt-1 > 0) {
+                            mapGenerator.blocks[xInt][yInt][zInt] = BlocksList.Grass;
+                            regenerateShell(xInt,zInt);
                         }
                     }
                     if(rayCastFace == 2) {
-                        if(!mapGenerator.blockExists((int) (rayPos.x + 1),(int) rayPos.y,(int) (rayPos.z))) {
-                            mapGenerator.blocks[(int) (rayPos.x + 1)][(int) rayPos.y][(int) (rayPos.z)] = BlocksList.Grass;
-                            regenerateShell((int) (rayPos.x),(int) (rayPos.z));
+                        if(!mapGenerator.blockExists(xInt+1,yInt,zInt)) {
+                            mapGenerator.blocks[xInt+1][yInt][zInt] = BlocksList.Grass;
+                            regenerateShell(xInt,zInt);
                         }
                     }
                     if(rayCastFace == 3) {
-                        if(!mapGenerator.blockExists((int) (rayPos.x) - 1,(int) rayPos.y,(int) (rayPos.z))) {
-                            mapGenerator.blocks[(int) (rayPos.x - 1)][(int) rayPos.y][(int) (rayPos.z)] = BlocksList.Grass;
-                            regenerateShell((int) (rayPos.x),(int) (rayPos.z));
+                        if(!mapGenerator.blockExists(xInt-1,yInt,zInt)) {
+                            mapGenerator.blocks[xInt-1][yInt][zInt] = BlocksList.Grass;
+                            regenerateShell(xInt,zInt);
                         }
                     }
                     if(rayCastFace == 4) {
-                        if(!mapGenerator.blockExists((int) (rayPos.x),(int) rayPos.y,(int) (rayPos.z + 1))) {
-                            mapGenerator.blocks[(int) (rayPos.x)][(int) rayPos.y][(int) (rayPos.z + 1)] = BlocksList.Grass;
-                            regenerateShell((int) (rayPos.x),(int) (rayPos.z));
+                        if(!mapGenerator.blockExists(xInt,yInt,zInt+1)) {
+                            mapGenerator.blocks[xInt][yInt][zInt+1] = BlocksList.Grass;
+                            regenerateShell(xInt,zInt);
                         }
                     }
                     if(rayCastFace == 5) {
-                        if(!mapGenerator.blockExists((int) (rayPos.x),(int) rayPos.y,(int) (rayPos.z - 1))) {
-                            mapGenerator.blocks[(int) (rayPos.x)][(int) rayPos.y][(int) (rayPos.z - 1)] = BlocksList.Grass;
-                            regenerateShell((int) (rayPos.x),(int) (rayPos.z));
+                        if(!mapGenerator.blockExists(xInt,yInt,zInt-1)) {
+                            mapGenerator.blocks[xInt][yInt][zInt-1] = BlocksList.Grass;
+                            regenerateShell(xInt,zInt);
                         }
                     }
                 }

@@ -84,6 +84,7 @@ public final class Picker {
 	}
 	
 	public static void render(Camera camera, Vector3 position) {
+		if (position.isZero()) return;
 		gl.glEnable(GL20.GL_BLEND);
 		shader.begin();
 		shader.setUniformMatrix("u_projTrans", camera.combined);

@@ -17,6 +17,7 @@ public class ChunkMesh implements Disposable
 	private int count;
 	
 	private boolean isEmpty;
+	public  boolean isDirty;
 
 	public ChunkMesh(ByteBuffer buffer, FloatArray verts, VertContext context, int glDraw) {
 		byteSize = context.getAttrs().vertexSize;
@@ -40,10 +41,6 @@ public class ChunkMesh implements Disposable
 		vbo.setVertices(verts.items, 0, verts.size);
 		count = (verts.size / byteSize) * 6;
 		isEmpty = false;
-	}
-	
-	public boolean isEmpty() {
-		return isEmpty;
 	}
 	
 	// For future optimization.

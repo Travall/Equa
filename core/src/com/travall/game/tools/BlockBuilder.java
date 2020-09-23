@@ -55,6 +55,7 @@ public class BlockBuilder {
 	
 	public ChunkMesh end(ChunkMesh mesh) {
 		mesh.setVertices(vertices);
+		mesh.isDirty = false;
 		return mesh;
 	}
 	
