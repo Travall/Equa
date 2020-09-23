@@ -14,19 +14,21 @@ attribute MEDIUM vec2 a_texCoord;
 
 uniform mat4 u_projTrans;
 uniform LOWP float sunLightIntensity;
+uniform LOWP float brightness;
 
 varying LOWP float v_shade;
 varying LOWP float v_light;
 varying MEDIUM vec2 v_texCoords;
 
-const LOWP float brightness = 0.1;
-
 // data[sideLight&Ambiant, source-light, skylight, unused]
 void main()
 {
-	// v_light = (source-light * brightness) + (skylight * brightness) * sunLightIntensity;
-	v_light = (a_data.y + (1.0 - a_data.y) * brightness) + (a_data.z + (1.0 - a_data.z) * brightness) * sunLightIntensity;
-	v_light = clamp(v_light, 0.0, 1.0);
+	v_light = a_data.y + a_data.z * sunLightIntensity;
+	v_light = v_light + (1.0 - v_light) * brightness;
+	v_light += a_data.y * brightness;
+	if (v_light > 1.0) {
+		v_light = mix(v_light, 1.0, 0.8);
+	}
 	v_shade = a_data.x;
 	
 	v_texCoords = a_texCoord;
