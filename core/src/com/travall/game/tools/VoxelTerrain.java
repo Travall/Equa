@@ -6,12 +6,12 @@ import static com.badlogic.gdx.graphics.glutils.ShaderProgram.TEXCOORD_ATTRIBUTE
 
 import java.nio.ByteBuffer;
 
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.travall.game.glutils.QuadIndexBuffer;
 import com.travall.game.glutils.VertContext;
@@ -48,11 +48,19 @@ public final class VoxelTerrain {
 		QuadIndexBuffer.ints();
 	}
 	
+	static float sine = 0;
+	
 	/** Begins the shader. */
 	public static void begin(Camera cam) {
+		sine += 0.02f;
+		if (sine > MathUtils.PI2) {
+			sine -= MathUtils.PI2;
+		}
 		shaderProgram.begin();
 		shaderProgram.setUniformMatrix("u_projTrans", cam.combined);
-		shaderProgram.setUniformf("sunLightIntensity", 0f); // 1f for full sun light.
+		shaderProgram.setUniformf("sunLightIntensity", MathUtils.clamp(MathUtils.sin(sine)+0.5f, 0.0f, 1.0f));
+		shaderProgram.setUniformf("sunLightIntensity", 0f);
+		shaderProgram.setUniformf("brightness", 0.2f);
 	}
 	
 	/** End the shader. */
