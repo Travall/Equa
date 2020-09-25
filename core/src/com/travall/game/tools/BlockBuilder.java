@@ -79,9 +79,27 @@ public class BlockBuilder {
 			
 			setAmb(1f);
 			if (!map.isOutBound(pos.x, pos.y+1, pos.z)) {
-				setSrc(map.getSrcLight(pos.x, pos.y+1, pos.z)/15f);
+				setSrc((map.getSrcLight(pos.x, pos.y+1, pos.z)/15f));
 			} else setSrc(0f);
-			
+
+			if(map.blockExists(pos.x + 1,pos.y + 1,pos.z)) v1.ambLit = v4.ambLit = 0.5f;
+			if(map.blockExists(pos.x - 1,pos.y + 1,pos.z)) v2.ambLit = v3.ambLit = 0.5f;
+
+
+			if(map.blockExists(pos.x - 1,pos.y + 1,pos.z -1)) v2.ambLit = 0.5f;
+			if(map.blockExists(pos.x + 1,pos.y + 1,pos.z +1)) v4.ambLit = 0.5f;
+
+
+			if(map.blockExists(pos.x + 1,pos.y + 1,pos.z -1)) v1.ambLit = 0.5f;
+			if(map.blockExists(pos.x - 1,pos.y + 1,pos.z +1)) v3.ambLit = 0.5f;
+
+
+			if(map.blockExists(pos.x,pos.y + 1,pos.z -1)) v1.ambLit = v2.ambLit = 0.5f;
+			if(map.blockExists(pos.x,pos.y + 1,pos.z +1)) v3.ambLit = v4.ambLit = 0.5f;
+
+
+
+
 			rect(block.textures.top);
 		}
 		if (renderBottom) { // facing Y-
@@ -95,6 +113,21 @@ public class BlockBuilder {
 			if (!map.isOutBound(pos.x, pos.y-1, pos.z)) {
 				setSrc(map.getSrcLight(pos.x, pos.y-1, pos.z)/15f);
 			} else setSrc(0f);
+
+			if(map.blockExists(pos.x - 1,pos.y - 1,pos.z)) v1.ambLit = v4.ambLit = 0.5f;
+			if(map.blockExists(pos.x + 1,pos.y - 1,pos.z)) v2.ambLit = v3.ambLit = 0.5f;
+
+
+			if(map.blockExists(pos.x - 1,pos.y - 1,pos.z -1)) v1.ambLit = 0.5f;
+			if(map.blockExists(pos.x + 1,pos.y - 1,pos.z +1)) v3.ambLit = 0.5f;
+//
+//
+			if(map.blockExists(pos.x + 1,pos.y - 1,pos.z -1)) v2.ambLit = 0.5f;
+			if(map.blockExists(pos.x - 1,pos.y - 1,pos.z +1)) v4.ambLit = 0.5f;
+//
+//
+			if(map.blockExists(pos.x,pos.y - 1,pos.z -1)) v1.ambLit = v2.ambLit = 0.5f;
+			if(map.blockExists(pos.x,pos.y - 1,pos.z +1)) v3.ambLit = v4.ambLit = 0.5f;
 			
 			rect(block.textures.bottom);
 		}

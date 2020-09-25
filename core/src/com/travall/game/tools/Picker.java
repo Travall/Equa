@@ -41,11 +41,11 @@ public final class Picker {
 		};
 		
 		shader.begin();
-		shader.setUniformf("u_alpha", 0.35f);
+		shader.setUniformf("u_alpha", 0.15f);
 		shader.end();
 		
 		final FloatArray array = new FloatArray(allFloats);
-		final float tmpN = -0.01f;
+		final float tmpN = -0.001f;
 		float tmpP = (-tmpN)+1f;
 		
 		// facing Y+

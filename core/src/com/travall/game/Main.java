@@ -37,13 +37,10 @@ public class Main extends ApplicationAdapter {
     FirstPersonCameraController cameraController;
     ModelBatch modelBatch;
     AssetManager assetManager;
-    Environment environment;
     ChunkMesh[][] chunkMeshes;
     ModelInstance skyboxInstance;
-    DirectionalShadowLight shadowLight;
     ModelBatch shadowBatch;
     MapGenerator mapGenerator;
-    ModelInstance shower;
     int mapWidth = 256; // changed from 128 to 256
     int mapLength = 256;
     int mapHeight = 128;
@@ -54,25 +51,13 @@ public class Main extends ApplicationAdapter {
     int xChunks = mapWidth/chunkSizeX;
     int zChunks = mapLength/chunkSizeZ;
 
-    final Ray ray = new Ray();
-    final Vector3 rayPos = new Vector3();
-    final Vector3 rayDir = new Vector3();
-    final Vector3 rayIntersection = new Vector3();
-    final BoundingBox rayBox = new BoundingBox();
-    final Vector3 rayBoxMin = new Vector3();
-    final Vector3 rayBoxMax = new Vector3();
     final GridPoint3 pickerHit = new GridPoint3();
 
-    Block blockType;
+    short blockType = BlocksList.Stone;
 
     Player player;
 
     Vector3 temp = new Vector3();
-
-
-    Vector3 mouseTilePos = new Vector3();
-    Vector3 targetPos = new Vector3();
-    boolean target = false;
 
     float y = 0;
 
@@ -105,16 +90,6 @@ public class Main extends ApplicationAdapter {
 
         cameraController = new FirstPersonCameraController(camera);
         Gdx.input.setInputProcessor(cameraController);
-
-        environment = new Environment();
-        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
-        environment.set(new ColorAttribute(ColorAttribute.Fog,  0.5f, 0.5f, 0.5f, 1f));
-//		environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
-
-        environment.add((shadowLight = new DirectionalShadowLight(4096, 4096, 32, 32, 1f, 10f))
-                .set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
-
-        environment.shadowMap = shadowLight;
 
         shadowBatch = new ModelBatch(new DepthShaderProvider());
 
@@ -199,6 +174,9 @@ public class Main extends ApplicationAdapter {
         camera.fieldOfView = MathUtils.lerp(camera.fieldOfView,cameraController.targetFOV, 0.2f);
         camera.update();
 
+        if(Gdx.input.isKeyPressed(Input.Keys.Q)) blockType = BlocksList.Stone;
+        if(Gdx.input.isKeyPressed(Input.Keys.E)) blockType = BlocksList.Gold;
+
 
         y = -0.15f;
         float speed = 0.025f;
@@ -266,18 +244,6 @@ public class Main extends ApplicationAdapter {
         return Math.round(i / chunkSize) * chunkSize;
     }
 
-    private void editChunk(int indexX, int indexZ, int x, int z, int addX, int addZ) {
-//        if(addX >= 0 && addZ >= 0) {
-            chunkMeshes[indexX + addX][indexZ + addZ] = mapGenerator.generateShell(nearestChunk(x+chunkSizeX,chunkSizeX),nearestChunk(z+chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX + addX][indexZ + addZ]);
-//        } else if(addX > 0 && addZ < 0) {
-//            chunkMeshes[indexX + addX][indexZ + addZ] = mapGenerator.generateShell(nearestChunk(x+chunkSizeX,chunkSizeX),nearestChunk(z-chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX + addX][indexZ + addZ]);
-//        } else if(addX < 0 && addZ > 0) {
-//            chunkMeshes[indexX + addX][indexZ + addZ] = mapGenerator.generateShell(nearestChunk(x-chunkSizeX,chunkSizeX),nearestChunk(z+chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX + addX][indexZ + addZ]);
-//        } else if(addX < 0 && addZ < 0) {
-//            chunkMeshes[indexX + addX][indexZ + addZ] = mapGenerator.generateShell(nearestChunk(x-chunkSizeX,chunkSizeX),nearestChunk(z-chunkSizeZ,chunkSizeZ),chunkSizeX,chunkSizeZ, chunkMeshes[indexX + addX][indexZ + addZ]);
-//        }
-    }
-
     public void regenerateShell(int x, int z) {
     	final int indexX = x >> chunkShift;
         final int indexZ = z >> chunkShift;
@@ -320,121 +286,13 @@ public class Main extends ApplicationAdapter {
     	
     	pickerHit.set(in);
     	if (Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
-    		mapGenerator.breakBlock(in.x, in.y, in.z);
-    		regenerateShell(in.x, in.z);
+    	    if(mapGenerator.blockExists(in.x,in.y,in.z) && mapGenerator.blocks[in.x][in.y][in.z] != BlocksList.Bedrock) {
+                mapGenerator.breakBlock(in.x, in.y, in.z);
+                regenerateShell(in.x, in.z);
+            }
     	} else if (!mapGenerator.isOutBound(out.x, out.y, out.z) && Gdx.input.isButtonJustPressed(Buttons.RIGHT)) {
-    		mapGenerator.placeBlock(out.x, out.y, out.z, BlocksList.Gold);
+    		mapGenerator.placeBlock(out.x, out.y, out.z, blockType);
     		regenerateShell(out.x, out.z);
     	}
     }
-
-    /* // Currently it's casing errors.
-    private void cameraRaycast() {
-        ray.set(camera.position, camera.direction);
-        rayPos.set(camera.position);
-        rayDir.set(camera.direction).scl(0.05f); // changed from 0.1f to 0.05f
-
-        pickerHit.setZero();
-        for (int steps = 0; steps < 800; steps++) {
-            rayPos.add(rayDir);
-
-
-            if (mapGenerator.blockExists((int)rayPos.x,(int)rayPos.y,(int)rayPos.z)) {
-                mouseTilePos = rayPos;
-                int xInt = MathUtils.floor(rayPos.x);
-                int yInt = MathUtils.floor(rayPos.y);
-                int zInt = MathUtils.floor(rayPos.z);
-                rayPos.set(xInt, yInt, zInt);
-
-                pickerHit.set(rayPos);
-
-                rayBoxMin.set(rayPos);
-                rayBoxMax.set(rayPos).add(1);
-                rayBox.set(rayBoxMin, rayBoxMax);
-
-                int rayCastFace = -1;
-                float rayCastClosest = 10;
-
-                if (Intersector.intersectRayBounds(ray, rayBox, rayIntersection)) {
-                    if (rayBoxMax.y - rayIntersection.y < rayCastClosest) {
-                        rayCastClosest = rayBoxMax.y - rayIntersection.y;
-                        rayCastFace = 0;
-                    }
-
-                    if (-(rayBoxMin.y - rayIntersection.y) < rayCastClosest) {
-                        rayCastClosest = -(rayBoxMin.y - rayIntersection.y);
-                        rayCastFace = 1;
-                    }
-
-                    if (rayBoxMax.x - rayIntersection.x < rayCastClosest) {
-                        rayCastClosest = rayBoxMax.x - rayIntersection.x;
-                        rayCastFace = 2;
-                    }
-
-                    if (-(rayBoxMin.x - rayIntersection.x) < rayCastClosest) {
-                        rayCastClosest = -(rayBoxMin.x - rayIntersection.x);
-                        rayCastFace = 3;
-                    }
-
-                    if (rayBoxMax.z - rayIntersection.z < rayCastClosest) {
-                        rayCastClosest = rayBoxMax.z - rayIntersection.z;
-                        rayCastFace = 4;
-                    }
-
-                    if (-(rayBoxMin.z - rayIntersection.z) < rayCastClosest) {
-                        rayCastClosest = -(rayBoxMin.z - rayIntersection.z);
-                        rayCastFace = 5;
-                    }
-
-
-                }
-
-                if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-                    mapGenerator.blocks[xInt][yInt][zInt] = 0;
-                    regenerateShell(xInt,zInt);
-                } else if(Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
-                    if(rayCastFace == 0) {
-                        if(yInt+1 != mapHeight && !mapGenerator.blockExists(xInt, yInt+1, zInt)) {
-                            mapGenerator.blocks[xInt][yInt+1][zInt] = BlocksList.Gold;
-                            regenerateShell(xInt,zInt);
-                            //mapGenerator.placeLight(temp.set((int) (rayPos.x),(int) rayPos.y + 1,(int) (rayPos.z)));
-                            //regenerateShellLighting((int) (rayPos.x),(int) (rayPos.z));
-                        }
-                    }
-                    if(rayCastFace == 1) {
-                        if(yInt-1 != -1 && !mapGenerator.blockExists(xInt,yInt-1,zInt)) {
-                            mapGenerator.blocks[xInt][yInt-1][zInt] = BlocksList.Gold;
-                            regenerateShell(xInt,zInt);
-                        }
-                    }
-                    if(rayCastFace == 2) {
-                        if(xInt+1 != mapHeight && !mapGenerator.blockExists(xInt+1,yInt,zInt)) {
-                            mapGenerator.blocks[xInt+1][yInt][zInt] = BlocksList.Gold;
-                            regenerateShell(xInt,zInt);
-                        }
-                    }
-                    if(rayCastFace == 3) {
-                        if(xInt-1 != -1 && !mapGenerator.blockExists(xInt-1,yInt,zInt)) {
-                            mapGenerator.blocks[xInt-1][yInt][zInt] = BlocksList.Gold;
-                            regenerateShell(xInt,zInt);
-                        }
-                    }
-                    if(rayCastFace == 4) {
-                        if(zInt+1 != mapLength && !mapGenerator.blockExists(xInt,yInt,zInt+1)) {
-                            mapGenerator.blocks[xInt][yInt][zInt+1] = BlocksList.Gold;
-                            regenerateShell(xInt,zInt);
-                        }
-                    }
-                    if(rayCastFace == 5) {
-                        if(zInt-1 != -1 && !mapGenerator.blockExists(xInt,yInt,zInt-1)) {
-                            mapGenerator.blocks[xInt][yInt][zInt-1] = BlocksList.Gold;
-                            regenerateShell(xInt,zInt);
-                        }
-                    }
-                }
-
-                break;
-            }
-        }
-    } */
 }
