@@ -80,7 +80,7 @@ public class BlockBuilder {
 			setAmb(1f);
 			if (!map.isOutBound(pos.x, pos.y+1, pos.z)) {
 				setSrc(map.getSrcLight(pos.x, pos.y+1, pos.z)/15f);
-			}
+			} else setSrc(0f);
 			
 			rect(block.textures.top);
 		}
@@ -94,7 +94,7 @@ public class BlockBuilder {
 			setAmb(0.6f);
 			if (!map.isOutBound(pos.x, pos.y-1, pos.z)) {
 				setSrc(map.getSrcLight(pos.x, pos.y-1, pos.z)/15f);
-			}
+			} else setSrc(0f);
 			
 			rect(block.textures.bottom);
 		}
@@ -108,7 +108,7 @@ public class BlockBuilder {
 			setAmb(0.72f);
 			if (!map.isOutBound(pos.x, pos.y, pos.z-1)) {
 				setSrc(map.getSrcLight(pos.x, pos.y, pos.z-1)/15f);
-			}
+			} else setSrc(0f);
 			
 			rect(block.textures.render3);
 		}
@@ -122,7 +122,7 @@ public class BlockBuilder {
 			setAmb(0.85f);
 			if (!map.isOutBound(pos.x-1, pos.y, pos.z)) {
 				setSrc(map.getSrcLight(pos.x-1, pos.y, pos.z)/15f);
-			}
+			} else setSrc(0f);
 			
 			rect(block.textures.render3);
 		}
@@ -136,7 +136,7 @@ public class BlockBuilder {
 			setAmb(0.72f);
 			if (!map.isOutBound(pos.x, pos.y, pos.z+1)) {
 				setSrc(map.getSrcLight(pos.x, pos.y, pos.z+1)/15f);
-			}
+			} else setSrc(0f);
 			
 			rect(block.textures.render3);
 		}
@@ -150,7 +150,7 @@ public class BlockBuilder {
 			setAmb(0.85f);
 			if (!map.isOutBound(pos.x+1, pos.y, pos.z)) {
 				setSrc(map.getSrcLight(pos.x+1, pos.y, pos.z)/15f);
-			}
+			} else setSrc(0f);
 			
 			rect(block.textures.render3);
 		}
