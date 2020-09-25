@@ -3,6 +3,8 @@
     precision lowp float;
 #endif
 
+uniform float u_alpha;
+
 void main() {
-	gl_FragColor = vec4(vec3(1.0), 0.4);
+	gl_FragColor = vec4(vec3(1.0), u_alpha);
 }

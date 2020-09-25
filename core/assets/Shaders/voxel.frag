@@ -18,5 +18,6 @@ void main()
 {
 	LOWP vec4 pix = texture2D(u_texture, v_texCoords);
 	if (pix.a <= 0.0) discard; // Don't draw the transparent pixel.
-	gl_FragColor = (pix * v_shade) * v_light;
+	pix.rgb = (pix.rgb * v_shade) * pow(v_light, 2.2);
+	gl_FragColor = pix;
 }

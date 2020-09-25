@@ -15,6 +15,7 @@ public class Block {
     public Block(int srclight, boolean transparent, BlockTextures textures) {
         this.transparent = transparent;
         this.textures = textures;
+        this.srclight = srclight;
     }
     
     public boolean isSrclight() {

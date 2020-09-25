@@ -1,6 +1,7 @@
 package com.travall.game.generation;
 
-import com.badlogic.gdx.Gdx;
+import java.util.Random;
+
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.GridPoint3;
@@ -8,48 +9,51 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
+import com.travall.game.Main;
 import com.travall.game.blocks.Block;
 import com.travall.game.blocks.BlocksList;
 import com.travall.game.tools.BlockBuilder;
-import com.travall.game.tools.BlockBuilder.VertInfo;
 import com.travall.game.tools.ChunkMesh;
+import com.travall.game.tools.FloodLight;
 import com.travall.game.tools.OpenSimplexOctaves;
 import com.travall.game.tools.UltimateTexture;
 import com.travall.game.tools.Utils;
 
 
 public class MapGenerator implements Disposable {
-    int mapWidth;
-    int mapLength;
-    int mapHeight;
+    public final int mapWidth;
+    public final int mapLength;
+    public final int mapHeight;
     int waterLevel;
     public short[][][] blocks;
-    public byte[][][] lightMap;
-    public BlocksList blockList;
+    private byte[][][] lights;
     BlockBuilder blockBuilder;
+    FloodLight floodLight;
     Vector3 temp = new Vector3();
     public UltimateTexture ultimate;
 	GridPoint3 pos = new GridPoint3();
 
-    public MapGenerator(int mapWidth, int mapHeight, int mapLength, int waterLevel) {
+    public MapGenerator(Main main, int mapWidth, int mapHeight, int mapLength, int waterLevel) {
         this.mapWidth = mapWidth;
         this.mapHeight = mapHeight;
         this.mapLength = mapLength;
         this.waterLevel = waterLevel;
         this.blockBuilder = new BlockBuilder();
+        this.floodLight = new FloodLight(this, main);
         this.ultimate = new UltimateTexture(new Texture("Tiles/ultimate3.png"));
-        this.blockList = new BlocksList(ultimate);
+        BlocksList.ints(ultimate);
         generate();
     }
 
     private void generate() {
-        OpenSimplexOctaves MountainNoise = new OpenSimplexOctaves(7,0.45, (int) (Math.random() * 100000));
-        OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5,0.25, (int) (Math.random() * 100000));
-        OpenSimplexOctaves FlatNoise = new OpenSimplexOctaves(6,0.15, (int) (Math.random() * 100000));
-        OpenSimplexOctaves DecisionNoise = new OpenSimplexOctaves(8,0.02, (int) (Math.random() * 100000));
+    	final Random random = MathUtils.random;
+        OpenSimplexOctaves MountainNoise = new OpenSimplexOctaves(7,0.43, random.nextInt()); // changed from 0.45 to 0.43
+        OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5,0.25, random.nextInt());
+        OpenSimplexOctaves FlatNoise = new OpenSimplexOctaves(6,0.2, random.nextInt()); // changed from 0.15 to 0.2
+        OpenSimplexOctaves DecisionNoise = new OpenSimplexOctaves(8,0.02, random.nextInt());
 
         blocks = new short[mapWidth][mapHeight][mapLength];
-        lightMap = new byte[mapWidth][mapHeight][mapLength];
+        lights = new byte[mapWidth][mapHeight][mapLength];
 
         int maxTerrainHeight = mapHeight / 2;
 
@@ -117,29 +121,41 @@ public class MapGenerator implements Disposable {
 
 
     }
+    
+    public void breakBlock(int x, int y, int z) {
+    	Block block = BlocksList.get(blocks[x][y][z]);
+    	blocks[x][y][z] = 0;
+    	
+    	if (block.isSrclight()) { // if break srclight block.
+    		floodLight.delSrclightAt(x, y, z, getSrcLight(x, y, z));
+    		setSrcLight(x, y, z, 0);
+    		floodLight.defillSrclight();
+    		floodLight.fillSrclight();
+    	} else { // if break non-srclight block.
+    		floodLight.newSrclightAt(x, y+1, z);
+    		floodLight.newSrclightAt(x, y-1, z);
+    		floodLight.newSrclightAt(x, y, z-1);
+    		floodLight.newSrclightAt(x-1, y, z);
+    		floodLight.newSrclightAt(x, y, z+1);
+    		floodLight.newSrclightAt(x+1, y, z);
+    		floodLight.fillSrclight();
+    	}
+    }
 
-    public void placeLight(Vector3 position) {
-        int distance = 8;
-
-        for(int xx = (int) (position.x - distance); xx < position.x + distance; xx++) {
-            for(int yy = (int) (position.y - distance); yy < position.y + distance; yy++) {
-                for(int zz = (int) (position.z - distance); zz < position.z + distance; zz++) {
-                    if(blockExists(xx,yy,zz)) {
-                        if(!blockExists(xx + 1, yy, zz) || (blockExists(xx + 1, yy, zz) && blockList.get(blocks[xx+1][yy][zz]).transparent)
-                                || !blockExists(xx - 1, yy, zz) || (blockExists(xx - 1, yy, zz) && blockList.get(blocks[xx-1][yy][zz]).transparent)
-                                || !blockExists(xx, yy + 1, zz) || (blockExists(xx, yy + 1, zz) && blockList.get(blocks[xx][yy + 1][zz]).transparent)
-                                || !blockExists(xx, yy - 1, zz) || (blockExists(xx, yy - 1, zz) && blockList.get(blocks[xx][yy - 1][zz]).transparent)
-                                || !blockExists(xx, yy, zz + 1) || (blockExists(xx, yy, zz + 1) && blockList.get(blocks[xx][yy][zz + 1]).transparent)
-                                || !blockExists(xx, yy, zz - 1) || (blockExists(xx, yy, zz - 1) && blockList.get(blocks[xx][yy][zz - 1]).transparent)) {
-                            Byte light = (byte) (distance - position.dst(xx,yy,zz));
-
-                            if(light < 0) light = 0;
-                            lightMap[xx][yy][zz] =  light;
-                        }
-                    }
-                }
-            }
-        }
+    public void placeBlock(int x, int y, int z, short id) {
+    	Block block = BlocksList.get(id);
+    	blocks[x][y][z] = id;
+    	
+    	if (block.isSrclight()) { // if place srclight block.
+    		setSrcLight(x, y, z, block.srclight);
+    		floodLight.newSrclightAt(x, y, z);
+    		floodLight.fillSrclight();
+    	} else { // if place non-srclight block.
+    		floodLight.delSrclightAt(x, y, z, getSrcLight(x, y, z));
+    		setSrcLight(x, y, z, 0);
+    		floodLight.defillSrclight();
+    		floodLight.fillSrclight();
+    	}
     }
 
 
@@ -151,24 +167,24 @@ public class MapGenerator implements Disposable {
                 for(int z = indexZ; z < indexZ + chunkSizeZ; z++) {
                     if(blockExists(x,y,z)) {
                         pos.set(x,y,z);
-                        block = blockList.get(blocks[x][y][z]);
+                        block = BlocksList.get(blocks[x][y][z]);
                         
-                        if  (!blockExists(x + 1, y, z) || (blockExists(x + 1, y, z) && blockList.get(blocks[x + 1][y][z]).transparent)
-                          || !blockExists(x - 1, y, z) || (blockExists(x - 1, y, z) && blockList.get(blocks[x - 1][y][z]).transparent)
-                          || !blockExists(x, y + 1, z) || (blockExists(x, y + 1, z) && blockList.get(blocks[x][y + 1][z]).transparent)
-                          || !blockExists(x, y - 1, z) || (blockExists(x, y - 1, z) && blockList.get(blocks[x][y - 1][z]).transparent)
-                          || !blockExists(x, y, z + 1) || (blockExists(x, y, z + 1) && blockList.get(blocks[x][y][z + 1]).transparent)
-                          || !blockExists(x, y, z - 1) || (blockExists(x, y, z - 1) && blockList.get(blocks[x][y][z - 1]).transparent)) {
+                        if  (!blockExists(x + 1, y, z) || (blockExists(x + 1, y, z) && BlocksList.get(blocks[x + 1][y][z]).transparent)
+                          || !blockExists(x - 1, y, z) || (blockExists(x - 1, y, z) && BlocksList.get(blocks[x - 1][y][z]).transparent)
+                          || !blockExists(x, y + 1, z) || (blockExists(x, y + 1, z) && BlocksList.get(blocks[x][y + 1][z]).transparent)
+                          || !blockExists(x, y - 1, z) || (blockExists(x, y - 1, z) && BlocksList.get(blocks[x][y - 1][z]).transparent)
+                          || !blockExists(x, y, z + 1) || (blockExists(x, y, z + 1) && BlocksList.get(blocks[x][y][z + 1]).transparent)
+                          || !blockExists(x, y, z - 1) || (blockExists(x, y, z - 1) && BlocksList.get(blocks[x][y][z - 1]).transparent)) {
 
                         	boolean blocksTranslucent = block.transparent;
-                            boolean renderTop = !(blockExists(x, y + 1, z) && (!blockList.get(blocks[x][y + 1][z]).transparent || blocksTranslucent));
-                            boolean renderBottom = !(blockExists(x, y - 1, z) && (!blockList.get(blocks[x][y - 1][z]).transparent || blocksTranslucent));
-                            boolean render1 = !(blockExists(x, y, z - 1) && (!blockList.get(blocks[x][y][z - 1]).transparent || blocksTranslucent));
-                            boolean render2 = !(blockExists(x - 1, y, z) && (!blockList.get(blocks[x - 1][y][z]).transparent || blocksTranslucent));
-                            boolean render3 = !(blockExists(x, y, z + 1) && (!blockList.get(blocks[x][y][z + 1]).transparent || blocksTranslucent));
-                            boolean render4 = !(blockExists(x + 1, y, z) && (!blockList.get(blocks[x + 1][y][z]).transparent || blocksTranslucent));
+                            boolean renderTop = !(blockExists(x, y + 1, z) && (!BlocksList.get(blocks[x][y + 1][z]).transparent || blocksTranslucent));
+                            boolean renderBottom = !(blockExists(x, y - 1, z) && (!BlocksList.get(blocks[x][y - 1][z]).transparent || blocksTranslucent));
+                            boolean render1 = !(blockExists(x, y, z - 1) && (!BlocksList.get(blocks[x][y][z - 1]).transparent || blocksTranslucent));
+                            boolean render2 = !(blockExists(x - 1, y, z) && (!BlocksList.get(blocks[x - 1][y][z]).transparent || blocksTranslucent));
+                            boolean render3 = !(blockExists(x, y, z + 1) && (!BlocksList.get(blocks[x][y][z + 1]).transparent || blocksTranslucent));
+                            boolean render4 = !(blockExists(x + 1, y, z) && (!BlocksList.get(blocks[x + 1][y][z]).transparent || blocksTranslucent));
 
-                            blockBuilder.buildCube(block, pos,renderTop,renderBottom,render1,render2,render3,render4,lightMap[x][y][z]);
+                            blockBuilder.buildCube(block, pos,renderTop,renderBottom,render1,render2,render3,render4,this);
                         }
                     }
                 }
@@ -182,8 +198,32 @@ public class MapGenerator implements Disposable {
     }
 
     public boolean blockExists(int x, int y, int z) {
-        return x >= 0 && x < blocks.length && y >=0 && y < blocks[x].length && z >= 0 && z < blocks[x][y].length && blocks[x][y][z] != 0;
+        return !isOutBound(x, y, z) && blocks[x][y][z] != 0;
     }
+    
+    public boolean isOutBound(int x, int y, int z) {
+    	return x < 0 || y < 0 || z < 0 || x >= mapWidth || y >= mapHeight || z >= mapLength;
+    }
+    
+ // Get the bits XXXX0000
+ 	public int getSunLight(int x, int y, int z) {
+ 	    return (lights[x][y][z] >>> 4) & 0xF;
+ 	}
+
+ 	// Set the bits XXXX0000
+ 	public void setSunLight(int x, int y, int z, int val) {
+ 		lights[x][y][z] = (byte)((lights[x][y][z] & 0xF) | (val << 4));
+ 	}
+
+ 	// Get the bits 0000XXXX
+ 	public int getSrcLight(int x, int y, int z) {
+ 	    return lights[x][y][z] & 0xF;
+ 	}
+ 	
+ 	// Set the bits 0000XXXX
+ 	public void setSrcLight(int x, int y, int z, int val) {
+ 		lights[x][y][z] = (byte)((lights[x][y][z] & 0xF0) | val); // Check this
+ 	}
     
     public Texture getTexture() {
     	return ultimate.currentTexture;

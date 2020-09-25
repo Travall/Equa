@@ -3,6 +3,7 @@ package com.travall.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -15,6 +16,7 @@ import com.badlogic.gdx.graphics.g3d.utils.*;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.math.collision.Ray;
+import com.badlogic.gdx.physics.bullet.dynamics.btWheelInfo.RaycastInfo;
 import com.kotcrab.vis.ui.VisUI;
 import com.travall.game.entities.Player;
 import com.travall.game.generation.MapGenerator;
@@ -23,6 +25,8 @@ import com.travall.game.blocks.BlocksList;
 import com.travall.game.tools.ChunkMesh;
 import com.travall.game.tools.FirstPersonCameraController;
 import com.travall.game.tools.Picker;
+import com.travall.game.tools.Raycast;
+import com.travall.game.tools.Raycast.RayInfo;
 import com.travall.game.tools.SSAO;
 import com.travall.game.tools.Skybox;
 import com.travall.game.tools.UltimateTexture;
@@ -40,12 +44,13 @@ public class Main extends ApplicationAdapter {
     ModelBatch shadowBatch;
     MapGenerator mapGenerator;
     ModelInstance shower;
-    int mapWidth = 256;// changed from 128 to 256
+    int mapWidth = 256; // changed from 128 to 256
     int mapLength = 256;
     int mapHeight = 128;
     int waterLevel = mapHeight/5; // changed from 4 to 5
-    int chunkSizeX = 32; // changed from 8 to 16
-    int chunkSizeZ = 32;
+    public int chunkShift = 4; // 1 << 4 = 16. I set it back from 32 to 16 due to vertices limitations.
+    public int chunkSizeX = 1<<chunkShift;
+    public int chunkSizeZ = 1<<chunkShift;
     int xChunks = mapWidth/chunkSizeX;
     int zChunks = mapLength/chunkSizeZ;
 
@@ -56,7 +61,7 @@ public class Main extends ApplicationAdapter {
     final BoundingBox rayBox = new BoundingBox();
     final Vector3 rayBoxMin = new Vector3();
     final Vector3 rayBoxMax = new Vector3();
-    final Vector3 pickerHit = new Vector3();
+    final GridPoint3 pickerHit = new GridPoint3();
 
     Block blockType;
 
@@ -114,7 +119,7 @@ public class Main extends ApplicationAdapter {
         shadowBatch = new ModelBatch(new DepthShaderProvider());
 
         chunkMeshes = new ChunkMesh[xChunks][zChunks];
-        mapGenerator = new MapGenerator(mapWidth,mapHeight,mapLength,waterLevel);
+        mapGenerator = new MapGenerator(this,mapWidth,mapHeight,mapLength,waterLevel);
         for(int x = 0; x < xChunks; x++) {
             for(int z = 0; z < zChunks; z++) {
             	chunkMeshes[x][z] = mapGenerator.generateShell(x * chunkSizeX,z * chunkSizeZ,chunkSizeX,chunkSizeZ, null);
@@ -174,9 +179,8 @@ public class Main extends ApplicationAdapter {
         }
         Gdx.gl30.glBindVertexArray(0);
         VoxelTerrain.end();
-        Gdx.gl.glDisable(GL20.GL_CULL_FACE);
-        
         Picker.render(camera, pickerHit);
+        Gdx.gl.glDisable(GL20.GL_CULL_FACE);
         
         ssao.end();
         Gdx.gl.glDisable(GL20.GL_CULL_FACE);
@@ -230,7 +234,7 @@ public class Main extends ApplicationAdapter {
         player.applyForce(add);
         player.applyForce(new Vector3(0,y,0));
         player.update(mapGenerator);
-        camera.position.set(player.instance.transform.getTranslation(temp).add(0,0.8f,0)); // changed from 0.9f to 0.8f
+        camera.position.set(player.instance.transform.getTranslation(temp).add(0,0.75f,0));
 
         cameraRaycast();
     }
@@ -274,12 +278,10 @@ public class Main extends ApplicationAdapter {
 //        }
     }
 
-    private void regenerateShell(int x, int z) {
-    	final int indexX = (nearestChunk(x,chunkSizeX)) / chunkSizeX;
-        final int indexZ = (nearestChunk(z,chunkSizeZ)) / chunkSizeZ;
+    public void regenerateShell(int x, int z) {
+    	final int indexX = x >> chunkShift;
+        final int indexZ = z >> chunkShift;
         setMeshDirtyAt(indexX, indexZ);
-    	
-        System.out.println(x + " : " + z);
 
         if(x % chunkSizeX == 0 && x != 0) {
         	setMeshDirtyAt(indexX-1, indexZ);
@@ -304,7 +306,29 @@ public class Main extends ApplicationAdapter {
     	
     	chunkMeshes[indexX][indexZ].isDirty = true;
     }
+    
+    // Fast, accurate, and simple ray-cast.
+    private void cameraRaycast() {
+    	RayInfo info = Raycast.Fastcast(camera, mapGenerator);    	
+    	if (info == null) {
+    		pickerHit.y = -1; // -1 indicates there's no block been casted.
+    		return;
+    	}
+    	
+    	GridPoint3 in =  info.in;
+    	GridPoint3 out = info.out;
+    	
+    	pickerHit.set(in);
+    	if (Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
+    		mapGenerator.breakBlock(in.x, in.y, in.z);
+    		regenerateShell(in.x, in.z);
+    	} else if (!mapGenerator.isOutBound(out.x, out.y, out.z) && Gdx.input.isButtonJustPressed(Buttons.RIGHT)) {
+    		mapGenerator.placeBlock(out.x, out.y, out.z, BlocksList.Gold);
+    		regenerateShell(out.x, out.z);
+    	}
+    }
 
+    /* // Currently it's casing errors.
     private void cameraRaycast() {
         ray.set(camera.position, camera.direction);
         rayPos.set(camera.position);
@@ -370,40 +394,40 @@ public class Main extends ApplicationAdapter {
                     regenerateShell(xInt,zInt);
                 } else if(Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
                     if(rayCastFace == 0) {
-                        if(!mapGenerator.blockExists(xInt, yInt+1, zInt) && yInt+1 < mapHeight) {
-                            mapGenerator.blocks[xInt][yInt+1][zInt] = BlocksList.Grass;
+                        if(yInt+1 != mapHeight && !mapGenerator.blockExists(xInt, yInt+1, zInt)) {
+                            mapGenerator.blocks[xInt][yInt+1][zInt] = BlocksList.Gold;
                             regenerateShell(xInt,zInt);
                             //mapGenerator.placeLight(temp.set((int) (rayPos.x),(int) rayPos.y + 1,(int) (rayPos.z)));
                             //regenerateShellLighting((int) (rayPos.x),(int) (rayPos.z));
                         }
                     }
                     if(rayCastFace == 1) {
-                        if(!mapGenerator.blockExists(xInt,yInt-1,zInt) && yInt-1 > 0) {
-                            mapGenerator.blocks[xInt][yInt][zInt] = BlocksList.Grass;
+                        if(yInt-1 != -1 && !mapGenerator.blockExists(xInt,yInt-1,zInt)) {
+                            mapGenerator.blocks[xInt][yInt-1][zInt] = BlocksList.Gold;
                             regenerateShell(xInt,zInt);
                         }
                     }
                     if(rayCastFace == 2) {
-                        if(!mapGenerator.blockExists(xInt+1,yInt,zInt)) {
-                            mapGenerator.blocks[xInt+1][yInt][zInt] = BlocksList.Grass;
+                        if(xInt+1 != mapHeight && !mapGenerator.blockExists(xInt+1,yInt,zInt)) {
+                            mapGenerator.blocks[xInt+1][yInt][zInt] = BlocksList.Gold;
                             regenerateShell(xInt,zInt);
                         }
                     }
                     if(rayCastFace == 3) {
-                        if(!mapGenerator.blockExists(xInt-1,yInt,zInt)) {
-                            mapGenerator.blocks[xInt-1][yInt][zInt] = BlocksList.Grass;
+                        if(xInt-1 != -1 && !mapGenerator.blockExists(xInt-1,yInt,zInt)) {
+                            mapGenerator.blocks[xInt-1][yInt][zInt] = BlocksList.Gold;
                             regenerateShell(xInt,zInt);
                         }
                     }
                     if(rayCastFace == 4) {
-                        if(!mapGenerator.blockExists(xInt,yInt,zInt+1)) {
-                            mapGenerator.blocks[xInt][yInt][zInt+1] = BlocksList.Grass;
+                        if(zInt+1 != mapLength && !mapGenerator.blockExists(xInt,yInt,zInt+1)) {
+                            mapGenerator.blocks[xInt][yInt][zInt+1] = BlocksList.Gold;
                             regenerateShell(xInt,zInt);
                         }
                     }
                     if(rayCastFace == 5) {
-                        if(!mapGenerator.blockExists(xInt,yInt,zInt-1)) {
-                            mapGenerator.blocks[xInt][yInt][zInt-1] = BlocksList.Grass;
+                        if(zInt-1 != -1 && !mapGenerator.blockExists(xInt,yInt,zInt-1)) {
+                            mapGenerator.blocks[xInt][yInt][zInt-1] = BlocksList.Gold;
                             regenerateShell(xInt,zInt);
                         }
                     }
@@ -412,6 +436,5 @@ public class Main extends ApplicationAdapter {
                 break;
             }
         }
-
-    }
+    } */
 }

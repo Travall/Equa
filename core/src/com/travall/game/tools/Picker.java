@@ -9,7 +9,9 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.g3d.decals.Decal;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.FloatArray;
@@ -37,6 +39,10 @@ public final class Picker {
 				return attributes;
 			}
 		};
+		
+		shader.begin();
+		shader.setUniformf("u_alpha", 0.35f);
+		shader.end();
 		
 		final FloatArray array = new FloatArray(allFloats);
 		final float tmpN = -0.01f;
@@ -83,8 +89,8 @@ public final class Picker {
 		vbo = new VBO(buffer, context, GL20.GL_STATIC_DRAW, true);
 	}
 	
-	public static void render(Camera camera, Vector3 position) {
-		if (position.isZero()) return;
+	public static void render(Camera camera, GridPoint3 position) {
+		if (position.y == -1) return;
 		gl.glEnable(GL20.GL_BLEND);
 		shader.begin();
 		shader.setUniformMatrix("u_projTrans", camera.combined);
