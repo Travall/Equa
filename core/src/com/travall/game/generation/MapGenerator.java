@@ -132,12 +132,12 @@ public class MapGenerator implements Disposable {
     		floodLight.defillSrclight();
     		floodLight.fillSrclight();
     	} else { // if break non-srclight block.
-    		floodLight.newSrclightAt(x, y+1, z);
-    		floodLight.newSrclightAt(x, y-1, z);
-    		floodLight.newSrclightAt(x, y, z-1);
-    		floodLight.newSrclightAt(x-1, y, z);
-    		floodLight.newSrclightAt(x, y, z+1);
-    		floodLight.newSrclightAt(x+1, y, z);
+    		if (y+1 < mapHeight) floodLight.newSrclightAt(x, y+1, z);
+    		if (y-1 >= 0) floodLight.newSrclightAt(x, y-1, z);
+    		if (z-1 >= 0) floodLight.newSrclightAt(x, y, z-1);
+    		if (x-1 >= 0) floodLight.newSrclightAt(x-1, y, z);
+    		if (z+1 < mapLength) floodLight.newSrclightAt(x, y, z+1);
+    		if (x+1 < mapWidth) floodLight.newSrclightAt(x+1, y, z);
     		floodLight.fillSrclight();
     	}
     }
