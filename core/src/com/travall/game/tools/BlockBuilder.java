@@ -2,8 +2,10 @@ package com.travall.game.tools;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.GridPoint3;
+import com.badlogic.gdx.math.Interpolation.PowIn;
 import com.badlogic.gdx.utils.FloatArray;
 import com.travall.game.blocks.Block;
+import com.travall.game.generation.MapGenerator;
 import com.travall.game.glutils.QuadIndexBuffer;
 
 public class BlockBuilder {
@@ -55,6 +57,7 @@ public class BlockBuilder {
 	
 	public ChunkMesh end(ChunkMesh mesh) {
 		mesh.setVertices(vertices);
+		mesh.isDirty = false;
 		return mesh;
 	}
 	
@@ -64,9 +67,7 @@ public class BlockBuilder {
 //		|       |
 //		v1-----v4
 	public void buildCube(Block block, GridPoint3 pos, boolean renderTop, boolean renderBottom, boolean render1,
-			boolean render2, boolean render3, boolean render4, float light) {
-		
-		setSrc(light/8f);
+			boolean render2, boolean render3, boolean render4, MapGenerator map) {
 
 		float temp; // For optimization by reduce the converting from integer to float.
 		if (renderTop) { // facing Y+
@@ -75,7 +76,12 @@ public class BlockBuilder {
 			v2.setPos(pos.x,   temp, pos.z);
 			v3.setPos(pos.x,   temp, pos.z+1);
 			v4.setPos(pos.x+1, temp, pos.z+1);
+			
 			setAmb(1f);
+			if (!map.isOutBound(pos.x, pos.y+1, pos.z)) {
+				setSrc(map.getSrcLight(pos.x, pos.y+1, pos.z)/15f);
+			} else setSrc(0f);
+			
 			rect(block.textures.top);
 		}
 		if (renderBottom) { // facing Y-
@@ -84,7 +90,12 @@ public class BlockBuilder {
 			v2.setPos(pos.x+1, temp, pos.z);
 			v3.setPos(pos.x+1, temp, pos.z+1);
 			v4.setPos(pos.x,   temp, pos.z+1);
+			
 			setAmb(0.6f);
+			if (!map.isOutBound(pos.x, pos.y-1, pos.z)) {
+				setSrc(map.getSrcLight(pos.x, pos.y-1, pos.z)/15f);
+			} else setSrc(0f);
+			
 			rect(block.textures.bottom);
 		}
 		if (render1) { // facing Z-
@@ -93,7 +104,12 @@ public class BlockBuilder {
 			v2.setPos(pos.x,   pos.y+1, temp);
 			v3.setPos(pos.x+1, pos.y+1, temp);
 			v4.setPos(pos.x+1, pos.y,   temp);
-			setAmb(0.70f);
+			
+			setAmb(0.72f);
+			if (!map.isOutBound(pos.x, pos.y, pos.z-1)) {
+				setSrc(map.getSrcLight(pos.x, pos.y, pos.z-1)/15f);
+			} else setSrc(0f);
+			
 			rect(block.textures.render3);
 		}
 		if (render2) { // facing X-
@@ -102,7 +118,12 @@ public class BlockBuilder {
 			v2.setPos(temp, pos.y+1, pos.z+1);
 			v3.setPos(temp, pos.y+1, pos.z);
 			v4.setPos(temp, pos.y,   pos.z);
+			
 			setAmb(0.85f);
+			if (!map.isOutBound(pos.x-1, pos.y, pos.z)) {
+				setSrc(map.getSrcLight(pos.x-1, pos.y, pos.z)/15f);
+			} else setSrc(0f);
+			
 			rect(block.textures.render3);
 		}
 		if (render3) { // facing Z+
@@ -111,7 +132,12 @@ public class BlockBuilder {
 			v2.setPos(pos.x+1,   pos.y+1, temp);
 			v3.setPos(pos.x, pos.y+1, temp);
 			v4.setPos(pos.x, pos.y,   temp);
-			setAmb(0.70f);
+			
+			setAmb(0.72f);
+			if (!map.isOutBound(pos.x, pos.y, pos.z+1)) {
+				setSrc(map.getSrcLight(pos.x, pos.y, pos.z+1)/15f);
+			} else setSrc(0f);
+			
 			rect(block.textures.render3);
 		}
 		if (render4) { // facing X+
@@ -120,7 +146,12 @@ public class BlockBuilder {
 			v2.setPos(temp, pos.y+1, pos.z);
 			v3.setPos(temp, pos.y+1, pos.z+1);
 			v4.setPos(temp, pos.y,   pos.z+1);
+			
 			setAmb(0.85f);
+			if (!map.isOutBound(pos.x+1, pos.y, pos.z)) {
+				setSrc(map.getSrcLight(pos.x+1, pos.y, pos.z)/15f);
+			} else setSrc(0f);
+			
 			rect(block.textures.render3);
 		}
 	}

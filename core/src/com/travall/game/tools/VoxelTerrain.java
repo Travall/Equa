@@ -58,9 +58,9 @@ public final class VoxelTerrain {
 		}
 		shaderProgram.begin();
 		shaderProgram.setUniformMatrix("u_projTrans", cam.combined);
-		shaderProgram.setUniformf("sunLightIntensity", MathUtils.clamp(MathUtils.sin(sine)+0.5f, 0.0f, 1.0f));
+		//shaderProgram.setUniformf("sunLightIntensity", MathUtils.clamp(MathUtils.sin(sine)+0.5f, 0.0f, 1.0f));
 		shaderProgram.setUniformf("sunLightIntensity", 0f);
-		shaderProgram.setUniformf("brightness", 0.2f);
+		shaderProgram.setUniformf("brightness", 0.35f);
 	}
 	
 	/** End the shader. */

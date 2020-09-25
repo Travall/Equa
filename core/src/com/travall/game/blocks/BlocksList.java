@@ -1,31 +1,38 @@
 package com.travall.game.blocks;
 
+import com.badlogic.gdx.utils.IntMap;
 import com.travall.game.tools.UltimateTexture;
 
-import java.util.HashMap;
-
 public class BlocksList {
-    public static short Air = 0;
-    public static short Bedrock = 1;
-    public static short Stone = 2;
-    public static short Dirt = 3;
-    public static short Grass = 4;
-    public static short Sand = 5;
-    public static short Water = 6;
+    public static final short 
+    Air = 0,
+    Bedrock = 1,
+    Stone = 2,
+    Dirt = 3,
+    Grass = 4,
+    Sand = 5,
+    Water = 6,
+    Gold = 7;
 
-
-    HashMap<Short,Block> types = new HashMap<>();
-
-    public BlocksList(UltimateTexture ultimate) {
-        types.put(Bedrock,new Bedrock(ultimate));
+    // Changed from HashMap to IntMap to avoid object baking from "short" key.
+    public static final IntMap<Block> types = new IntMap<>();
+    
+    private static boolean hasInts;
+    
+    public static void ints(UltimateTexture ultimate) {
+    	if (hasInts) return;
+    	types.put(Bedrock,new Bedrock(ultimate));
         types.put(Stone,new Stone(ultimate));
         types.put(Dirt,new Dirt(ultimate));
         types.put(Grass,new Grass(ultimate));
         types.put(Sand,new Sand(ultimate));
         types.put(Water,new Water(ultimate));
+        types.put(Gold,new Gold(ultimate));
+        
+        hasInts = true;
     }
 
-    public Block get(short id) {
+    public static Block get(short id) {
         return types.get(id);
     }
 }
