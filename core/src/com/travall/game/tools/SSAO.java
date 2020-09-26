@@ -22,7 +22,7 @@ public class SSAO implements Disposable {
 	final Mesh mesh;
 	final Camera camera;
 	
-	private boolean enable = true;
+	private boolean enable = true, isDisposed;
 	
 	public SSAO(Camera camera) {
 		this.camera = camera;
@@ -31,10 +31,10 @@ public class SSAO implements Disposable {
 		ssaoShaderProgram = new ShaderProgram(Gdx.files.internal("Shaders/vertex.vs").readString(),Gdx.files.internal("Shaders/fragment.fs").readString());
 		Gdx.app.log("ShaderTest", ssaoShaderProgram.getLog());
 		
-		ssaoShaderProgram.begin();
+		ssaoShaderProgram.bind();
 		ssaoShaderProgram.setUniformi("depthText", 1);
 		ssaoShaderProgram.setUniformi("u_texture", 2);
-		ssaoShaderProgram.end();
+		Gdx.gl.glUseProgram(0);
 		
 		mesh = new Mesh(true, 4, 6, new VertexAttributes(
 									new VertexAttribute(Usage.Position, 2, ShaderProgram.POSITION_ATTRIBUTE),
@@ -88,6 +88,7 @@ public class SSAO implements Disposable {
 	}
 
 	public void resize(int width, int height) {
+		if (isDisposed) return;
 		fbo.dispose();
 		createFBO(width, height);
 	}
@@ -104,8 +105,10 @@ public class SSAO implements Disposable {
 	
 	@Override
 	public void dispose() {
+		if (isDisposed) return;
 		fbo.dispose();
 		ssaoShaderProgram.dispose();
 		mesh.dispose();
+		isDisposed = true;
 	}
 }

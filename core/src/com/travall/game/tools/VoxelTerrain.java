@@ -6,6 +6,7 @@ import static com.badlogic.gdx.graphics.glutils.ShaderProgram.TEXCOORD_ATTRIBUTE
 
 import java.nio.ByteBuffer;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -56,7 +57,7 @@ public final class VoxelTerrain {
 		if (sine > MathUtils.PI2) {
 			sine -= MathUtils.PI2;
 		}
-		shaderProgram.begin();
+		shaderProgram.bind();
 		shaderProgram.setUniformMatrix("u_projTrans", cam.combined);
 		//shaderProgram.setUniformf("sunLightIntensity", MathUtils.clamp(MathUtils.sin(sine)+0.5f, 0.0f, 1.0f));
 		shaderProgram.setUniformf("sunLightIntensity", 0f);
@@ -65,7 +66,7 @@ public final class VoxelTerrain {
 	
 	/** End the shader. */
 	public static void end() {
-		shaderProgram.end();
+		Gdx.gl.glUseProgram(0);
 	}
 	
 	public static void dispose() {
