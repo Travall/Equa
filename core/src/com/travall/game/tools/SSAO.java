@@ -88,8 +88,7 @@ public class SSAO implements Disposable {
 	}
 
 	public void resize(int width, int height) {
-		if (isDisposed) return;
-		if (width == 0 || height == 0) return;
+		if (isDisposed || width == 0 || height == 0) return;
 		fbo.dispose();
 		createFBO(width, height);
 	}
