@@ -47,10 +47,10 @@ public class MapGenerator implements Disposable {
 
     private void generate() {
     	final Random random = MathUtils.random;
-        OpenSimplexOctaves MountainNoise = new OpenSimplexOctaves(7,0.43, random.nextInt()); // changed from 0.45 to 0.43
-        OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5,0.25, random.nextInt());
-        OpenSimplexOctaves FlatNoise = new OpenSimplexOctaves(6,0.2, random.nextInt()); // changed from 0.15 to 0.2
-        OpenSimplexOctaves DecisionNoise = new OpenSimplexOctaves(8,0.02, random.nextInt());
+        OpenSimplexOctaves MountainNoise = new OpenSimplexOctaves(7,0.43, 345); // changed from 0.45 to 0.43
+        OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5,0.25, 567);
+        OpenSimplexOctaves FlatNoise = new OpenSimplexOctaves(6,0.2, 123); // changed from 0.15 to 0.2
+        OpenSimplexOctaves DecisionNoise = new OpenSimplexOctaves(8,0.02, 789);
 
         blocks = new short[mapWidth][mapHeight][mapLength];
         lights = new byte[mapWidth][mapHeight][mapLength];

@@ -38,6 +38,8 @@ public final class VoxelTerrain {
 	public static int[] locations;
 	
 	public static ByteBuffer BUFFER;
+
+	public static float toggleAO = 1f;
 	
 	public static void ints() {
 		shaderProgram = new ShaderProgram(files.internal("Shaders/voxel.vert"), files.internal("Shaders/voxel.frag"));
@@ -62,6 +64,7 @@ public final class VoxelTerrain {
 		//shaderProgram.setUniformf("sunLightIntensity", MathUtils.clamp(MathUtils.sin(sine)+0.5f, 0.0f, 1.0f));
 		shaderProgram.setUniformf("sunLightIntensity", 0f);
 		shaderProgram.setUniformf("brightness", 0.4f);
+		shaderProgram.setUniformf("toggleAO", toggleAO);
 	}
 	
 	/** End the shader. */
@@ -86,4 +89,13 @@ public final class VoxelTerrain {
 			return locations[i];
 		}
 	};
+
+
+	public static void toggleAO() {
+		if(toggleAO == 1) {
+			toggleAO = 0;
+		} else {
+			toggleAO = 1;
+		}
+	}
 }

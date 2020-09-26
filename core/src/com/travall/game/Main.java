@@ -178,6 +178,8 @@ public class Main extends ApplicationAdapter {
         if(Gdx.input.isKeyPressed(Input.Keys.Q)) blockType = BlocksList.Stone;
         if(Gdx.input.isKeyPressed(Input.Keys.E)) blockType = BlocksList.Gold;
 
+        if(Gdx.input.isKeyJustPressed(Input.Keys.P)) VoxelTerrain.toggleAO();
+
         y = -0.15f;
         float speed = 0.025f;
 
