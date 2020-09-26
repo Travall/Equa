@@ -40,9 +40,9 @@ public final class Picker {
 			}
 		};
 		
-		shader.begin();
+		shader.bind();
 		shader.setUniformf("u_alpha", 0.15f);
-		shader.end();
+		Gdx.gl.glUseProgram(0);
 		
 		final FloatArray array = new FloatArray(allFloats);
 		final float tmpN = -0.001f;
@@ -92,13 +92,13 @@ public final class Picker {
 	public static void render(Camera camera, GridPoint3 position) {
 		if (position.y == -1) return;
 		gl.glEnable(GL20.GL_BLEND);
-		shader.begin();
+		shader.bind();
 		shader.setUniformMatrix("u_projTrans", camera.combined);
 		shader.setUniformf("u_trans", position.x, position.y, position.z);
 		vbo.bind();
 		Gdx.gl.glDrawElements(GL20.GL_TRIANGLES, allIndex, GL20.GL_UNSIGNED_SHORT, 0);
 		vbo.unbind(); Gdx.gl30.glBindVertexArray(0);
-		shader.end();
+		Gdx.gl.glUseProgram(0);
 		gl.glDisable(GL20.GL_BLEND);
 	}
 
