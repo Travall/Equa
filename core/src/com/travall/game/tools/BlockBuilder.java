@@ -60,16 +60,18 @@ public class BlockBuilder {
 		mesh.isDirty = false;
 		return mesh;
 	}
-	
-	
-//		v2-----v3
-//		|       |
-//		|       |
-//		v1-----v4
+
+
+//     v3-----v2
+//     |       |
+//     |       |
+//     v4-----v1
 	public void buildCube(Block block, GridPoint3 pos, boolean renderTop, boolean renderBottom, boolean render1,
 			boolean render2, boolean render3, boolean render4, MapGenerator map) {
 
 		float temp; // For optimization by reduce the converting from integer to float.
+		final int x = pos.x, y = pos.y, z = pos.z;
+
 		if (renderTop) { // facing Y+
 			temp = pos.y + 1;
 			v1.setPos(pos.x+1, temp, pos.z);
@@ -82,22 +84,10 @@ public class BlockBuilder {
 				setSrc((map.getSrcLight(pos.x, pos.y+1, pos.z)/15f));
 			} else setSrc(0f);
 
-			if(map.blockExists(pos.x + 1,pos.y + 1,pos.z)) v1.ambLit = v4.ambLit = 0.5f;
-			if(map.blockExists(pos.x - 1,pos.y + 1,pos.z)) v2.ambLit = v3.ambLit = 0.5f;
-
-
-			if(map.blockExists(pos.x - 1,pos.y + 1,pos.z -1)) v2.ambLit = 0.5f;
-			if(map.blockExists(pos.x + 1,pos.y + 1,pos.z +1)) v4.ambLit = 0.5f;
-
-
-			if(map.blockExists(pos.x + 1,pos.y + 1,pos.z -1)) v1.ambLit = 0.5f;
-			if(map.blockExists(pos.x - 1,pos.y + 1,pos.z +1)) v3.ambLit = 0.5f;
-
-
-			if(map.blockExists(pos.x,pos.y + 1,pos.z -1)) v1.ambLit = v2.ambLit = 0.5f;
-			if(map.blockExists(pos.x,pos.y + 1,pos.z +1)) v3.ambLit = v4.ambLit = 0.5f;
-
-
+			v1.vertAO(map.blockExists(pos.x+1, pos.y+1, pos.z), map.blockExists(pos.x, pos.y+1, pos.z-1), map.blockExists(pos.x+1, pos.y+1, pos.z-1));
+			v2.vertAO(map.blockExists(pos.x-1, pos.y+1, pos.z), map.blockExists(pos.x, pos.y+1, pos.z-1), map.blockExists(pos.x-1, pos.y+1, pos.z-1));
+			v3.vertAO(map.blockExists(pos.x-1, pos.y+1, pos.z), map.blockExists(pos.x, pos.y+1, pos.z+1), map.blockExists(pos.x-1, pos.y+1, pos.z+1));
+			v4.vertAO(map.blockExists(pos.x+1, pos.y+1, pos.z), map.blockExists(pos.x, pos.y+1, pos.z+1), map.blockExists(pos.x+1, pos.y+1, pos.z+1));
 
 
 			rect(block.textures.top);
@@ -109,25 +99,15 @@ public class BlockBuilder {
 			v3.setPos(pos.x+1, temp, pos.z+1);
 			v4.setPos(pos.x,   temp, pos.z+1);
 			
-			setAmb(0.6f);
+			setAmb(1);
 			if (!map.isOutBound(pos.x, pos.y-1, pos.z)) {
 				setSrc(map.getSrcLight(pos.x, pos.y-1, pos.z)/15f);
 			} else setSrc(0f);
 
-			if(map.blockExists(pos.x - 1,pos.y - 1,pos.z)) v1.ambLit = v4.ambLit = 0.5f;
-			if(map.blockExists(pos.x + 1,pos.y - 1,pos.z)) v2.ambLit = v3.ambLit = 0.5f;
-
-
-			if(map.blockExists(pos.x - 1,pos.y - 1,pos.z -1)) v1.ambLit = 0.5f;
-			if(map.blockExists(pos.x + 1,pos.y - 1,pos.z +1)) v3.ambLit = 0.5f;
-//
-//
-			if(map.blockExists(pos.x + 1,pos.y - 1,pos.z -1)) v2.ambLit = 0.5f;
-			if(map.blockExists(pos.x - 1,pos.y - 1,pos.z +1)) v4.ambLit = 0.5f;
-//
-//
-			if(map.blockExists(pos.x,pos.y - 1,pos.z -1)) v1.ambLit = v2.ambLit = 0.5f;
-			if(map.blockExists(pos.x,pos.y - 1,pos.z +1)) v3.ambLit = v4.ambLit = 0.5f;
+			v1.vertAO(map.blockExists(pos.x-1, pos.y-1, pos.z), map.blockExists(pos.x, pos.y-1, pos.z-1), map.blockExists(pos.x-1, pos.y-1, pos.z-1));
+			v2.vertAO(map.blockExists(pos.x+1, pos.y-1, pos.z), map.blockExists(pos.x, pos.y-1, pos.z-1), map.blockExists(pos.x+1, pos.y-1, pos.z-1));
+			v3.vertAO(map.blockExists(pos.x+1, pos.y-1, pos.z), map.blockExists(pos.x, pos.y-1, pos.z+1), map.blockExists(pos.x+1, pos.y-1, pos.z+1));
+			v4.vertAO(map.blockExists(pos.x-1, pos.y-1, pos.z), map.blockExists(pos.x, pos.y-1, pos.z+1), map.blockExists(pos.x-1, pos.y-1, pos.z+1));
 			
 			rect(block.textures.bottom);
 		}
@@ -138,12 +118,18 @@ public class BlockBuilder {
 			v3.setPos(pos.x+1, pos.y+1, temp);
 			v4.setPos(pos.x+1, pos.y,   temp);
 			
-			setAmb(0.72f);
+			setAmb(1);
 			if (!map.isOutBound(pos.x, pos.y, pos.z-1)) {
 				setSrc(map.getSrcLight(pos.x, pos.y, pos.z-1)/15f);
 			} else setSrc(0f);
-			
-			rect(block.textures.render3);
+
+			final int z1 = z-1;
+			v1.vertAO(map.blockExists(x, y-1, z1), map.blockExists(x-1, y, z1), map.blockExists(x-1, y-1, z1));
+			v2.vertAO(map.blockExists(x, y+1, z1), map.blockExists(x-1, y, z1), map.blockExists(x-1, y+1, z1));
+			v3.vertAO(map.blockExists(x, y+1, z1), map.blockExists(x+1, y, z1), map.blockExists(x+1, y+1, z1));
+			v4.vertAO(map.blockExists(x, y-1, z1), map.blockExists(x+1, y, z1), map.blockExists(x+1, y-1, z1));
+
+			rect(block.textures.render1);
 		}
 		if (render2) { // facing X-
 			temp = pos.x;
@@ -152,12 +138,18 @@ public class BlockBuilder {
 			v3.setPos(temp, pos.y+1, pos.z);
 			v4.setPos(temp, pos.y,   pos.z);
 			
-			setAmb(0.85f);
+			setAmb(1);
 			if (!map.isOutBound(pos.x-1, pos.y, pos.z)) {
 				setSrc(map.getSrcLight(pos.x-1, pos.y, pos.z)/15f);
 			} else setSrc(0f);
-			
-			rect(block.textures.render3);
+
+			final int x1 = x-1;
+			v1.vertAO(map.blockExists(x1, y-1, z), map.blockExists(x1, y, z+1), map.blockExists(x1, y-1, z+1));
+			v2.vertAO(map.blockExists(x1, y+1, z), map.blockExists(x1, y, z+1), map.blockExists(x1, y+1, z+1));
+			v3.vertAO(map.blockExists(x1, y+1, z), map.blockExists(x1, y, z-1), map.blockExists(x1, y+1, z-1));
+			v4.vertAO(map.blockExists(x1, y-1, z), map.blockExists(x1, y, z-1), map.blockExists(x1, y-1, z-1));
+
+			rect(block.textures.render2);
 		}
 		if (render3) { // facing Z+
 			temp = pos.z + 1;
@@ -166,11 +158,17 @@ public class BlockBuilder {
 			v3.setPos(pos.x, pos.y+1, temp);
 			v4.setPos(pos.x, pos.y,   temp);
 			
-			setAmb(0.72f);
+			setAmb(1);
 			if (!map.isOutBound(pos.x, pos.y, pos.z+1)) {
 				setSrc(map.getSrcLight(pos.x, pos.y, pos.z+1)/15f);
 			} else setSrc(0f);
-			
+
+			final int z1 = z+1;
+			v1.vertAO(map.blockExists(x, y-1, z1), map.blockExists(x+1, y, z1), map.blockExists(x+1, y-1, z1));
+			v2.vertAO(map.blockExists(x, y+1, z1), map.blockExists(x+1, y, z1), map.blockExists(x+1, y+1, z1));
+			v3.vertAO(map.blockExists(x, y+1, z1), map.blockExists(x-1, y, z1), map.blockExists(x-1, y+1, z1));
+			v4.vertAO(map.blockExists(x, y-1, z1), map.blockExists(x-1, y, z1), map.blockExists(x-1, y-1, z1));
+
 			rect(block.textures.render3);
 		}
 		if (render4) { // facing X+
@@ -180,12 +178,18 @@ public class BlockBuilder {
 			v3.setPos(temp, pos.y+1, pos.z+1);
 			v4.setPos(temp, pos.y,   pos.z+1);
 			
-			setAmb(0.85f);
+			setAmb(1);
 			if (!map.isOutBound(pos.x+1, pos.y, pos.z)) {
 				setSrc(map.getSrcLight(pos.x+1, pos.y, pos.z)/15f);
 			} else setSrc(0f);
+
+			final int x1 = x+1;
+			v1.vertAO(map.blockExists(x1, y-1, z), map.blockExists(x1, y, z-1), map.blockExists(x1, y-1, z-1));
+			v2.vertAO(map.blockExists(x1, y+1, z), map.blockExists(x1, y, z-1), map.blockExists(x1, y+1, z-1));
+			v3.vertAO(map.blockExists(x1, y+1, z), map.blockExists(x1, y, z+1), map.blockExists(x1, y+1, z+1));
+			v4.vertAO(map.blockExists(x1, y-1, z), map.blockExists(x1, y, z+1), map.blockExists(x1, y-1, z+1));
 			
-			rect(block.textures.render3);
+			rect(block.textures.render4);
 		}
 	}
 	
@@ -221,11 +225,24 @@ public class BlockBuilder {
 		public float packData() {
 			return Float.intBitsToFloat((((int)(255*sunLit)<<16)|((int)(255*srcLit)<<8)|((int)(255*ambLit))));
 		}
-		
+
+		private static final double strengh = 2;
+		private static final float[] AMB =
+				{1/3f, 1/2f, 1/1.5f, 1f};
+
+		public void vertAO(boolean side1, boolean side2, boolean corner) {
+			if(side1 && side2) {
+				ambLit = AMB[0];
+				return;
+			}
+			ambLit = AMB[3-((side1?1:0)+(side2?1:0)+(corner?1:0))];
+		}
+
 		public void setPos(float x, float y, float z) {
 			this.x = x;
 			this.y = y;
 			this.z = z;
 		}
 	}
+
 }
