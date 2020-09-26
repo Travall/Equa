@@ -16,7 +16,6 @@ import com.badlogic.gdx.graphics.g3d.utils.*;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.math.collision.Ray;
-import com.badlogic.gdx.physics.bullet.dynamics.btWheelInfo.RaycastInfo;
 import com.kotcrab.vis.ui.VisUI;
 import com.travall.game.entities.Player;
 import com.travall.game.generation.MapGenerator;
@@ -167,6 +166,8 @@ public class Main extends ApplicationAdapter {
         spriteBatch.draw(crosshair,(Gdx.graphics.getWidth() / 2) - 8, (Gdx.graphics.getHeight() / 2) - 8);
         spriteBatch.end();
         spriteBatch.setShader(null);
+        
+        Gdx.gl.glUseProgram(0); // Fix some performance issues.
     }
 
     final Vector3 add = new Vector3(), direction = new Vector3(), noam = new Vector3();
@@ -176,7 +177,6 @@ public class Main extends ApplicationAdapter {
 
         if(Gdx.input.isKeyPressed(Input.Keys.Q)) blockType = BlocksList.Stone;
         if(Gdx.input.isKeyPressed(Input.Keys.E)) blockType = BlocksList.Gold;
-
 
         y = -0.15f;
         float speed = 0.025f;
@@ -240,10 +240,6 @@ public class Main extends ApplicationAdapter {
         Picker.dispose();
     }
 
-    private int nearestChunk(int i,int chunkSize) {
-        return Math.round(i / chunkSize) * chunkSize;
-    }
-
     public void regenerateShell(int x, int z) {
     	final int indexX = x >> chunkShift;
         final int indexZ = z >> chunkShift;
@@ -286,7 +282,7 @@ public class Main extends ApplicationAdapter {
     	
     	pickerHit.set(in);
     	if (Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
-    	    if(mapGenerator.blockExists(in.x,in.y,in.z) && mapGenerator.blocks[in.x][in.y][in.z] != BlocksList.Bedrock) {
+    		if(mapGenerator.blockExists(in.x,in.y,in.z) && mapGenerator.blocks[in.x][in.y][in.z] != BlocksList.Bedrock) {
                 mapGenerator.breakBlock(in.x, in.y, in.z);
                 regenerateShell(in.x, in.z);
             }

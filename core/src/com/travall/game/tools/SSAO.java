@@ -31,10 +31,10 @@ public class SSAO implements Disposable {
 		ssaoShaderProgram = new ShaderProgram(Gdx.files.internal("Shaders/vertex.vs").readString(),Gdx.files.internal("Shaders/fragment.fs").readString());
 		Gdx.app.log("ShaderTest", ssaoShaderProgram.getLog());
 		
-		ssaoShaderProgram.begin();
+		ssaoShaderProgram.bind();
 		ssaoShaderProgram.setUniformi("depthText", 1);
 		ssaoShaderProgram.setUniformi("u_texture", 2);
-		ssaoShaderProgram.end();
+		Gdx.gl.glUseProgram(0);
 		
 		mesh = new Mesh(true, 4, 6, new VertexAttributes(
 									new VertexAttribute(Usage.Position, 2, ShaderProgram.POSITION_ATTRIBUTE),
