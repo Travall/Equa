@@ -61,72 +61,74 @@ public class Player
         boolean moveY = true;
         boolean moveZ = true;
         onGround = false;
+        
+        int px, py, pz;
+        BoundingBox bintersector;
 
-        int parts = 20;
+        final int parts = 10;
+        final float temp = parts;
 
-        for(float nx = 1; nx <= parts; nx++) {
+        for(int nx = 1; nx <= parts; nx++) {
 
-            instance.transform.translate(x/parts,0,0);
+        	if (moveX) {
+        		instance.transform.translate(x/temp,0,0);
+                instance.transform.getTranslation(temp1);
 
-            instance.transform.getTranslation(temp1);
+                px = MathUtils.round(temp1.x);
+                py = MathUtils.round(temp1.y);
+                pz = MathUtils.round(temp1.z);
 
-            int px = MathUtils.round(temp1.x);
-            int py = MathUtils.round(temp1.y);
-            int pz = MathUtils.round(temp1.z);
+                bintersector = instance.calculateBoundingBox(boundingBoxTemp).mul(instance.transform);
 
-            BoundingBox bintersector = instance.calculateBoundingBox(boundingBoxTemp).mul(instance.transform);
+                if(around(mapGenerator,px,py,pz,bintersector)) {
+                	instance.transform.translate(-x/temp,0,0);
+                    this.velocity.x = 0;
+                	moveX = false;
+                }
+        	}
+            
+        	if (moveY) {
+        		instance.transform.translate(0, y/temp, 0);
+                instance.transform.getTranslation(temp1);
 
-            if(around(mapGenerator,px,py,pz,bintersector)) moveX = false;
+                px = MathUtils.round(temp1.x);
+                py = MathUtils.round(temp1.y);
+                pz = MathUtils.round(temp1.z);
 
-            if(!moveX) {
-                instance.transform.translate(-x/parts,0,0);
-                this.velocity.x = 0;
-            }
+                bintersector = instance.calculateBoundingBox(boundingBoxTemp).mul(instance.transform);
 
+                if (around(mapGenerator, px, py, pz, bintersector)) {
+                	onGround = true;
+                    instance.transform.translate(0, -y/temp, 0);
+                    this.velocity.y = 0;
+                	moveY = false;
+                }
+        	}
+            
+        	if (moveZ) {
+        		 instance.transform.translate(0, 0, z/temp);
+                 instance.transform.getTranslation(temp1);
 
+                 px = MathUtils.round(temp1.x);
+                 py = MathUtils.round(temp1.y);
+                 pz = MathUtils.round(temp1.z);
 
-            instance.transform.translate(0, y/parts, 0);
+                 bintersector = instance.calculateBoundingBox(boundingBoxTemp).mul(instance.transform);
 
-            instance.transform.getTranslation(temp1);
-
-            px = MathUtils.round(temp1.x);
-            py = MathUtils.round(temp1.y);
-            pz = MathUtils.round(temp1.z);
-
-            bintersector = instance.calculateBoundingBox(boundingBoxTemp).mul(instance.transform);
-
-            if (around(mapGenerator, px, py, pz, bintersector)) moveY = false;
-
-            if (!moveY) {
-            	onGround = true;
-                instance.transform.translate(0, -y/parts, 0);
-                this.velocity.y = 0;
-            }
-
-            instance.transform.translate(0, 0, z/parts);
-
-            instance.transform.getTranslation(temp1);
-
-            px = MathUtils.round(temp1.x);
-            py = MathUtils.round(temp1.y);
-            pz = MathUtils.round(temp1.z);
-
-            bintersector = instance.calculateBoundingBox(boundingBoxTemp).mul(instance.transform);
-
-            if (around(mapGenerator, px, py, pz, bintersector)) moveZ = false;
-
-            if (!moveZ) {
-                instance.transform.translate(0, 0, -z/parts);
-                this.velocity.z = 0;
-            }
-
+                 if (around(mapGenerator, px, py, pz, bintersector)) {
+                	 instance.transform.translate(0, 0, -z/temp);
+                     this.velocity.z = 0;
+                	 moveZ = false;
+                 }
+        	}
+        	
+        	if (!moveX && !moveY && !moveZ) break;
         }
     }
 
     boolean intersects(MapGenerator mapGenerator, int x, int y, int z, BoundingBox bintersector) {
-        boolean exists = mapGenerator.blockExists(x,y,z);
         temp2.set(temp1.set(x,y,z)).add(1, 1, 1);
-        return exists && boundingBox.set(temp1,temp2).intersects(bintersector);
+        return mapGenerator.blockExists(x,y,z) && boundingBox.set(temp1,temp2).intersects(bintersector);
     }
 
 

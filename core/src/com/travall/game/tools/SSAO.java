@@ -22,7 +22,7 @@ public class SSAO implements Disposable {
 	final Mesh mesh;
 	final Camera camera;
 	
-	private boolean enable = true;
+	private boolean enable = true, isDisposed;
 	
 	public SSAO(Camera camera) {
 		this.camera = camera;
@@ -88,6 +88,7 @@ public class SSAO implements Disposable {
 	}
 
 	public void resize(int width, int height) {
+		if (isDisposed) return;
 		fbo.dispose();
 		createFBO(width, height);
 	}
@@ -104,8 +105,10 @@ public class SSAO implements Disposable {
 	
 	@Override
 	public void dispose() {
+		if (isDisposed) return;
 		fbo.dispose();
 		ssaoShaderProgram.dispose();
 		mesh.dispose();
+		isDisposed = true;
 	}
 }
