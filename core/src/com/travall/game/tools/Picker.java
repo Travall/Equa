@@ -41,7 +41,7 @@ public final class Picker {
 		};
 		
 		shader.bind();
-		shader.setUniformf("u_alpha", 0.15f);
+		shader.setUniformf("u_alpha", 0.2f);
 		Gdx.gl.glUseProgram(0);
 		
 		final FloatArray array = new FloatArray(allFloats);

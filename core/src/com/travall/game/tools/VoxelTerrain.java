@@ -39,7 +39,7 @@ public final class VoxelTerrain {
 	
 	public static ByteBuffer BUFFER;
 
-	public static float toggleAO = 1f;
+	private static int toggleAO = 1;
 	
 	public static void ints() {
 		shaderProgram = new ShaderProgram(files.internal("Shaders/voxel.vert"), files.internal("Shaders/voxel.frag"));
@@ -55,7 +55,7 @@ public final class VoxelTerrain {
 	
 	/** Begins the shader. */
 	public static void begin(Camera cam) {
-		sine += 0.02f;
+		sine += 0.01f;
 		if (sine > MathUtils.PI2) {
 			sine -= MathUtils.PI2;
 		}
@@ -64,7 +64,7 @@ public final class VoxelTerrain {
 		//shaderProgram.setUniformf("sunLightIntensity", MathUtils.clamp(MathUtils.sin(sine)+0.5f, 0.0f, 1.0f));
 		shaderProgram.setUniformf("sunLightIntensity", 0f);
 		shaderProgram.setUniformf("brightness", 0.4f);
-		shaderProgram.setUniformf("toggleAO", toggleAO);
+		shaderProgram.setUniformi("toggleAO", toggleAO);
 	}
 	
 	/** End the shader. */
@@ -92,10 +92,6 @@ public final class VoxelTerrain {
 
 
 	public static void toggleAO() {
-		if(toggleAO == 1) {
-			toggleAO = 0;
-		} else {
-			toggleAO = 1;
-		}
+		toggleAO = toggleAO == 1 ? 0 : 1;
 	}
 }
