@@ -4,6 +4,7 @@ import com.travall.game.tools.BlockTextures;
 import com.travall.game.tools.UltimateTexture;
 
 public class Dirt extends Block {
+    public static short id = 3;
     public static boolean transparent = false;
 
     public Dirt(UltimateTexture ultimate) {

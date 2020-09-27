@@ -4,6 +4,7 @@ import com.travall.game.tools.BlockTextures;
 import com.travall.game.tools.UltimateTexture;
 
 public class Log extends Block {
+    public static short id = 8;
     public static boolean transparent = false;
 
     public Log(UltimateTexture ultimate) {

@@ -4,6 +4,7 @@ import com.travall.game.tools.BlockTextures;
 import com.travall.game.tools.UltimateTexture;
 
 public class Stone extends Block {
+    public static short id = 2;
     public static boolean transparent = false;
 
     public Stone(UltimateTexture ultimate) {
