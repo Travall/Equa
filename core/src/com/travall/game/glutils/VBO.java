@@ -41,7 +41,7 @@ public final class VBO implements Disposable
 		BufferUtils.copy(vertices, buffer, count, offset);
 		if (!isBound) gl30.glBindVertexArray(vaoHandle);
 		gl30.glBindBuffer(GL_ARRAY_BUFFER, bufferHandle);
-		gl30.glBufferData(GL_ARRAY_BUFFER, 0, buffer, glDraw);
+		gl30.glBufferData(GL_ARRAY_BUFFER, buffer.limit(), buffer, glDraw);
 		if (!isBound) gl30.glBindVertexArray(0);
 	}
 
