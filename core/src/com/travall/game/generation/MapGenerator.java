@@ -78,6 +78,33 @@ public class MapGenerator implements Disposable {
 //                    }
 //                }
 
+                if(decision > 0.5) {
+                    if(random.nextInt(30) >= 29 && x > 0 && z > 0 && x < mapWidth-1 && z < mapLength-1) {
+                        blocks[x][yValue + 1][z] = BlocksList.Log;
+                        blocks[x][yValue + 2][z] = BlocksList.Log;
+                        blocks[x][yValue + 3][z] = BlocksList.Log;
+
+
+                        for(int xx = x-2; xx <= x+2; xx++) {
+                            for(int zz = z-2; zz <= z+2; zz++) {
+                                if(x > 1 && z > 1 && x < mapWidth-2 && z < mapLength-2) blocks[xx][yValue + 4][zz] = BlocksList.Leaves;
+                            }
+                        }
+
+                        for(int xx = x-1; xx <= x+1; xx++) {
+                            for(int zz = z-1; zz <= z+1; zz++) {
+                                if(x > 0 && z > 0 && x < mapWidth-1 && z < mapLength-1) blocks[xx][yValue + 5][zz] = BlocksList.Leaves;
+                            }
+                        }
+
+
+                        blocks[x][yValue + 4][z] = BlocksList.Log;
+                        blocks[x][yValue + 6][z] = BlocksList.Leaves;
+
+
+                    }
+                }
+
                 for(int i = yValue; i >= 0; i--) {
                     double caves = Utils.normalize(CaveNoise.getNoise(x, (int) (i), z), maxTerrainHeight);
                     boolean caveTerritory = (caves >= maxTerrainHeight - (height - i) * 4 && caves > maxTerrainHeight /1.9 && i > 0);
@@ -121,11 +148,11 @@ public class MapGenerator implements Disposable {
 
 
     }
-    
+
     public void breakBlock(int x, int y, int z) {
     	Block block = BlocksList.get(blocks[x][y][z]);
     	blocks[x][y][z] = 0;
-    	
+
     	if (block.isSrclight()) { // if break srclight block.
     		floodLight.delSrclightAt(x, y, z, getSrcLight(x, y, z));
     		setSrcLight(x, y, z, 0);
@@ -145,7 +172,7 @@ public class MapGenerator implements Disposable {
     public void placeBlock(int x, int y, int z, short id) {
     	Block block = BlocksList.get(id);
     	blocks[x][y][z] = id;
-    	
+
     	if (block.isSrclight()) { // if place srclight block.
     		setSrcLight(x, y, z, block.srclight);
     		floodLight.newSrclightAt(x, y, z);
@@ -165,24 +192,25 @@ public class MapGenerator implements Disposable {
         for(int x = indexX; x < indexX + chunkSizeX; x++) {
             for(int y = 0; y < blocks[0].length; y++) {
                 for(int z = indexZ; z < indexZ + chunkSizeZ; z++) {
-                    if(blockExists(x,y,z)) {                        
-                        if  (!blockExists(x + 1, y, z) || (blockExists(x + 1, y, z) && BlocksList.get(blocks[x + 1][y][z]).transparent)
-                          || !blockExists(x - 1, y, z) || (blockExists(x - 1, y, z) && BlocksList.get(blocks[x - 1][y][z]).transparent)
-                          || !blockExists(x, y + 1, z) || (blockExists(x, y + 1, z) && BlocksList.get(blocks[x][y + 1][z]).transparent)
-                          || !blockExists(x, y - 1, z) || (blockExists(x, y - 1, z) && BlocksList.get(blocks[x][y - 1][z]).transparent)
-                          || !blockExists(x, y, z + 1) || (blockExists(x, y, z + 1) && BlocksList.get(blocks[x][y][z + 1]).transparent)
-                          || !blockExists(x, y, z - 1) || (blockExists(x, y, z - 1) && BlocksList.get(blocks[x][y][z - 1]).transparent)) {
-                        	
-                        	pos.set(x,y,z);
-                            block = BlocksList.get(blocks[x][y][z]);
+                    if(blockExists(x,y,z)) {
+                        pos.set(x,y,z);
+                        block = BlocksList.get(blocks[x][y][z]);
 
-                        	boolean blocksTranslucent = block.transparent;
-                            boolean renderTop = !(blockExists(x, y + 1, z) && (!BlocksList.get(blocks[x][y + 1][z]).transparent || blocksTranslucent));
-                            boolean renderBottom = !(blockExists(x, y - 1, z) && (!BlocksList.get(blocks[x][y - 1][z]).transparent || blocksTranslucent));
-                            boolean render1 = !(blockExists(x, y, z - 1) && (!BlocksList.get(blocks[x][y][z - 1]).transparent || blocksTranslucent));
-                            boolean render2 = !(blockExists(x - 1, y, z) && (!BlocksList.get(blocks[x - 1][y][z]).transparent || blocksTranslucent));
-                            boolean render3 = !(blockExists(x, y, z + 1) && (!BlocksList.get(blocks[x][y][z + 1]).transparent || blocksTranslucent));
-                            boolean render4 = !(blockExists(x + 1, y, z) && (!BlocksList.get(blocks[x + 1][y][z]).transparent || blocksTranslucent));
+                        if  (!blockExists(x + 1, y, z) || (blockExists(x + 1, y, z) && (BlocksList.get(blocks[x + 1][y][z]).transparent || BlocksList.get(blocks[x + 1][y][z]).translucent))
+                                || !blockExists(x - 1, y, z) || (blockExists(x - 1, y, z) && (BlocksList.get(blocks[x - 1][y][z]).transparent || BlocksList.get(blocks[x - 1][y][z]).translucent))
+                                || !blockExists(x, y + 1, z) || (blockExists(x, y + 1, z) && (BlocksList.get(blocks[x][y + 1][z]).transparent || BlocksList.get(blocks[x][y + 1][z]).translucent))
+                                || !blockExists(x, y - 1, z) || (blockExists(x, y - 1, z) && (BlocksList.get(blocks[x][y - 1][z]).transparent || BlocksList.get(blocks[x][y - 1][z]).translucent))
+                                || !blockExists(x, y, z + 1) || (blockExists(x, y, z + 1) && (BlocksList.get(blocks[x][y][z + 1]).transparent || BlocksList.get(blocks[x][y][z + 1]).translucent))
+                                || !blockExists(x, y, z - 1) || (blockExists(x, y, z - 1) && (BlocksList.get(blocks[x][y][z - 1]).transparent) || BlocksList.get(blocks[x][y][z - 1]).translucent)) {
+
+                            boolean blocksTransparent = block.transparent;
+                            boolean blocksTranslucent = block.translucent;
+                            boolean renderTop = !(blockExists(x, y + 1, z) && (!BlocksList.get(blocks[x][y + 1][z]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x][y + 1][z]).translucent;
+                            boolean renderBottom = !(blockExists(x, y - 1, z) && (!BlocksList.get(blocks[x][y - 1][z]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x][y - 1][z]).translucent;
+                            boolean render1 = !(blockExists(x, y, z - 1) && (!BlocksList.get(blocks[x][y][z - 1]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x][y][z - 1]).translucent;
+                            boolean render2 = !(blockExists(x - 1, y, z) && (!BlocksList.get(blocks[x - 1][y][z]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x - 1][y][z]).translucent;
+                            boolean render3 = !(blockExists(x, y, z + 1) && (!BlocksList.get(blocks[x][y][z + 1]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x][y][z + 1]).translucent;
+                            boolean render4 = !(blockExists(x + 1, y, z) && (!BlocksList.get(blocks[x + 1][y][z]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x + 1][y][z]).translucent;
 
                             blockBuilder.buildCube(block, pos,renderTop,renderBottom,render1,render2,render3,render4);
                         }
