@@ -2,6 +2,7 @@ package com.travall.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.assets.AssetManager;
@@ -52,7 +53,7 @@ public class Main extends ApplicationAdapter {
 
     final GridPoint3 pickerHit = new GridPoint3();
 
-    short blockType = BlocksList.Stone;
+    short blockType = BlocksList.Log;
 
     Player player;
 
@@ -175,7 +176,17 @@ public class Main extends ApplicationAdapter {
         camera.fieldOfView = MathUtils.lerp(camera.fieldOfView,cameraController.targetFOV, 0.2f);
         camera.update();
 
-        if(Gdx.input.isKeyPressed(Input.Keys.Q)) blockType = BlocksList.Stone;
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F11)){
+            Graphics.DisplayMode currentMode = Gdx.graphics.getDisplayMode();
+
+            if(Gdx.graphics.isFullscreen()) {
+                Gdx.graphics.setWindowedMode(800,600);
+            } else {
+                Gdx.graphics.setFullscreenMode(currentMode);
+            }
+        }
+
+        if(Gdx.input.isKeyPressed(Input.Keys.Q)) blockType = BlocksList.Log;
         if(Gdx.input.isKeyPressed(Input.Keys.E)) blockType = BlocksList.Gold;
 
         if(Gdx.input.isKeyJustPressed(Input.Keys.P)) VoxelTerrain.toggleAO();

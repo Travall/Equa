@@ -12,7 +12,9 @@ public class BlocksList {
     Grass = 4,
     Sand = 5,
     Water = 6,
-    Gold = 7;
+    Gold = 7,
+    Log = 8,
+    Leaves = 9;
 
     // Changed from HashMap to IntMap to avoid object baking from "short" key.
     public static final IntMap<Block> types = new IntMap<>();
@@ -28,7 +30,9 @@ public class BlocksList {
         types.put(Sand,new Sand(ultimate));
         types.put(Water,new Water(ultimate));
         types.put(Gold,new Gold(ultimate));
-        
+        types.put(Log,new Log(ultimate));
+        types.put(Leaves,new Leaves(ultimate));
+
         hasInts = true;
     }
 
