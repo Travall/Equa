@@ -18,10 +18,9 @@ import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.math.collision.Ray;
 import com.kotcrab.vis.ui.VisUI;
+import com.travall.game.blocks.*;
 import com.travall.game.entities.Player;
 import com.travall.game.generation.MapGenerator;
-import com.travall.game.blocks.Block;
-import com.travall.game.blocks.BlocksList;
 import com.travall.game.tools.ChunkMesh;
 import com.travall.game.tools.FirstPersonCameraController;
 import com.travall.game.tools.Picker;
@@ -53,7 +52,7 @@ public class Main extends ApplicationAdapter {
 
     final GridPoint3 pickerHit = new GridPoint3();
 
-    short blockType = BlocksList.Log;
+    short blockType = Log.id;
 
     Player player;
 
@@ -186,8 +185,8 @@ public class Main extends ApplicationAdapter {
             }
         }
 
-        if(Gdx.input.isKeyPressed(Input.Keys.Q)) blockType = BlocksList.Log;
-        if(Gdx.input.isKeyPressed(Input.Keys.E)) blockType = BlocksList.Gold;
+        if(Gdx.input.isKeyPressed(Input.Keys.Q)) blockType = Log.id;
+        if(Gdx.input.isKeyPressed(Input.Keys.E)) blockType = Gold.id;
 
         if(Gdx.input.isKeyJustPressed(Input.Keys.P)) VoxelTerrain.toggleAO();
 
@@ -295,7 +294,7 @@ public class Main extends ApplicationAdapter {
     	
     	pickerHit.set(in);
     	if (Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
-    		if(mapGenerator.blockExists(in.x,in.y,in.z) && mapGenerator.blocks[in.x][in.y][in.z] != BlocksList.Bedrock) {
+    		if(mapGenerator.blockExists(in.x,in.y,in.z) && mapGenerator.blocks[in.x][in.y][in.z] != Bedrock.id) {
                 mapGenerator.breakBlock(in.x, in.y, in.z);
                 regenerateShell(in.x, in.z);
             }

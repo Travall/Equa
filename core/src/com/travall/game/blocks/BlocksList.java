@@ -20,6 +20,7 @@ public class BlocksList {
         types.put(Gold.id,new Gold(ultimate));
         types.put(Log.id,new Log(ultimate));
         types.put(Leaves.id,new Leaves(ultimate));
+        types.put(Cactus.id,new Cactus(ultimate));
 
         hasInts = true;
     }

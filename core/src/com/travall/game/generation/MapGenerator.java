@@ -9,8 +9,7 @@ import com.badlogic.gdx.math.RandomXS128;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import com.travall.game.Main;
-import com.travall.game.blocks.Block;
-import com.travall.game.blocks.BlocksList;
+import com.travall.game.blocks.*;
 import com.travall.game.tools.BlockBuilder;
 import com.travall.game.tools.ChunkMesh;
 import com.travall.game.tools.FloodLight;
@@ -78,30 +77,36 @@ public class MapGenerator implements Disposable {
 //                    }
 //                }
 
-                if(decision > 0.5) {
+                if(steep > 0.6) {
                     if(random.nextInt(30) >= 29 && x > 0 && z > 0 && x < mapWidth-1 && z < mapLength-1) {
-                        blocks[x][yValue + 1][z] = BlocksList.Log;
-                        blocks[x][yValue + 2][z] = BlocksList.Log;
-                        blocks[x][yValue + 3][z] = BlocksList.Log;
+                        blocks[x][yValue + 1][z] = Log.id;
+                        blocks[x][yValue + 2][z] = Log.id;
+                        blocks[x][yValue + 3][z] = Log.id;
 
 
                         for(int xx = x-2; xx <= x+2; xx++) {
                             for(int zz = z-2; zz <= z+2; zz++) {
-                                if(x > 1 && z > 1 && x < mapWidth-2 && z < mapLength-2) blocks[xx][yValue + 4][zz] = BlocksList.Leaves;
+                                if(x > 1 && z > 1 && x < mapWidth-2 && z < mapLength-2) blocks[xx][yValue + 4][zz] = Leaves.id;
                             }
                         }
 
                         for(int xx = x-1; xx <= x+1; xx++) {
                             for(int zz = z-1; zz <= z+1; zz++) {
-                                if(x > 0 && z > 0 && x < mapWidth-1 && z < mapLength-1) blocks[xx][yValue + 5][zz] = BlocksList.Leaves;
+                                if(x > 0 && z > 0 && x < mapWidth-1 && z < mapLength-1) blocks[xx][yValue + 5][zz] = Leaves.id;
                             }
                         }
 
 
-                        blocks[x][yValue + 4][z] = BlocksList.Log;
-                        blocks[x][yValue + 6][z] = BlocksList.Leaves;
+                        blocks[x][yValue + 4][z] = Log.id;
+                        blocks[x][yValue + 6][z] = Leaves.id;
 
 
+                    }
+                } else {
+                    if(random.nextInt(60) >= 59 && x > 0 && z > 0 && x < mapWidth && z < mapLength && yValue > waterLevel) {
+                        blocks[x][yValue + 1][z] = Cactus.id;
+                        blocks[x][yValue + 2][z] = Cactus.id;
+                        blocks[x][yValue + 3][z] = Cactus.id;
                     }
                 }
 
@@ -109,23 +114,23 @@ public class MapGenerator implements Disposable {
                     double caves = Utils.normalize(CaveNoise.getNoise(x, (int) (i), z), maxTerrainHeight);
                     boolean caveTerritory = (caves >= maxTerrainHeight - (height - i) * 4 && caves > maxTerrainHeight /1.9 && i > 0);
                     if(i == 0) {
-                        blocks[x][i][z] = BlocksList.Bedrock;
+                        blocks[x][i][z] = Bedrock.id;
                     } else {
                         if (i == yValue && i >= waterLevel) {
                             if (Math.abs(i - waterLevel) < 3 || steep < 0.6) {
-                                blocks[x][i][z] = BlocksList.Sand;
+                                blocks[x][i][z] = Sand.id;
                             } else {
-                                blocks[x][i][z] = BlocksList.Grass;
+                                blocks[x][i][z] = Grass.id;
                             }
                         } else {
                             // steep < 0.65 && Math.abs(yValue - i) < (steep * 12) + 2
                             if (Math.abs(i - waterLevel) < 3 && steep < 0.6) {
-                                blocks[x][i][z] = BlocksList.Sand;
+                                blocks[x][i][z] = Sand.id;
                             } else if(!caveTerritory) {
                                 if(caves >= mapHeight/2 - (height - i) * 5) {
-                                    blocks[x][i][z] = BlocksList.Stone;
+                                    blocks[x][i][z] = Stone.id;
                                 } else {
-                                    blocks[x][i][z] = BlocksList.Dirt;
+                                    blocks[x][i][z] = Dirt.id;
                                 }
 
                             }
@@ -136,8 +141,8 @@ public class MapGenerator implements Disposable {
                 for(int j = waterLevel; j > 0; j--) {
                     double caves = Utils.normalize(CaveNoise.getNoise(x, (int) (j), z), maxTerrainHeight);
                     boolean caveTerritory = (caves >= maxTerrainHeight - (height - j) * 4 && caves > maxTerrainHeight /1.9 && j > 0);
-                    if (blocks[x][j][z] == BlocksList.Air && !caveTerritory) {
-                        blocks[x][j][z] = BlocksList.Water;
+                    if (blocks[x][j][z] == Air.id && !caveTerritory) {
+                        blocks[x][j][z] = Water.id;
                     } else {
                         break;
                     }
