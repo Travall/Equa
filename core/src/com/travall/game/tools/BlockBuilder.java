@@ -2,7 +2,6 @@ package com.travall.game.tools;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.GridPoint3;
-import com.badlogic.gdx.math.Interpolation.PowIn;
 import com.badlogic.gdx.utils.FloatArray;
 import com.travall.game.blocks.Block;
 import com.travall.game.generation.MapGenerator;
@@ -25,10 +24,16 @@ public class BlockBuilder {
 		}
 	};
 	
-//		v2-----v3
-//		|       |
-//		|       |
-//		v1-----v4
+	private final MapGenerator map;
+	
+	public BlockBuilder(MapGenerator map) {
+		this.map = map;
+	}
+	
+//     v3-----v2
+//     |       |
+//     |       |
+//     v4-----v1
 	public void rect(TextureRegion textureRegion) {
 		vertices.add(v1.x, v1.y, v1.z, v1.packData());
 		vertices.add(textureRegion.getU2(), textureRegion.getV2());
@@ -67,129 +72,149 @@ public class BlockBuilder {
 //     |       |
 //     v4-----v1
 	public void buildCube(Block block, GridPoint3 pos, boolean renderTop, boolean renderBottom, boolean render1,
-			boolean render2, boolean render3, boolean render4, MapGenerator map) {
+			boolean render2, boolean render3, boolean render4) {
 
 		float temp; // For optimization by reduce the converting from integer to float.
 		final int x = pos.x, y = pos.y, z = pos.z;
+		final BlockTextures textures = block.textures;
 
 		if (renderTop) { // facing Y+
-			temp = pos.y + 1;
-			v1.setPos(pos.x+1, temp, pos.z);
-			v2.setPos(pos.x,   temp, pos.z);
-			v3.setPos(pos.x,   temp, pos.z+1);
-			v4.setPos(pos.x+1, temp, pos.z+1);
+			final int y1 = y+1;
+			temp = y1;
+			
+			v1.setPos(x+1, temp, z);
+			v2.setPos(x,   temp, z);
+			v3.setPos(x,   temp, z+1);
+			v4.setPos(x+1, temp, z+1);
 			
 			setAmb(1f);
-			if (!map.isOutBound(pos.x, pos.y+1, pos.z)) {
-				setSrc((map.getSrcLight(pos.x, pos.y+1, pos.z)/15f));
-			} else setSrc(0f);
+			v1.vertAO(map.blockExists(x+1, y1, z), map.blockExists(x, y1, z-1), map.blockExists(x+1, y1, z-1));
+			v2.vertAO(map.blockExists(x-1, y1, z), map.blockExists(x, y1, z-1), map.blockExists(x-1, y1, z-1));
+			v3.vertAO(map.blockExists(x-1, y1, z), map.blockExists(x, y1, z+1), map.blockExists(x-1, y1, z+1));
+			v4.vertAO(map.blockExists(x+1, y1, z), map.blockExists(x, y1, z+1), map.blockExists(x+1, y1, z+1));
+			
+			final int center = map.getLight(x, y1, z);
+			v1.smoothLight(center, map.getLight(x+1, y1, z), map.getLight(x, y1, z-1), map.getLight(x+1, y1, z-1));
+			v2.smoothLight(center, map.getLight(x-1, y1, z), map.getLight(x, y1, z-1), map.getLight(x-1, y1, z-1));
+			v3.smoothLight(center, map.getLight(x-1, y1, z), map.getLight(x, y1, z+1), map.getLight(x-1, y1, z+1));
+			v4.smoothLight(center, map.getLight(x+1, y1, z), map.getLight(x, y1, z+1), map.getLight(x+1, y1, z+1));
 
-			v1.vertAO(map.blockExists(pos.x+1, pos.y+1, pos.z), map.blockExists(pos.x, pos.y+1, pos.z-1), map.blockExists(pos.x+1, pos.y+1, pos.z-1));
-			v2.vertAO(map.blockExists(pos.x-1, pos.y+1, pos.z), map.blockExists(pos.x, pos.y+1, pos.z-1), map.blockExists(pos.x-1, pos.y+1, pos.z-1));
-			v3.vertAO(map.blockExists(pos.x-1, pos.y+1, pos.z), map.blockExists(pos.x, pos.y+1, pos.z+1), map.blockExists(pos.x-1, pos.y+1, pos.z+1));
-			v4.vertAO(map.blockExists(pos.x+1, pos.y+1, pos.z), map.blockExists(pos.x, pos.y+1, pos.z+1), map.blockExists(pos.x+1, pos.y+1, pos.z+1));
-
-
-			rect(block.textures.top);
+			rect(textures.top);
 		}
 		if (renderBottom) { // facing Y-
+			final int y1 = y-1;
 			temp = pos.y;
-			v1.setPos(pos.x,   temp, pos.z);
-			v2.setPos(pos.x+1, temp, pos.z);
-			v3.setPos(pos.x+1, temp, pos.z+1);
-			v4.setPos(pos.x,   temp, pos.z+1);
+			
+			v1.setPos(x,   temp, z);
+			v2.setPos(x+1, temp, z);
+			v3.setPos(x+1, temp, z+1);
+			v4.setPos(x,   temp, z+1);
 			
 			setAmb(1);
-			if (!map.isOutBound(pos.x, pos.y-1, pos.z)) {
-				setSrc(map.getSrcLight(pos.x, pos.y-1, pos.z)/15f);
-			} else setSrc(0f);
-
-			v1.vertAO(map.blockExists(pos.x-1, pos.y-1, pos.z), map.blockExists(pos.x, pos.y-1, pos.z-1), map.blockExists(pos.x-1, pos.y-1, pos.z-1));
-			v2.vertAO(map.blockExists(pos.x+1, pos.y-1, pos.z), map.blockExists(pos.x, pos.y-1, pos.z-1), map.blockExists(pos.x+1, pos.y-1, pos.z-1));
-			v3.vertAO(map.blockExists(pos.x+1, pos.y-1, pos.z), map.blockExists(pos.x, pos.y-1, pos.z+1), map.blockExists(pos.x+1, pos.y-1, pos.z+1));
-			v4.vertAO(map.blockExists(pos.x-1, pos.y-1, pos.z), map.blockExists(pos.x, pos.y-1, pos.z+1), map.blockExists(pos.x-1, pos.y-1, pos.z+1));
+			v1.vertAO(map.blockExists(x-1, y1, z), map.blockExists(x, y1, z-1), map.blockExists(x-1, y1, z-1));
+			v2.vertAO(map.blockExists(x+1, y1, z), map.blockExists(x, y1, z-1), map.blockExists(x+1, y1, z-1));
+			v3.vertAO(map.blockExists(x+1, y1, z), map.blockExists(x, y1, z+1), map.blockExists(x+1, y1, z+1));
+			v4.vertAO(map.blockExists(x-1, y1, z), map.blockExists(x, y1, z+1), map.blockExists(x-1, y1, z+1));
 			
-			rect(block.textures.bottom);
+			final int center = map.getLight(x, y1, z);
+			v1.smoothLight(center, map.getLight(x-1, y1, z), map.getLight(x, y1, z-1), map.getLight(x-1, y1, z-1));
+			v2.smoothLight(center, map.getLight(x+1, y1, z), map.getLight(x, y1, z-1), map.getLight(x+1, y1, z-1));
+			v3.smoothLight(center, map.getLight(x+1, y1, z), map.getLight(x, y1, z+1), map.getLight(x+1, y1, z+1));
+			v4.smoothLight(center, map.getLight(x-1, y1, z), map.getLight(x, y1, z+1), map.getLight(x-1, y1, z+1));
+			
+			rect(textures.bottom);
 		}
 		if (render1) { // facing Z-
-			temp = pos.z;
-			v1.setPos(pos.x,   pos.y,   temp);
-			v2.setPos(pos.x,   pos.y+1, temp);
-			v3.setPos(pos.x+1, pos.y+1, temp);
-			v4.setPos(pos.x+1, pos.y,   temp);
+			final int z1 = z-1;
+			temp = z;
+			
+			v1.setPos(x,   y,   temp);
+			v2.setPos(x,   y+1, temp);
+			v3.setPos(x+1, y+1, temp);
+			v4.setPos(x+1, y,   temp);
 			
 			setAmb(1);
-			if (!map.isOutBound(pos.x, pos.y, pos.z-1)) {
-				setSrc(map.getSrcLight(pos.x, pos.y, pos.z-1)/15f);
-			} else setSrc(0f);
-
-			final int z1 = z-1;
 			v1.vertAO(map.blockExists(x, y-1, z1), map.blockExists(x-1, y, z1), map.blockExists(x-1, y-1, z1));
 			v2.vertAO(map.blockExists(x, y+1, z1), map.blockExists(x-1, y, z1), map.blockExists(x-1, y+1, z1));
 			v3.vertAO(map.blockExists(x, y+1, z1), map.blockExists(x+1, y, z1), map.blockExists(x+1, y+1, z1));
 			v4.vertAO(map.blockExists(x, y-1, z1), map.blockExists(x+1, y, z1), map.blockExists(x+1, y-1, z1));
+			
+			final int center = map.getLight(x, y, z1);
+			v1.smoothLight(center, map.getLight(x, y-1, z1), map.getLight(x-1, y, z1), map.getLight(x-1, y-1, z1));
+			v2.smoothLight(center, map.getLight(x, y+1, z1), map.getLight(x-1, y, z1), map.getLight(x-1, y+1, z1));
+			v3.smoothLight(center, map.getLight(x, y+1, z1), map.getLight(x+1, y, z1), map.getLight(x+1, y+1, z1));
+			v4.smoothLight(center, map.getLight(x, y-1, z1), map.getLight(x+1, y, z1), map.getLight(x+1, y-1, z1));
 
-			rect(block.textures.render1);
+			rect(textures.render1);
 		}
 		if (render2) { // facing X-
-			temp = pos.x;
-			v1.setPos(temp, pos.y,   pos.z+1);
-			v2.setPos(temp, pos.y+1, pos.z+1);
-			v3.setPos(temp, pos.y+1, pos.z);
-			v4.setPos(temp, pos.y,   pos.z);
+			final int x1 = x-1;
+			temp = x;
+			
+			v1.setPos(temp, y,   z+1);
+			v2.setPos(temp, y+1, z+1);
+			v3.setPos(temp, y+1, z);
+			v4.setPos(temp, y,   z);
 			
 			setAmb(1);
-			if (!map.isOutBound(pos.x-1, pos.y, pos.z)) {
-				setSrc(map.getSrcLight(pos.x-1, pos.y, pos.z)/15f);
-			} else setSrc(0f);
-
-			final int x1 = x-1;
 			v1.vertAO(map.blockExists(x1, y-1, z), map.blockExists(x1, y, z+1), map.blockExists(x1, y-1, z+1));
 			v2.vertAO(map.blockExists(x1, y+1, z), map.blockExists(x1, y, z+1), map.blockExists(x1, y+1, z+1));
 			v3.vertAO(map.blockExists(x1, y+1, z), map.blockExists(x1, y, z-1), map.blockExists(x1, y+1, z-1));
 			v4.vertAO(map.blockExists(x1, y-1, z), map.blockExists(x1, y, z-1), map.blockExists(x1, y-1, z-1));
+			
+			final int center = map.getLight(x1, y, z);
+			v1.smoothLight(center, map.getLight(x1, y-1, z), map.getLight(x1, y, z+1), map.getLight(x1, y-1, z+1));
+			v2.smoothLight(center, map.getLight(x1, y+1, z), map.getLight(x1, y, z+1), map.getLight(x1, y+1, z+1));
+			v3.smoothLight(center, map.getLight(x1, y+1, z), map.getLight(x1, y, z-1), map.getLight(x1, y+1, z-1));
+			v4.smoothLight(center, map.getLight(x1, y-1, z), map.getLight(x1, y, z-1), map.getLight(x1, y-1, z-1));
 
-			rect(block.textures.render2);
+			rect(textures.render2);
 		}
 		if (render3) { // facing Z+
-			temp = pos.z + 1;
-			v1.setPos(pos.x+1,   pos.y,   temp);
-			v2.setPos(pos.x+1,   pos.y+1, temp);
-			v3.setPos(pos.x, pos.y+1, temp);
-			v4.setPos(pos.x, pos.y,   temp);
+			final int z1 = z+1;
+			temp = z1;
+			
+			v1.setPos(x+1, y,   temp);
+			v2.setPos(x+1, y+1, temp);
+			v3.setPos(x,   y+1, temp);
+			v4.setPos(x,   y,   temp);
 			
 			setAmb(1);
-			if (!map.isOutBound(pos.x, pos.y, pos.z+1)) {
-				setSrc(map.getSrcLight(pos.x, pos.y, pos.z+1)/15f);
-			} else setSrc(0f);
-
-			final int z1 = z+1;
 			v1.vertAO(map.blockExists(x, y-1, z1), map.blockExists(x+1, y, z1), map.blockExists(x+1, y-1, z1));
 			v2.vertAO(map.blockExists(x, y+1, z1), map.blockExists(x+1, y, z1), map.blockExists(x+1, y+1, z1));
 			v3.vertAO(map.blockExists(x, y+1, z1), map.blockExists(x-1, y, z1), map.blockExists(x-1, y+1, z1));
 			v4.vertAO(map.blockExists(x, y-1, z1), map.blockExists(x-1, y, z1), map.blockExists(x-1, y-1, z1));
+			
+			final int center = map.getLight(x, y, z1);
+			v1.smoothLight(center, map.getLight(x, y-1, z1), map.getLight(x+1, y, z1), map.getLight(x+1, y-1, z1));
+			v2.smoothLight(center, map.getLight(x, y+1, z1), map.getLight(x+1, y, z1), map.getLight(x+1, y+1, z1));
+			v3.smoothLight(center, map.getLight(x, y+1, z1), map.getLight(x-1, y, z1), map.getLight(x-1, y+1, z1));
+			v4.smoothLight(center, map.getLight(x, y-1, z1), map.getLight(x-1, y, z1), map.getLight(x-1, y-1, z1));
 
-			rect(block.textures.render3);
+			rect(textures.render3);
 		}
 		if (render4) { // facing X+
-			temp = pos.x + 1;
-			v1.setPos(temp, pos.y,   pos.z);
-			v2.setPos(temp, pos.y+1, pos.z);
-			v3.setPos(temp, pos.y+1, pos.z+1);
-			v4.setPos(temp, pos.y,   pos.z+1);
+			final int x1 = x+1;
+			temp = x1;
+			
+			v1.setPos(temp, y,   z);
+			v2.setPos(temp, y+1, z);
+			v3.setPos(temp, y+1, z+1);
+			v4.setPos(temp, y,   z+1);
 			
 			setAmb(1);
-			if (!map.isOutBound(pos.x+1, pos.y, pos.z)) {
-				setSrc(map.getSrcLight(pos.x+1, pos.y, pos.z)/15f);
-			} else setSrc(0f);
-
-			final int x1 = x+1;
 			v1.vertAO(map.blockExists(x1, y-1, z), map.blockExists(x1, y, z-1), map.blockExists(x1, y-1, z-1));
 			v2.vertAO(map.blockExists(x1, y+1, z), map.blockExists(x1, y, z-1), map.blockExists(x1, y+1, z-1));
 			v3.vertAO(map.blockExists(x1, y+1, z), map.blockExists(x1, y, z+1), map.blockExists(x1, y+1, z+1));
 			v4.vertAO(map.blockExists(x1, y-1, z), map.blockExists(x1, y, z+1), map.blockExists(x1, y-1, z+1));
 			
-			rect(block.textures.render4);
+			final int center = map.getLight(x1, y, z);
+			v1.smoothLight(center, map.getLight(x1, y-1, z), map.getLight(x1, y, z-1), map.getLight(x1, y-1, z-1));
+			v2.smoothLight(center, map.getLight(x1, y+1, z), map.getLight(x1, y, z-1), map.getLight(x1, y+1, z-1));
+			v3.smoothLight(center, map.getLight(x1, y+1, z), map.getLight(x1, y, z+1), map.getLight(x1, y+1, z+1));
+			v4.smoothLight(center, map.getLight(x1, y-1, z), map.getLight(x1, y, z+1), map.getLight(x1, y-1, z+1));
+			
+			rect(textures.render4);
 		}
 	}
 	
@@ -226,16 +251,36 @@ public class BlockBuilder {
 			return Float.intBitsToFloat((((int)(255*sunLit)<<16)|((int)(255*srcLit)<<8)|((int)(255*ambLit))));
 		}
 
-		private static final double strengh = 2;
+		// change from {1/3f, 1/2f, 1/1.5f, 1f} to {1/2.5f, 1/1.85f, 1/1.45f, 1f} it's a bit too strong.
 		private static final float[] AMB =
-				{1/3f, 1/2f, 1/1.5f, 1f};
+			{1/2.5f, 1/1.85f, 1/1.45f, 1f};
 
 		public void vertAO(boolean side1, boolean side2, boolean corner) {
 			if(side1 && side2) {
 				ambLit = AMB[0];
 				return;
 			}
-			ambLit = AMB[3-((side1?1:0)+(side2?1:0)+(corner?1:0))];
+			ambLit = AMB[(side1?0:1)+(side2?0:1)+(corner?0:1)];
+		}
+		
+		public void smoothLight(int center, int side1, int side2, int corner) {
+			//int sunLight, sunLightTotal;
+			int srcLight, srcLightTotal;
+			
+			srcLightTotal = LightUtil.getSrcLight(center);
+			
+			srcLight = LightUtil.getSrcLight(side1);
+			srcLightTotal += srcLight == 0 ? center : srcLight;
+			
+			srcLight = LightUtil.getSrcLight(side2);
+			srcLightTotal += srcLight == 0 ? center : srcLight;
+			
+			srcLight = LightUtil.getSrcLight(corner);
+			srcLightTotal += (srcLight == 0 && center != 1) ? center : 
+			(srcLight == 1 && center == 1) ? 0 : srcLight; // fix some lighting errors.
+			
+			// The ">>>2" is a faster version of "/4" and it won't crash if value is 0.
+			srcLit = (srcLightTotal>>>2) / 15f;
 		}
 
 		public void setPos(float x, float y, float z) {

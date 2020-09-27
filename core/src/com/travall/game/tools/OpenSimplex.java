@@ -14,9 +14,9 @@ public class OpenSimplex
 	private static final int PSIZE = 2048;
 	private static final int PMASK = 2047;
 
-	private short[] perm;
-	private Grad2[] permGrad2;
-	private Grad3[] permGrad3;
+	private final short[] perm;
+	private final Grad2[] permGrad2;
+	private final Grad3[] permGrad3;
 
 	public OpenSimplex(long seed) {
 		perm = new short[PSIZE];
@@ -90,10 +90,6 @@ public class OpenSimplex
 		double ys = y + stretchOffset;
 		double zs = z + stretchOffset;
 		
-		return eval3_Base(xs, ys, zs);
-	}
-	
-	private double eval3_Base(double xs, double ys, double zs) {
 		int xsb = fastFloor(xs);
 		int ysb = fastFloor(ys);
 		int zsb = fastFloor(zs);
@@ -171,7 +167,7 @@ public class OpenSimplex
 		}
 	}
 
-	public static class Grad2 {
+	private static class Grad2 {
 		double dx, dy;
 		public Grad2(double dx, double dy) {
 			this.dx = dx;
@@ -179,7 +175,7 @@ public class OpenSimplex
 		}
 	}
 
-	public static class Grad3 {
+	private static class Grad3 {
 		double dx, dy, dz;
 		public Grad3(double dx, double dy, double dz) {
 			this.dx = dx;

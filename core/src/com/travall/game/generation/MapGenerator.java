@@ -1,12 +1,11 @@
 package com.travall.game.generation;
 
-import java.util.Random;
-
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.RandomXS128;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import com.travall.game.Main;
@@ -15,6 +14,7 @@ import com.travall.game.blocks.BlocksList;
 import com.travall.game.tools.BlockBuilder;
 import com.travall.game.tools.ChunkMesh;
 import com.travall.game.tools.FloodLight;
+import com.travall.game.tools.LightUtil;
 import com.travall.game.tools.OpenSimplexOctaves;
 import com.travall.game.tools.UltimateTexture;
 import com.travall.game.tools.Utils;
@@ -38,19 +38,19 @@ public class MapGenerator implements Disposable {
         this.mapHeight = mapHeight;
         this.mapLength = mapLength;
         this.waterLevel = waterLevel;
-        this.blockBuilder = new BlockBuilder();
+        this.blockBuilder = new BlockBuilder(this);
         this.floodLight = new FloodLight(this, main);
         this.ultimate = new UltimateTexture(new Texture("Tiles/ultimate3.png"));
         BlocksList.ints(ultimate);
-        generate();
+        generate(MathUtils.random.nextLong());
     }
 
-    private void generate() {
-    	final Random random = MathUtils.random;
-        OpenSimplexOctaves MountainNoise = new OpenSimplexOctaves(7,0.43, 345); // changed from 0.45 to 0.43
-        OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5,0.25, 567);
-        OpenSimplexOctaves FlatNoise = new OpenSimplexOctaves(6,0.2, 123); // changed from 0.15 to 0.2
-        OpenSimplexOctaves DecisionNoise = new OpenSimplexOctaves(8,0.02, 789);
+    private void generate(long seed) {
+    	final RandomXS128 random = new RandomXS128(seed);
+        OpenSimplexOctaves MountainNoise = new OpenSimplexOctaves(7,0.43, random.nextLong()); // changed from 0.45 to 0.43
+        OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5,0.25, random.nextLong());
+        OpenSimplexOctaves FlatNoise = new OpenSimplexOctaves(6,0.2, random.nextLong()); // changed from 0.15 to 0.2
+        OpenSimplexOctaves DecisionNoise = new OpenSimplexOctaves(8,0.02, random.nextLong());
 
         blocks = new short[mapWidth][mapHeight][mapLength];
         lights = new byte[mapWidth][mapHeight][mapLength];
@@ -77,44 +77,6 @@ public class MapGenerator implements Disposable {
 //                        break;
 //                    }
 //                }
-
-                if(decision > 0.5) {
-                    if(random.nextInt(30) >= 29 && x > 0 && z > 0 && x < mapWidth-1 && z < mapLength-1) {
-                        blocks[x][yValue + 1][z] = BlocksList.Log;
-                        blocks[x][yValue + 2][z] = BlocksList.Log;
-                        blocks[x][yValue + 3][z] = BlocksList.Log;
-
-
-//                        blocks[x][yValue + 4][z] = BlocksList.Leaves;
-//                        blocks[x][yValue + 5][z] = BlocksList.Leaves;
-//                        blocks[x+1][yValue + 4][z] = BlocksList.Leaves;
-//                        blocks[x-1][yValue + 4][z] = BlocksList.Leaves;
-//                        blocks[x][yValue + 4][z+1] = BlocksList.Leaves;
-//                        blocks[x][yValue + 4][z-1] = BlocksList.Leaves;
-//                        blocks[x+1][yValue + 4][z+1] = BlocksList.Leaves;
-//                        blocks[x-1][yValue + 4][z-1] = BlocksList.Leaves;
-//                        blocks[x-1][yValue + 4][z+1] = BlocksList.Leaves;
-//                        blocks[x+1][yValue + 4][z-1] = BlocksList.Leaves;
-
-                        for(int xx = x-2; xx <= x+2; xx++) {
-                            for(int zz = z-2; zz <= z+2; zz++) {
-                                if(x > 1 && z > 1 && x < mapWidth-2 && z < mapLength-2) blocks[xx][yValue + 4][zz] = BlocksList.Leaves;
-                            }
-                        }
-
-                        for(int xx = x-1; xx <= x+1; xx++) {
-                            for(int zz = z-1; zz <= z+1; zz++) {
-                                if(x > 0 && z > 0 && x < mapWidth-1 && z < mapLength-1) blocks[xx][yValue + 5][zz] = BlocksList.Leaves;
-                            }
-                        }
-
-
-                        blocks[x][yValue + 4][z] = BlocksList.Log;
-                        blocks[x][yValue + 6][z] = BlocksList.Leaves;
-
-
-                    }
-                }
 
                 for(int i = yValue; i >= 0; i--) {
                     double caves = Utils.normalize(CaveNoise.getNoise(x, (int) (i), z), maxTerrainHeight);
@@ -203,37 +165,33 @@ public class MapGenerator implements Disposable {
         for(int x = indexX; x < indexX + chunkSizeX; x++) {
             for(int y = 0; y < blocks[0].length; y++) {
                 for(int z = indexZ; z < indexZ + chunkSizeZ; z++) {
-                    if(blockExists(x,y,z)) {
-                        pos.set(x,y,z);
-                        block = BlocksList.get(blocks[x][y][z]);
-                        
-                        if  (!blockExists(x + 1, y, z) || (blockExists(x + 1, y, z) && (BlocksList.get(blocks[x + 1][y][z]).transparent || BlocksList.get(blocks[x + 1][y][z]).translucent))
-                          || !blockExists(x - 1, y, z) || (blockExists(x - 1, y, z) && (BlocksList.get(blocks[x - 1][y][z]).transparent || BlocksList.get(blocks[x - 1][y][z]).translucent))
-                          || !blockExists(x, y + 1, z) || (blockExists(x, y + 1, z) && (BlocksList.get(blocks[x][y + 1][z]).transparent || BlocksList.get(blocks[x][y + 1][z]).translucent))
-                          || !blockExists(x, y - 1, z) || (blockExists(x, y - 1, z) && (BlocksList.get(blocks[x][y - 1][z]).transparent || BlocksList.get(blocks[x][y - 1][z]).translucent))
-                          || !blockExists(x, y, z + 1) || (blockExists(x, y, z + 1) && (BlocksList.get(blocks[x][y][z + 1]).transparent || BlocksList.get(blocks[x][y][z + 1]).translucent))
-                          || !blockExists(x, y, z - 1) || (blockExists(x, y, z - 1) && (BlocksList.get(blocks[x][y][z - 1]).transparent) || BlocksList.get(blocks[x][y][z - 1]).translucent)) {
+                    if(blockExists(x,y,z)) {                        
+                        if  (!blockExists(x + 1, y, z) || (blockExists(x + 1, y, z) && BlocksList.get(blocks[x + 1][y][z]).transparent)
+                          || !blockExists(x - 1, y, z) || (blockExists(x - 1, y, z) && BlocksList.get(blocks[x - 1][y][z]).transparent)
+                          || !blockExists(x, y + 1, z) || (blockExists(x, y + 1, z) && BlocksList.get(blocks[x][y + 1][z]).transparent)
+                          || !blockExists(x, y - 1, z) || (blockExists(x, y - 1, z) && BlocksList.get(blocks[x][y - 1][z]).transparent)
+                          || !blockExists(x, y, z + 1) || (blockExists(x, y, z + 1) && BlocksList.get(blocks[x][y][z + 1]).transparent)
+                          || !blockExists(x, y, z - 1) || (blockExists(x, y, z - 1) && BlocksList.get(blocks[x][y][z - 1]).transparent)) {
+                        	
+                        	pos.set(x,y,z);
+                            block = BlocksList.get(blocks[x][y][z]);
 
-                            boolean blocksTransparent = block.transparent;
-                            boolean blocksTranslucent = block.translucent;
-                            boolean renderTop = !(blockExists(x, y + 1, z) && (!BlocksList.get(blocks[x][y + 1][z]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x][y + 1][z]).translucent;
-                            boolean renderBottom = !(blockExists(x, y - 1, z) && (!BlocksList.get(blocks[x][y - 1][z]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x][y - 1][z]).translucent;
-                            boolean render1 = !(blockExists(x, y, z - 1) && (!BlocksList.get(blocks[x][y][z - 1]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x][y][z - 1]).translucent;
-                            boolean render2 = !(blockExists(x - 1, y, z) && (!BlocksList.get(blocks[x - 1][y][z]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x - 1][y][z]).translucent;
-                            boolean render3 = !(blockExists(x, y, z + 1) && (!BlocksList.get(blocks[x][y][z + 1]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x][y][z + 1]).translucent;
-                            boolean render4 = !(blockExists(x + 1, y, z) && (!BlocksList.get(blocks[x + 1][y][z]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x + 1][y][z]).translucent;
+                        	boolean blocksTranslucent = block.transparent;
+                            boolean renderTop = !(blockExists(x, y + 1, z) && (!BlocksList.get(blocks[x][y + 1][z]).transparent || blocksTranslucent));
+                            boolean renderBottom = !(blockExists(x, y - 1, z) && (!BlocksList.get(blocks[x][y - 1][z]).transparent || blocksTranslucent));
+                            boolean render1 = !(blockExists(x, y, z - 1) && (!BlocksList.get(blocks[x][y][z - 1]).transparent || blocksTranslucent));
+                            boolean render2 = !(blockExists(x - 1, y, z) && (!BlocksList.get(blocks[x - 1][y][z]).transparent || blocksTranslucent));
+                            boolean render3 = !(blockExists(x, y, z + 1) && (!BlocksList.get(blocks[x][y][z + 1]).transparent || blocksTranslucent));
+                            boolean render4 = !(blockExists(x + 1, y, z) && (!BlocksList.get(blocks[x + 1][y][z]).transparent || blocksTranslucent));
 
-                            blockBuilder.buildCube(block, pos,renderTop,renderBottom,render1,render2,render3,render4,this);
+                            blockBuilder.buildCube(block, pos,renderTop,renderBottom,render1,render2,render3,render4);
                         }
                     }
                 }
             }
         }
         
-        if (chunkMesh == null) {
-        	return blockBuilder.end(GL20.GL_STREAM_DRAW);
-        }
-        return blockBuilder.end(chunkMesh);
+        return chunkMesh == null ? blockBuilder.end(GL20.GL_STREAM_DRAW) : blockBuilder.end(chunkMesh);
     }
 
     public boolean blockExists(int x, int y, int z) {
@@ -244,9 +202,13 @@ public class MapGenerator implements Disposable {
     	return x < 0 || y < 0 || z < 0 || x >= mapWidth || y >= mapHeight || z >= mapLength;
     }
     
- // Get the bits XXXX0000
+    public int getLight(int x, int y, int z) {
+ 	    return isOutBound(x, y, z) ? 0xF0 : lights[x][y][z]&0xFF;
+ 	}
+    
+    // Get the bits XXXX0000
  	public int getSunLight(int x, int y, int z) {
- 	    return (lights[x][y][z] >>> 4) & 0xF;
+ 	    return LightUtil.getSunLight(lights[x][y][z]);
  	}
 
  	// Set the bits XXXX0000
@@ -256,7 +218,7 @@ public class MapGenerator implements Disposable {
 
  	// Get the bits 0000XXXX
  	public int getSrcLight(int x, int y, int z) {
- 	    return lights[x][y][z] & 0xF;
+ 	    return LightUtil.getSrcLight(lights[x][y][z]);
  	}
  	
  	// Set the bits 0000XXXX
