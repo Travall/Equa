@@ -192,7 +192,7 @@ public class Main extends ApplicationAdapter {
         if(Gdx.input.isKeyJustPressed(Keys.P)) VoxelTerrain.toggleAO();
 
         float y = -0.015f;
-        float speed = 0.025f;
+        float speed = 0.02f;
 
         player.jumpTimer--;
         if(player.jumpTimer < 0 && player.onGround && Gdx.input.isKeyPressed(Keys.SPACE)) {
