@@ -24,7 +24,8 @@ public class Skybox implements Disposable
 	private final PerspectiveCamera skyCam = new PerspectiveCamera();
 	
 	public Skybox() {
-		this.shader = new ShaderProgram(files.internal("Shaders/skybox.vert"), files.internal("Shaders/skybox.frag"));		shader.bind();
+		this.shader = new ShaderProgram(files.internal("Shaders/skybox.vert"), files.internal("Shaders/skybox.frag"));
+		shader.bind();
 		shader.setUniformf("u_sky", sky);
 		shader.setUniformf("u_fog", fog);
 		Gdx.gl.glUseProgram(0);
