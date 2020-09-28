@@ -14,5 +14,5 @@ uniform LOWP vec4 u_sky;
 uniform LOWP vec4 u_fog;
 
 void main() {
-	gl_FragColor = mix(u_fog, u_sky, clamp((v_yCoord*1.2)+0.6, 0.0, 1.0));
+	gl_FragColor = mix(u_fog, u_sky, clamp((v_yCoord*1.2)+0.5, 0.0, 1.0));
 }
