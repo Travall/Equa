@@ -1,40 +1,78 @@
 package com.travall.game.tools;
 
+import static com.badlogic.gdx.Gdx.files;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.graphics.g3d.attributes.IntAttribute;
-import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
+import com.badlogic.gdx.graphics.Mesh;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.VertexAttributes.Usage;
+import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
+import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.SphereShapeBuilder;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.utils.Disposable;
 
-public class Skybox {
-    public ModelInstance Generate() {
-        ModelBuilder modelBuilder = new ModelBuilder();
-        modelBuilder.begin();
-
-        MeshPartBuilder part = modelBuilder.part("triangle", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position | VertexAttributes.Usage.ColorPacked,new Material(IntAttribute.createCullFace(GL20.GL_BACK)));
-
-        BoxShapeBuilder boxBuilder = new BoxShapeBuilder();
-
-        Color bottom = new Color(220/255f,220/255f,220/255f,1f);
-        Color top = new Color(77/255f,145/255f,255/255f,1f);
-
-        MeshPartBuilder.VertexInfo one = new MeshPartBuilder.VertexInfo().setPos(-1,-1,-1).setCol(bottom);
-        MeshPartBuilder.VertexInfo two = new MeshPartBuilder.VertexInfo().setPos(1,-1,-1).setCol(bottom);
-        MeshPartBuilder.VertexInfo three = new MeshPartBuilder.VertexInfo().setPos(-1,-1,1).setCol(bottom);
-        MeshPartBuilder.VertexInfo four = new MeshPartBuilder.VertexInfo().setPos(1,-1,1).setCol(bottom);
-        MeshPartBuilder.VertexInfo five = new MeshPartBuilder.VertexInfo().setPos(-1,1,-1).setCol(top);
-        MeshPartBuilder.VertexInfo six = new MeshPartBuilder.VertexInfo().setPos(1,1,-1).setCol(top);
-        MeshPartBuilder.VertexInfo seven = new MeshPartBuilder.VertexInfo().setPos(-1,1,1).setCol(top);
-        MeshPartBuilder.VertexInfo eight = new MeshPartBuilder.VertexInfo().setPos(1,1,1).setCol(top);
-
-        boxBuilder.build(part,one,two,three,four,five,six,seven,eight);
-
-        Model model = modelBuilder.end();
-        return new ModelInstance(model);
-    }
+public class Skybox implements Disposable
+{
+	public static final Color sky = new Color(77/255f,145/255f,255/255f,1f);
+	public static final Color fog = new Color(220/255f,220/255f,220/255f,1f);
+		
+	private ShaderProgram shader;
+	private final Mesh box;
+	private final PerspectiveCamera skyCam = new PerspectiveCamera();
+	
+	public Skybox() {
+		this.shader = new ShaderProgram(files.internal("Shaders/skybox.vert"), files.internal("Shaders/skybox.frag"));		shader.bind();
+		shader.setUniformf("u_sky", sky);
+		shader.setUniformf("u_fog", fog);
+		Gdx.gl.glUseProgram(0);
+		MeshBuilder build = new MeshBuilder();
+		build.begin(Usage.Position, GL20.GL_TRIANGLES);
+		SphereShapeBuilder.build(build, 1f, 1f, 1f, 24, 16);
+		box = build.end();
+		
+		skyCam.near = 0.1f;
+		skyCam.far = 2f;
+	}
+	
+	public void render(PerspectiveCamera camera) {
+		Gdx.gl.glDepthMask(false);
+		//if (Gdx.input.isKeyJustPressed(Keys.R)) reload();
+		
+		intsSkyCam(camera);
+		shader.bind();
+		shader.setUniformMatrix("u_projTrans", skyCam.combined);
+		//shader.setUniformf("u_height", pos.y);
+		box.render(shader, GL20.GL_TRIANGLES);
+		Gdx.gl.glUseProgram(0);
+		
+		Gdx.gl.glDepthMask(true);
+	}
+	
+	private void intsSkyCam(PerspectiveCamera camera) {
+		skyCam.direction.set(camera.direction);
+		skyCam.up.set(camera.up);
+		skyCam.fieldOfView = camera.fieldOfView;
+		skyCam.viewportWidth = camera.viewportWidth;
+		skyCam.viewportHeight = camera.viewportHeight;
+		skyCam.update(false);
+	}
+	
+	@SuppressWarnings("unused")
+	private void reload() {
+		shader.dispose();
+		shader = new ShaderProgram(files.internal("Shaders/skybox.vert"), files.internal("Shaders/skybox.frag"));
+		shader.bind();
+		shader.setUniformf("u_sky", sky);
+		shader.setUniformf("u_fog", fog);
+		Gdx.gl.glUseProgram(0);
+	}
+	
+	@Override
+	public void dispose() {
+		box.dispose();
+		shader.dispose();
+	}
 }
