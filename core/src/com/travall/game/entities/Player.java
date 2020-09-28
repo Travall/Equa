@@ -1,7 +1,5 @@
 package com.travall.game.entities;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
@@ -55,12 +53,12 @@ public class Player
 
     public void update(MapGenerator mapGenerator) {
         velocity.add(acceleration);
+        move(mapGenerator, this.velocity.x, this.velocity.y, this.velocity.z);
+        acceleration.setZero();
+        
         velocity.x = MathUtils.lerp(this.velocity.x,0,0.2f);
         velocity.y = MathUtils.lerp(this.velocity.y,0,0.01f);
         velocity.z = MathUtils.lerp(this.velocity.z,0,0.2f);
-
-        move(mapGenerator, this.velocity.x, this.velocity.y, this.velocity.z);
-        acceleration.setZero();
     }
 
     public void move(MapGenerator mapGenerator, float x, float y, float z) {

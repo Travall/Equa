@@ -19,9 +19,7 @@ import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.kotcrab.vis.ui.VisUI;
-import com.travall.game.blocks.Bedrock;
-import com.travall.game.blocks.Gold;
-import com.travall.game.blocks.Log;
+import com.travall.game.blocks.*;
 import com.travall.game.entities.Player;
 import com.travall.game.generation.MapGenerator;
 import com.travall.game.tools.ChunkMesh;
@@ -132,7 +130,7 @@ public class Main extends ApplicationAdapter {
         camera.update(); // Update the camera projection
 
         ssao.begin();
-        Gdx.gl.glClearColor(0.2f, 0.6f, 0.6f, 1);
+        Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         modelBatch.begin(camera);
         modelBatch.render(skyboxInstance);
@@ -237,7 +235,7 @@ public class Main extends ApplicationAdapter {
 
         if (isFlying) {
         	add.y = Gdx.input.isKeyPressed(Keys.SPACE) ? speed : Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) ? -speed : 0f;
-        	player.setPosition(flyPosition.add(add.scl(20.0f)));
+        	player.setPosition(flyPosition.add(add.scl(15.0f)));
             camera.position.set(player.instance.transform.getTranslation(temp).add(0,0.75f,0));
         } else {
         	add.y = y;
