@@ -55,8 +55,6 @@ public class Main extends ApplicationAdapter {
     short blockType = Log.id;
 
     Player player;
-    Vector3 flyPosition = new Vector3();
-    boolean isFlying;
 
     Vector3 temp = new Vector3();
 
@@ -187,18 +185,28 @@ public class Main extends ApplicationAdapter {
             }
         }
 
+        if (Gdx.input.isKeyJustPressed(Keys.F)) {
+            player.isFlying = !player.isFlying;
+        }
+
         if(Gdx.input.isKeyPressed(Keys.Q)) blockType = Log.id;
         if(Gdx.input.isKeyPressed(Keys.E)) blockType = Gold.id;
 
         if(Gdx.input.isKeyJustPressed(Keys.P)) VoxelTerrain.toggleAO();
 
-        float y = -0.015f;
+        float y = player.isFlying ? 0 : -0.015f;
         float speed = 0.0175f;
 
-        player.jumpTimer--;
-        if(player.jumpTimer < 0 && player.onGround && Gdx.input.isKeyPressed(Keys.SPACE)) {
-        	y = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) ? 0.6f : 0.2f;
-        	player.jumpTimer = 15;
+        if(Gdx.input.isKeyPressed(Keys.SPACE)) {
+            if(player.onGround) {
+                y = 0.2f;
+            } else if(player.isFlying) {
+                y = 0.03f;
+            }
+        }
+
+        if(Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) && player.isFlying) {
+            y = -0.03f;
         }
 
         noam.set(camera.direction).nor();
@@ -212,38 +220,21 @@ public class Main extends ApplicationAdapter {
 
         temp.set(direction);
         
-        if(Gdx.input.isKeyPressed(Keys.W)) add.add(temp.scl(speed * (!isFlying && Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) ? 1.5f : 1)));
+        if(Gdx.input.isKeyPressed(Keys.W)) add.add(temp.scl(speed * (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) ? (player.isFlying ? 3f : 1.5f) : 1)));
         if(Gdx.input.isKeyPressed(Keys.S)) add.add(temp.scl(-speed));
 
         temp.set(direction.rotate(Vector3.Y,-90));
 
-        if(Gdx.input.isKeyPressed(Keys.A)) add.add(temp.scl(-speed));
-        if(Gdx.input.isKeyPressed(Keys.D)) add.add(temp.scl(speed));
+        if(Gdx.input.isKeyPressed(Keys.A)) add.add(temp.scl(-speed * (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) ? (player.isFlying ? 1.5f : 1f) : 1)));
+        if(Gdx.input.isKeyPressed(Keys.D)) add.add(temp.scl(speed * (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) ? (player.isFlying ? 1.5f : 1f) : 1)));
 
-        if(!isFlying && !add.equals(Vector3.Zero) && Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) && Gdx.input.isKeyPressed(Keys.W)) cameraController.targetFOV = 90; // changed from 110 to 90
+        if(!add.equals(Vector3.Zero) && Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) && Gdx.input.isKeyPressed(Keys.W)) cameraController.targetFOV = 90; // changed from 110 to 90
         else cameraController.targetFOV = 80; // changed from 90 to 80
-        
-        if (Gdx.input.isKeyJustPressed(Keys.F)) {
-        	isFlying = !isFlying;
-        	
-        	if (isFlying) {
-        		flyPosition.set(player.instance.transform.getTranslation(temp));
-        	} else {
-        		player.reset();
-        		player.setPosition(flyPosition);
-        	}
-        }
 
-        if (isFlying) {
-        	add.y = Gdx.input.isKeyPressed(Keys.SPACE) ? speed : Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) ? -speed : 0f;
-        	player.setPosition(flyPosition.add(add.scl(16.0f)));
-            camera.position.set(player.instance.transform.getTranslation(temp).add(0,0.75f,0));
-        } else {
-        	add.y = y;
-        	player.applyForce(add);
-            player.update(mapGenerator);
-            camera.position.set(player.instance.transform.getTranslation(temp).add(0,0.75f,0));
-        }
+        add.y = y;
+        player.applyForce(add);
+        player.update(mapGenerator);
+        camera.position.set(player.instance.transform.getTranslation(temp).add(0,0.75f,0));
 
         cameraRaycast();
     }

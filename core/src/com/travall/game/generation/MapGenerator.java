@@ -46,10 +46,10 @@ public class MapGenerator implements Disposable {
 
     private void generate(long seed) {
     	final RandomXS128 random = new RandomXS128(seed);
-        OpenSimplexOctaves MountainNoise = new OpenSimplexOctaves(7,0.43, random.nextLong()); // changed from 0.45 to 0.43
+        OpenSimplexOctaves MountainNoise = new OpenSimplexOctaves(7,0.5, random.nextLong()); // changed from 0.45 to 0.43
         OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5,0.25, random.nextLong());
         OpenSimplexOctaves FlatNoise = new OpenSimplexOctaves(6,0.2, random.nextLong()); // changed from 0.15 to 0.2
-        OpenSimplexOctaves DecisionNoise = new OpenSimplexOctaves(8,0.02, random.nextLong());
+        OpenSimplexOctaves DecisionNoise = new OpenSimplexOctaves(7,0.02, random.nextLong());
 
         blocks = new short[mapWidth][mapHeight][mapLength];
         lights = new byte[mapWidth][mapHeight][mapLength];
@@ -77,7 +77,7 @@ public class MapGenerator implements Disposable {
 //                    }
 //                }
 
-                if(steep > 0.6) {
+                if(steep > 0.5 && yValue > waterLevel) {
                     if(random.nextInt(30) >= 29 && x > 0 && z > 0 && x < mapWidth-1 && z < mapLength-1) {
                         blocks[x][yValue + 1][z] = Log.id;
                         blocks[x][yValue + 2][z] = Log.id;
@@ -117,14 +117,14 @@ public class MapGenerator implements Disposable {
                         blocks[x][i][z] = Bedrock.id;
                     } else {
                         if (i == yValue && i >= waterLevel) {
-                            if (Math.abs(i - waterLevel) < 3 || steep < 0.6) {
+                            if (Math.abs(i - waterLevel) < 3 || steep < 0.5) {
                                 blocks[x][i][z] = Sand.id;
                             } else {
                                 blocks[x][i][z] = Grass.id;
                             }
                         } else {
                             // steep < 0.65 && Math.abs(yValue - i) < (steep * 12) + 2
-                            if (Math.abs(i - waterLevel) < 3 && steep < 0.6) {
+                            if (Math.abs(i - waterLevel) < 3 && steep < 0.5) {
                                 blocks[x][i][z] = Sand.id;
                             } else if(!caveTerritory) {
                                 if(caves >= mapHeight/2 - (height - i) * 5) {

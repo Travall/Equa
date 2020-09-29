@@ -25,7 +25,7 @@ public class Player
     Vector3 acceleration = new Vector3();
     
     public boolean onGround;
-    public int jumpTimer = 0;
+    public boolean isFlying = false;
 
     public Player(Vector3 position) {
         ModelBuilder modelBuilder = new ModelBuilder();
@@ -57,7 +57,7 @@ public class Player
         acceleration.setZero();
         
         velocity.x = MathUtils.lerp(this.velocity.x,0,0.2f);
-        velocity.y = MathUtils.lerp(this.velocity.y,0,0.01f);
+        velocity.y = isFlying ? MathUtils.lerp(this.velocity.y,0,0.1f) : MathUtils.lerp(this.velocity.y,0,0.01f);
         velocity.z = MathUtils.lerp(this.velocity.z,0,0.2f);
     }
 
