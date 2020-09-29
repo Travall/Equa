@@ -40,10 +40,10 @@ public class Main extends ApplicationAdapter {
     Skybox skybox;
     ModelBatch shadowBatch;
     MapGenerator mapGenerator;
-    int mapWidth = 256; // changed from 128 to 256
-    int mapLength = 256;
+    int mapWidth = 512; // changed from 128 to 256
+    int mapLength = 512;
     int mapHeight = 128;
-    int waterLevel = mapHeight/5; // changed from 4 to 5
+    int waterLevel = mapHeight / 5; // changed from 4 to 5
     public int chunkShift = 4; // 1 << 4 = 16. I set it back from 32 to 16 due to vertices limitations.
     public int chunkSizeX = 1<<chunkShift;
     public int chunkSizeY = 1<<chunkShift;

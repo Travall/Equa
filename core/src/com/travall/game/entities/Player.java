@@ -46,9 +46,12 @@ public class Player
     	velocity.setZero();
     	acceleration.setZero();
     }
-    
+
     public void setPosition(Vector3 position) {
-    	instance.transform.setTranslation(position);
+        instance.transform.setTranslation(position);
+    }
+    public Vector3 getPosition() {
+        return instance.transform.getTranslation(new Vector3());
     }
 
     public void update(MapGenerator mapGenerator) {

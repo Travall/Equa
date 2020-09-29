@@ -46,10 +46,10 @@ public class MapGenerator implements Disposable {
 
     private void generate(long seed) {
     	final RandomXS128 random = new RandomXS128(seed);
-        OpenSimplexOctaves MountainNoise = new OpenSimplexOctaves(7,0.5, random.nextLong()); // changed from 0.45 to 0.43
+        OpenSimplexOctaves BaseNoise = new OpenSimplexOctaves(8,0.5, random.nextLong()); // changed from 0.45 to 0.43
         OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5,0.25, random.nextLong());
-        OpenSimplexOctaves FlatNoise = new OpenSimplexOctaves(6,0.2, random.nextLong()); // changed from 0.15 to 0.2
-        OpenSimplexOctaves DecisionNoise = new OpenSimplexOctaves(7,0.02, random.nextLong());
+        OpenSimplexOctaves DecisionNoise = new OpenSimplexOctaves(8,0.4, random.nextLong());
+        OpenSimplexOctaves Decision2Noise = new OpenSimplexOctaves(8,0.4, random.nextLong());
 
         blocks = new short[mapWidth][mapHeight][mapLength];
         lights = new byte[mapWidth][mapHeight][mapLength];
@@ -58,27 +58,20 @@ public class MapGenerator implements Disposable {
 
         for(int x = 0; x < mapWidth; x++) {
             for(int z = 0; z < mapLength; z++) {
-                double mountain = Utils.normalize(MountainNoise.getNoise(x,z),maxTerrainHeight) * 1.4;
-                double flat = Utils.normalize(FlatNoise.getNoise(x,z),maxTerrainHeight) *0.6f;
+                double base = Utils.normalize(BaseNoise.getNoise(x,z),maxTerrainHeight);
+                double mountain = Utils.normalize(BaseNoise.getNoise(x,z),maxTerrainHeight) * 2;
                 double decision = Utils.normalize(DecisionNoise.getNoise(x,z),1);
+                double decision2 = Utils.normalize(Decision2Noise.getNoise(x,z),1);
 
                 float steep = Interpolation.exp10.apply(Interpolation.exp5.apply((Interpolation.exp10.apply((float) decision))));
+                float steep2 = Interpolation.exp10.apply(Interpolation.exp5.apply((Interpolation.exp10.apply((float) decision2))));
 
-                float height = MathUtils.lerp((float)flat, (float)mountain, steep);
-
+                float height = MathUtils.lerp((float)base,(float)mountain,steep);
 
                 int yValue = (Math.round(height / 1) * 1);
 
-//                for(int j = waterLevel; j > 0; j--) {
-//                    if (!blockExists(x, j, z)) {
-//                        blocks[x][j][z] = BlocksList.Water;
-//                    } else {
-//                        break;
-//                    }
-//                }
-
-                if(steep > 0.5 && yValue > waterLevel) {
-                    if(random.nextInt(30) >= 29 && x > 0 && z > 0 && x < mapWidth-1 && z < mapLength-1) {
+                if(steep2 > 0.5 && yValue > waterLevel) {
+                    if(random.nextInt(100) >= 99 && x > 0 && z > 0 && x < mapWidth-1 && z < mapLength-1) {
                         blocks[x][yValue + 1][z] = Log.id;
                         blocks[x][yValue + 2][z] = Log.id;
                         blocks[x][yValue + 3][z] = Log.id;
@@ -102,8 +95,8 @@ public class MapGenerator implements Disposable {
 
 
                     }
-                } else {
-                    if(random.nextInt(60) >= 59 && x > 0 && z > 0 && x < mapWidth && z < mapLength && yValue > waterLevel) {
+                } else if(steep < 0.3 && steep2 < 0.5) {
+                    if(random.nextInt(100) >= 99 && x > 0 && z > 0 && x < mapWidth && z < mapLength && yValue > waterLevel) {
                         blocks[x][yValue + 1][z] = Cactus.id;
                         blocks[x][yValue + 2][z] = Cactus.id;
                         blocks[x][yValue + 3][z] = Cactus.id;
@@ -112,35 +105,32 @@ public class MapGenerator implements Disposable {
 
                 for(int i = yValue; i >= 0; i--) {
                     double caves = Utils.normalize(CaveNoise.getNoise(x, (int) (i), z), maxTerrainHeight);
-                    boolean caveTerritory = (caves >= maxTerrainHeight - (height - i) * 4 && caves > maxTerrainHeight /1.9 && i > 0);
+                    boolean caveTerritory = (caves >= maxTerrainHeight - (height - i) && caves > maxTerrainHeight /2 && i > 0);
                     if(i == 0) {
                         blocks[x][i][z] = Bedrock.id;
                     } else {
                         if (i == yValue && i >= waterLevel) {
-                            if (Math.abs(i - waterLevel) < 3 || steep < 0.5) {
+                            if(steep < 0.3 && steep2 < 0.5) {
                                 blocks[x][i][z] = Sand.id;
                             } else {
                                 blocks[x][i][z] = Grass.id;
                             }
-                        } else {
-                            // steep < 0.65 && Math.abs(yValue - i) < (steep * 12) + 2
-                            if (Math.abs(i - waterLevel) < 3 && steep < 0.5) {
+                        } else if(!caveTerritory) {
+                            if (steep < 0.3 && steep2 < 0.5) {
                                 blocks[x][i][z] = Sand.id;
-                            } else if(!caveTerritory) {
-                                if(caves >= mapHeight/2 - (height - i) * 5) {
-                                    blocks[x][i][z] = Stone.id;
-                                } else {
-                                    blocks[x][i][z] = Dirt.id;
-                                }
-
+                            } else if(caves >= maxTerrainHeight - (height - i) * 10) {
+                                blocks[x][i][z] = Stone.id;
+                            } else {
+                                blocks[x][i][z] = Dirt.id;
                             }
+
                         }
                     }
                 }
 
                 for(int j = waterLevel; j > 0; j--) {
                     double caves = Utils.normalize(CaveNoise.getNoise(x, (int) (j), z), maxTerrainHeight);
-                    boolean caveTerritory = (caves >= maxTerrainHeight - (height - j) * 4 && caves > maxTerrainHeight /1.9 && j > 0);
+                    boolean caveTerritory = (caves >= maxTerrainHeight - (height - j) && caves > maxTerrainHeight /2 && j > 0);
                     if (blocks[x][j][z] == Air.id && !caveTerritory) {
                         blocks[x][j][z] = Water.id;
                     } else {

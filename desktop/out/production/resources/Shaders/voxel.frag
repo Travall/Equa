@@ -1,18 +1,18 @@
 #version 100
 #ifdef GL_ES
 #define LOWP lowp
-#define MEDIUM mediump
+#define MEDIUMP mediump
 precision mediump float;
 #else
 #define LOWP
-#define MEDIUM
+#define MEDIUMP
 #endif
 
 uniform sampler2D u_texture;
 
 varying LOWP float v_shade;
 varying LOWP float v_light;
-varying MEDIUM vec2 v_texCoords;
+varying MEDIUMP vec2 v_texCoords;
 
 const LOWP float gamma = 2.2;
 

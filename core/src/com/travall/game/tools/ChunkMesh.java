@@ -24,6 +24,7 @@ public class ChunkMesh implements Disposable
 		count = (verts.size / byteSize) * 6;
 		BufferUtils.copy(verts.items, buffer, verts.size, 0);
 		vbo = new VBO(buffer, context, glDraw, true);
+		isEmpty = verts.isEmpty();
 	}
 	
 	public void render() {
