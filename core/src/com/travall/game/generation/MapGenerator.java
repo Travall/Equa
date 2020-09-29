@@ -36,8 +36,12 @@ public class MapGenerator implements Disposable {
         this.mapWidth = mapWidth;
         this.mapHeight = mapHeight;
         this.mapLength = mapLength;
+        
+        blocks = new short[mapWidth][mapHeight][mapLength];
+        lights = new byte[mapWidth][mapHeight][mapLength];
+        
         this.waterLevel = waterLevel;
-        this.blockBuilder = new BlockBuilder(this);
+        this.blockBuilder = new BlockBuilder(this, lights);
         this.floodLight = new FloodLight(this, main);
         this.ultimate = new UltimateTexture(new Texture("Tiles/ultimate3.png"));
         BlocksList.ints(ultimate);
@@ -50,9 +54,6 @@ public class MapGenerator implements Disposable {
         OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5,0.25, random.nextLong());
         OpenSimplexOctaves DecisionNoise = new OpenSimplexOctaves(8,0.4, random.nextLong());
         OpenSimplexOctaves Decision2Noise = new OpenSimplexOctaves(8,0.4, random.nextLong());
-
-        blocks = new short[mapWidth][mapHeight][mapLength];
-        lights = new byte[mapWidth][mapHeight][mapLength];
 
         int maxTerrainHeight = mapHeight / 2;
 
