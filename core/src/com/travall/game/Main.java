@@ -3,20 +3,21 @@ package com.travall.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g3d.*;
-import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
+import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
-import com.badlogic.gdx.graphics.g3d.utils.*;
-import com.badlogic.gdx.math.*;
-import com.badlogic.gdx.math.collision.BoundingBox;
-import com.badlogic.gdx.math.collision.Ray;
+import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
+import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
+import com.badlogic.gdx.math.GridPoint3;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector3;
 import com.kotcrab.vis.ui.VisUI;
 import com.travall.game.blocks.*;
 import com.travall.game.entities.Player;
@@ -28,7 +29,6 @@ import com.travall.game.tools.Raycast;
 import com.travall.game.tools.Raycast.RayInfo;
 import com.travall.game.tools.SSAO;
 import com.travall.game.tools.Skybox;
-import com.travall.game.tools.UltimateTexture;
 import com.travall.game.tools.VoxelTerrain;
 
 public class Main extends ApplicationAdapter {
@@ -55,10 +55,10 @@ public class Main extends ApplicationAdapter {
     short blockType = Log.id;
 
     Player player;
+    Vector3 flyPosition = new Vector3();
+    boolean isFlying;
 
     Vector3 temp = new Vector3();
-
-    float y = 0;
 
     SSAO ssao;
     SpriteBatch spriteBatch;
@@ -127,9 +127,10 @@ public class Main extends ApplicationAdapter {
     @Override
     public void render () {
         update();
+        camera.update(); // Update the camera projection
 
         ssao.begin();
-        Gdx.gl.glClearColor(0.6f, 0.6f, 0.6f, 1);
+        Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         modelBatch.begin(camera);
         modelBatch.render(skyboxInstance);
@@ -172,10 +173,10 @@ public class Main extends ApplicationAdapter {
 
     final Vector3 add = new Vector3(), direction = new Vector3(), noam = new Vector3();
     private void update() {
+    	
         camera.fieldOfView = MathUtils.lerp(camera.fieldOfView,cameraController.targetFOV, 0.2f);
-        camera.update();
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F11)){
+        if (Gdx.input.isKeyJustPressed(Keys.F11)){
             Graphics.DisplayMode currentMode = Gdx.graphics.getDisplayMode();
 
             if(Gdx.graphics.isFullscreen()) {
@@ -185,17 +186,17 @@ public class Main extends ApplicationAdapter {
             }
         }
 
-        if(Gdx.input.isKeyPressed(Input.Keys.Q)) blockType = Log.id;
-        if(Gdx.input.isKeyPressed(Input.Keys.E)) blockType = Gold.id;
+        if(Gdx.input.isKeyPressed(Keys.Q)) blockType = Log.id;
+        if(Gdx.input.isKeyPressed(Keys.E)) blockType = Gold.id;
 
-        if(Gdx.input.isKeyJustPressed(Input.Keys.P)) VoxelTerrain.toggleAO();
+        if(Gdx.input.isKeyJustPressed(Keys.P)) VoxelTerrain.toggleAO();
 
-        y = -0.15f;
-        float speed = 0.025f;
+        float y = -0.015f;
+        float speed = 0.0175f;
 
         player.jumpTimer--;
-        if(player.jumpTimer < 0 && player.onGround && Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-        	y = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? 6f : 2f;
+        if(player.jumpTimer < 0 && player.onGround && Gdx.input.isKeyPressed(Keys.SPACE)) {
+        	y = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) ? 0.6f : 0.2f;
         	player.jumpTimer = 15;
         }
 
@@ -205,26 +206,43 @@ public class Main extends ApplicationAdapter {
 //        player.instance.nodes.first().rotation.set(Vector3.Y,angle);
 //        player.instance.calculateTransforms();
 
-        direction.set(MathUtils.sin(angle)*60f,0,MathUtils.cos(angle)*60f);
+        direction.set(MathUtils.sin(angle),0,MathUtils.cos(angle));
         add.setZero();
 
         temp.set(direction);
-
-        if(Gdx.input.isKeyPressed(Input.Keys.W)) add.add(temp.scl(speed * (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) ? 1.5f : 1)));
-        if(Gdx.input.isKeyPressed(Input.Keys.S)) add.add(temp.scl(-speed));
+        
+        if(Gdx.input.isKeyPressed(Keys.W)) add.add(temp.scl(speed * (!isFlying && Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) ? 1.5f : 1)));
+        if(Gdx.input.isKeyPressed(Keys.S)) add.add(temp.scl(-speed));
 
         temp.set(direction.rotate(Vector3.Y,-90));
 
-        if(Gdx.input.isKeyPressed(Input.Keys.A)) add.add(temp.scl(-speed));
-        if(Gdx.input.isKeyPressed(Input.Keys.D)) add.add(temp.scl(speed));
+        if(Gdx.input.isKeyPressed(Keys.A)) add.add(temp.scl(-speed));
+        if(Gdx.input.isKeyPressed(Keys.D)) add.add(temp.scl(speed));
 
-        if(!add.equals(Vector3.Zero) && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && Gdx.input.isKeyPressed(Input.Keys.W)) cameraController.targetFOV = 90; // changed from 110 to 90
+        if(!isFlying && !add.equals(Vector3.Zero) && Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) && Gdx.input.isKeyPressed(Keys.W)) cameraController.targetFOV = 90; // changed from 110 to 90
         else cameraController.targetFOV = 80; // changed from 90 to 80
+        
+        if (Gdx.input.isKeyJustPressed(Keys.F)) {
+        	isFlying = !isFlying;
+        	
+        	if (isFlying) {
+        		flyPosition.set(player.instance.transform.getTranslation(temp));
+        	} else {
+        		player.reset();
+        		player.setPosition(flyPosition);
+        	}
+        }
 
-        player.applyForce(add);
-        player.applyForce(new Vector3(0,y,0));
-        player.update(mapGenerator);
-        camera.position.set(player.instance.transform.getTranslation(temp).add(0,0.75f,0));
+        if (isFlying) {
+        	add.y = Gdx.input.isKeyPressed(Keys.SPACE) ? speed : Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) ? -speed : 0f;
+        	player.setPosition(flyPosition.add(add.scl(16.0f)));
+            camera.position.set(player.instance.transform.getTranslation(temp).add(0,0.75f,0));
+        } else {
+        	add.y = y;
+        	player.applyForce(add);
+            player.update(mapGenerator);
+            camera.position.set(player.instance.transform.getTranslation(temp).add(0,0.75f,0));
+        }
 
         cameraRaycast();
     }
@@ -275,7 +293,7 @@ public class Main extends ApplicationAdapter {
     }
     
     public void setMeshDirtyAt(int indexX, int indexZ) {
-    	if (indexX < 0 || indexX >= chunkSizeX || indexZ < 0 || indexZ >= chunkSizeZ)
+    	if (indexX < 0 || indexX >= xChunks || indexZ < 0 || indexZ >= zChunks)
     		return;
     	
     	chunkMeshes[indexX][indexZ].isDirty = true;
