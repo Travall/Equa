@@ -37,7 +37,7 @@ public class Main extends ApplicationAdapter {
     ModelBatch modelBatch;
     AssetManager assetManager;
     ChunkMesh[][] chunkMeshes;
-    ModelInstance skyboxInstance;
+    Skybox skybox;
     ModelBatch shadowBatch;
     MapGenerator mapGenerator;
     int mapWidth = 256; // changed from 128 to 256
@@ -79,8 +79,7 @@ public class Main extends ApplicationAdapter {
 
         Vector3 starting = new Vector3(mapWidth/2,mapHeight,mapLength/2);
 
-        skyboxInstance = new Skybox().Generate();
-        skyboxInstance.transform.scale(500,500,500);
+        skybox = new Skybox();;
 
         camera = new PerspectiveCamera(90,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
         camera.near = 0.15f; // changed from 0.1f to 0.15f
@@ -132,10 +131,12 @@ public class Main extends ApplicationAdapter {
         ssao.begin();
         Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-        modelBatch.begin(camera);
-        modelBatch.render(skyboxInstance);
-//        modelBatch.render(player.instance,environment);
-        modelBatch.end();
+        
+        skybox.render(camera);
+        
+//      modelBatch.begin(camera);
+//      modelBatch.render(player.instance,environment);
+//      modelBatch.end();
         
         mapGenerator.getTexture().bind();
         VoxelTerrain.begin(camera);
@@ -262,6 +263,7 @@ public class Main extends ApplicationAdapter {
         spriteBatch.dispose();
         crosshair.dispose();
         mapGenerator.dispose();
+        skybox.dispose();
 
         modelBatch.dispose();
         assetManager.dispose();
