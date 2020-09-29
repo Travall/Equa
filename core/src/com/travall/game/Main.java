@@ -192,7 +192,7 @@ public class Main extends ApplicationAdapter {
         if(Gdx.input.isKeyJustPressed(Keys.P)) VoxelTerrain.toggleAO();
 
         float y = -0.015f;
-        float speed = 0.02f;
+        float speed = 0.0175f;
 
         player.jumpTimer--;
         if(player.jumpTimer < 0 && player.onGround && Gdx.input.isKeyPressed(Keys.SPACE)) {
@@ -235,7 +235,7 @@ public class Main extends ApplicationAdapter {
 
         if (isFlying) {
         	add.y = Gdx.input.isKeyPressed(Keys.SPACE) ? speed : Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) ? -speed : 0f;
-        	player.setPosition(flyPosition.add(add.scl(15.0f)));
+        	player.setPosition(flyPosition.add(add.scl(16.0f)));
             camera.position.set(player.instance.transform.getTranslation(temp).add(0,0.75f,0));
         } else {
         	add.y = y;
