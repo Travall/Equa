@@ -36,7 +36,7 @@ public class Main extends ApplicationAdapter {
     FirstPersonCameraController cameraController;
     ModelBatch modelBatch;
     AssetManager assetManager;
-    ChunkMesh[][] chunkMeshes;
+    ChunkMesh[][][] chunkMeshes;
     Skybox skybox;
     ModelBatch shadowBatch;
     MapGenerator mapGenerator;
@@ -46,8 +46,10 @@ public class Main extends ApplicationAdapter {
     int waterLevel = mapHeight/5; // changed from 4 to 5
     public int chunkShift = 4; // 1 << 4 = 16. I set it back from 32 to 16 due to vertices limitations.
     public int chunkSizeX = 1<<chunkShift;
+    public int chunkSizeY = 1<<chunkShift;
     public int chunkSizeZ = 1<<chunkShift;
     int xChunks = mapWidth/chunkSizeX;
+    int yChunks = mapHeight/chunkSizeY;
     int zChunks = mapLength/chunkSizeZ;
 
     final GridPoint3 pickerHit = new GridPoint3();
@@ -89,11 +91,13 @@ public class Main extends ApplicationAdapter {
 
         shadowBatch = new ModelBatch(new DepthShaderProvider());
 
-        chunkMeshes = new ChunkMesh[xChunks][zChunks];
+        chunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
         mapGenerator = new MapGenerator(this,mapWidth,mapHeight,mapLength,waterLevel);
         for(int x = 0; x < xChunks; x++) {
-            for(int z = 0; z < zChunks; z++) {
-            	chunkMeshes[x][z] = mapGenerator.generateShell(x * chunkSizeX,z * chunkSizeZ,chunkSizeX,chunkSizeZ, null);
+            for(int y = 0; y < yChunks; y++) {
+                for(int z = 0; z < zChunks; z++) {
+                    chunkMeshes[x][y][z] = mapGenerator.generateShell(x * chunkSizeX,y * chunkSizeY, z * chunkSizeZ, chunkSizeX, chunkSizeY, chunkSizeZ, null);
+                }
             }
         }
 
@@ -142,13 +146,17 @@ public class Main extends ApplicationAdapter {
         Gdx.gl.glEnable(GL20.GL_CULL_FACE);
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
         for(int x = 0; x < chunkMeshes.length; x++) {
-            for(int z = 0; z < chunkMeshes[0].length; z++) {
-            	ChunkMesh mesh = chunkMeshes[x][z];
-            	if (mesh == null) continue;
-            	if (mesh.isDirty) {
-            		mapGenerator.generateShell(x*chunkSizeX, z*chunkSizeZ, chunkSizeX, chunkSizeZ, mesh);
-            	}
-            	mesh.render();
+            for(int y = 0; y < chunkMeshes[0].length; y++) {
+                for(int z = 0; z < chunkMeshes[0][0].length; z++) {
+                    ChunkMesh mesh = chunkMeshes[x][y][z];
+                    if (mesh == null) continue;
+                    if (mesh.isDirty) {
+                        mapGenerator.generateShell(x * chunkSizeX, y * chunkSizeY, z * chunkSizeZ, chunkSizeX, chunkSizeY, chunkSizeZ, mesh);
+                    }
+
+                    if(camera.frustum.boundsInFrustum(x * chunkSizeX, y * chunkSizeY, z * chunkSizeZ, chunkSizeX,chunkSizeY,chunkSizeZ))
+                        mesh.render();
+                }
             }
         }
         Gdx.gl30.glBindVertexArray(0);
@@ -172,6 +180,8 @@ public class Main extends ApplicationAdapter {
 
     final Vector3 add = new Vector3(), direction = new Vector3(), noam = new Vector3();
     private void update() {
+
+        System.out.println(Gdx.graphics.getFramesPerSecond());
     	
         camera.fieldOfView = MathUtils.lerp(camera.fieldOfView,cameraController.targetFOV, 0.2f);
 
@@ -205,7 +215,7 @@ public class Main extends ApplicationAdapter {
             }
         }
 
-        if(Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) && player.isFlying) {
+        if(Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) && player.isFlying) {
             y = -0.03f;
         }
 
@@ -220,15 +230,15 @@ public class Main extends ApplicationAdapter {
 
         temp.set(direction);
         
-        if(Gdx.input.isKeyPressed(Keys.W)) add.add(temp.scl(speed * (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) ? (player.isFlying ? 3f : 1.5f) : 1)));
+        if(Gdx.input.isKeyPressed(Keys.W)) add.add(temp.scl(speed * (Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) ? (player.isFlying ? 3f : 1.5f) : 1)));
         if(Gdx.input.isKeyPressed(Keys.S)) add.add(temp.scl(-speed));
 
         temp.set(direction.rotate(Vector3.Y,-90));
 
-        if(Gdx.input.isKeyPressed(Keys.A)) add.add(temp.scl(-speed * (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) ? (player.isFlying ? 1.5f : 1f) : 1)));
-        if(Gdx.input.isKeyPressed(Keys.D)) add.add(temp.scl(speed * (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) ? (player.isFlying ? 1.5f : 1f) : 1)));
+        if(Gdx.input.isKeyPressed(Keys.A)) add.add(temp.scl(-speed * (Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) ? (player.isFlying ? 1.5f : 1f) : 1)));
+        if(Gdx.input.isKeyPressed(Keys.D)) add.add(temp.scl(speed * (Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) ? (player.isFlying ? 1.5f : 1f) : 1)));
 
-        if(!add.equals(Vector3.Zero) && Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) && Gdx.input.isKeyPressed(Keys.W)) cameraController.targetFOV = 90; // changed from 110 to 90
+        if(!add.equals(Vector3.Zero) && Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) && Gdx.input.isKeyPressed(Keys.W)) cameraController.targetFOV = 90; // changed from 110 to 90
         else cameraController.targetFOV = 80; // changed from 90 to 80
 
         add.y = y;
@@ -263,33 +273,42 @@ public class Main extends ApplicationAdapter {
         Picker.dispose();
     }
 
-    public void regenerateShell(int x, int z) {
-    	final int indexX = x >> chunkShift;
+    public void regenerateShell(int x, int y, int z) {
+        final int indexX = x >> chunkShift;
+        final int indexY = y >> chunkShift;
         final int indexZ = z >> chunkShift;
-        setMeshDirtyAt(indexX, indexZ);
+        setMeshDirtyAt(indexX, indexY, indexZ);
 
-        if(x % chunkSizeX == 0 && x != 0) {
-        	setMeshDirtyAt(indexX-1, indexZ);
+        if(x % chunkSizeX == 0 && x > 0) {
+        	setMeshDirtyAt(indexX-1, indexY, indexZ);
         }
 
-        if((x+1) % (chunkSizeX) == 0 && x != mapWidth-1) {
-        	setMeshDirtyAt(indexX+1, indexZ);
+        if((x+1) % (chunkSizeX) == 0 && x < mapWidth-1) {
+        	setMeshDirtyAt(indexX+1, indexY, indexZ);
         }
 
-        if(z % chunkSizeZ == 0 && z != 0) {
-        	setMeshDirtyAt(indexX, indexZ-1);
+        if(y % chunkSizeY == 0 && y > 0) {
+            setMeshDirtyAt(indexX, indexY-1, indexZ);
         }
 
-        if((z+1) % (chunkSizeZ) == 0 && z != mapLength-1) {
-        	setMeshDirtyAt(indexX, indexZ+1);
+        if((y+1) % (chunkSizeY) == 0 && y < mapHeight-1) {
+            setMeshDirtyAt(indexX, indexY+1, indexZ);
+        }
+
+        if(z % chunkSizeZ == 0 && z > 0) {
+        	setMeshDirtyAt(indexX, indexY, indexZ-1);
+        }
+
+        if((z+1) % (chunkSizeZ) == 0 && z < mapLength-1) {
+        	setMeshDirtyAt(indexX, indexY, indexZ+1);
         }
     }
     
-    public void setMeshDirtyAt(int indexX, int indexZ) {
-    	if (indexX < 0 || indexX >= xChunks || indexZ < 0 || indexZ >= zChunks)
+    public void setMeshDirtyAt(int indexX, int indexY, int indexZ) {
+    	if (indexX < 0 || indexX >= xChunks || indexY < 0 || indexY >= yChunks || indexZ < 0 || indexZ >= zChunks)
     		return;
-    	
-    	chunkMeshes[indexX][indexZ].isDirty = true;
+
+        if(chunkMeshes[indexX][indexY][indexZ] != null) chunkMeshes[indexX][indexY][indexZ].isDirty = true;
     }
     
     // Fast, accurate, and simple ray-cast.
@@ -307,11 +326,11 @@ public class Main extends ApplicationAdapter {
     	if (Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
     		if(mapGenerator.blockExists(in.x,in.y,in.z) && mapGenerator.blocks[in.x][in.y][in.z] != Bedrock.id) {
                 mapGenerator.breakBlock(in.x, in.y, in.z);
-                regenerateShell(in.x, in.z);
+                regenerateShell(in.x, in.y, in.z);
             }
     	} else if (!mapGenerator.isOutBound(out.x, out.y, out.z) && Gdx.input.isButtonJustPressed(Buttons.RIGHT)) {
     		mapGenerator.placeBlock(out.x, out.y, out.z, blockType);
-    		regenerateShell(out.x, out.z);
+    		regenerateShell(out.x, out.y, out.z);
     	}
     }
 }

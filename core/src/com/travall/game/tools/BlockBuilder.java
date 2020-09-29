@@ -54,10 +54,7 @@ public class BlockBuilder {
 
 	/** Will return null if vertices are empty.  */
 	public ChunkMesh end(int glDraw) {
-		if (vertices.notEmpty()) {
-			return new ChunkMesh(VoxelTerrain.BUFFER, vertices, VoxelTerrain.context, glDraw);
-		}
-		return null;
+		return new ChunkMesh(VoxelTerrain.BUFFER, vertices, VoxelTerrain.context, glDraw);
 	}
 	
 	public ChunkMesh end(ChunkMesh mesh) {

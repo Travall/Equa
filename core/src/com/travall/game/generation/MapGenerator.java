@@ -191,11 +191,11 @@ public class MapGenerator implements Disposable {
     }
 
 
-    public ChunkMesh generateShell(int indexX, int indexZ,int chunkSizeX, int chunkSizeZ, ChunkMesh chunkMesh) {
+    public ChunkMesh generateShell(int indexX, int indexY, int indexZ,int chunkSizeX, int chunkSizeY, int chunkSizeZ, ChunkMesh chunkMesh) {
     	blockBuilder.begin();
         Block block;
         for(int x = indexX; x < indexX + chunkSizeX; x++) {
-            for(int y = 0; y < blocks[0].length; y++) {
+            for(int y = indexY; y < indexY + chunkSizeY; y++) {
                 for(int z = indexZ; z < indexZ + chunkSizeZ; z++) {
                     if(blockExists(x,y,z)) {
                         pos.set(x,y,z);

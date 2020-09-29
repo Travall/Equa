@@ -54,7 +54,7 @@ public class FloodLight {
 			int z = node.z;
 			
 			// Set the chunk dirty.
-			main.regenerateShell(x, z);
+			main.regenerateShell(x, y, z);
 			
 			// Get the light value from lightMap at current position
 			int lightLevel = map.getSrcLight(x, y, z);
@@ -111,7 +111,7 @@ public class FloodLight {
 			int lightLevel = node.val;
 			
 			// Set the chunk dirty.
-			main.regenerateShell(x, z);
+			main.regenerateShell(x, y, z);
 			
 			if (y+1 < height) {
 				neighborLevel = map.getSrcLight(x, y+1, z);
