@@ -1,4 +1,4 @@
-package com.travall.game.generation;
+package com.travall.game.world;
 
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -19,7 +19,7 @@ import com.travall.game.tools.UltimateTexture;
 import com.travall.game.tools.Utils;
 
 
-public class MapGenerator implements Disposable {
+public class World implements Disposable {
     public final int mapWidth;
     public final int mapLength;
     public final int mapHeight;
@@ -28,11 +28,10 @@ public class MapGenerator implements Disposable {
     private byte[][][] lights;
     BlockBuilder blockBuilder;
     FloodLight floodLight;
-    Vector3 temp = new Vector3();
     public UltimateTexture ultimate;
 	GridPoint3 pos = new GridPoint3();
 
-    public MapGenerator(Main main, int mapWidth, int mapHeight, int mapLength, int waterLevel) {
+    public World(Main main, int mapWidth, int mapHeight, int mapLength, int waterLevel) {
         this.mapWidth = mapWidth;
         this.mapHeight = mapHeight;
         this.mapLength = mapLength;
@@ -54,7 +53,7 @@ public class MapGenerator implements Disposable {
         blocks = new short[mapWidth][mapHeight][mapLength];
         lights = new byte[mapWidth][mapHeight][mapLength];
 
-        int maxTerrainHeight = mapHeight / 2;
+        int maxTerrainHeight = Math.round(mapHeight / 1.75f);
 
         for(int x = 0; x < mapWidth; x++) {
             for(int z = 0; z < mapLength; z++) {

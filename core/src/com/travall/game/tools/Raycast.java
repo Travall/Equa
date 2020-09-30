@@ -5,7 +5,7 @@ import static com.badlogic.gdx.math.MathUtils.floor;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector3;
-import com.travall.game.generation.MapGenerator;
+import com.travall.game.world.World;
 
 public class Raycast {
 	private static final float LENGHT = 32.0f;
@@ -16,7 +16,7 @@ public class Raycast {
 	private static final GridPoint3 offset = new GridPoint3();
 	
 	
-	public static RayInfo Fastcast(Camera cam, MapGenerator map) {
+	public static RayInfo Fastcast(Camera cam, World map) {
 		nor.set(cam.direction).scl(STEPS);
 		
 		final Vector3 rayPos = cam.position;

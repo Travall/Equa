@@ -4,7 +4,7 @@ import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Queue;
 import com.travall.game.Main;
 import com.travall.game.blocks.BlocksList;
-import com.travall.game.generation.MapGenerator;
+import com.travall.game.world.World;
 
 public class FloodLight {
 	/** LightNode pool. */
@@ -23,10 +23,10 @@ public class FloodLight {
 	private static final Queue<LightNode>    srclightQue    = new Queue<LightNode>(64);
 	private static final Queue<LightDelNode> srclightDelQue = new Queue<LightDelNode>(64);
 	
-	private final MapGenerator map;
+	private final World map;
 	private final Main main;
 	
-	public FloodLight(MapGenerator map, Main main) {
+	public FloodLight(World map, Main main) {
 		this.map = map;
 		this.main = main;
 	}

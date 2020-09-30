@@ -11,7 +11,6 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
@@ -21,7 +20,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.kotcrab.vis.ui.VisUI;
 import com.travall.game.blocks.*;
 import com.travall.game.entities.Player;
-import com.travall.game.generation.MapGenerator;
+import com.travall.game.world.World;
 import com.travall.game.tools.ChunkMesh;
 import com.travall.game.tools.FirstPersonCameraController;
 import com.travall.game.tools.Picker;
@@ -39,7 +38,7 @@ public class Main extends ApplicationAdapter {
     ChunkMesh[][][] chunkMeshes;
     Skybox skybox;
     ModelBatch shadowBatch;
-    MapGenerator mapGenerator;
+    World world;
     int mapWidth = 512; // changed from 128 to 256
     int mapLength = 512;
     int mapHeight = 128;
@@ -92,11 +91,11 @@ public class Main extends ApplicationAdapter {
         shadowBatch = new ModelBatch(new DepthShaderProvider());
 
         chunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
-        mapGenerator = new MapGenerator(this,mapWidth,mapHeight,mapLength,waterLevel);
+        world = new World(this,mapWidth,mapHeight,mapLength,waterLevel);
         for(int x = 0; x < xChunks; x++) {
             for(int y = 0; y < yChunks; y++) {
                 for(int z = 0; z < zChunks; z++) {
-                    chunkMeshes[x][y][z] = mapGenerator.generateShell(x * chunkSizeX,y * chunkSizeY, z * chunkSizeZ, chunkSizeX, chunkSizeY, chunkSizeZ, null);
+                    chunkMeshes[x][y][z] = world.generateShell(x * chunkSizeX,y * chunkSizeY, z * chunkSizeZ, chunkSizeX, chunkSizeY, chunkSizeZ, null);
                 }
             }
         }
@@ -140,7 +139,7 @@ public class Main extends ApplicationAdapter {
 //      modelBatch.render(player.instance,environment);
 //      modelBatch.end();
         
-        mapGenerator.getTexture().bind();
+        world.getTexture().bind();
         VoxelTerrain.begin(camera);
         Gdx.gl.glCullFace(GL20.GL_BACK);
         Gdx.gl.glEnable(GL20.GL_CULL_FACE);
@@ -151,7 +150,7 @@ public class Main extends ApplicationAdapter {
                     ChunkMesh mesh = chunkMeshes[x][y][z];
                     if (mesh == null) continue;
                     if (mesh.isDirty) {
-                        mapGenerator.generateShell(x * chunkSizeX, y * chunkSizeY, z * chunkSizeZ, chunkSizeX, chunkSizeY, chunkSizeZ, mesh);
+                        world.generateShell(x * chunkSizeX, y * chunkSizeY, z * chunkSizeZ, chunkSizeX, chunkSizeY, chunkSizeZ, mesh);
                     }
 
                     if(camera.frustum.boundsInFrustum(x * chunkSizeX, y * chunkSizeY, z * chunkSizeZ, chunkSizeX,chunkSizeY,chunkSizeZ))
@@ -178,8 +177,9 @@ public class Main extends ApplicationAdapter {
         Gdx.gl.glUseProgram(0); // Fix some performance issues.
     }
 
-    final Vector3 add = new Vector3(), direction = new Vector3(), noam = new Vector3();
     private void update() {
+
+        player.update(world,camera,cameraController);
 
         System.out.println(Gdx.graphics.getFramesPerSecond());
     	
@@ -204,46 +204,6 @@ public class Main extends ApplicationAdapter {
 
         if(Gdx.input.isKeyJustPressed(Keys.P)) VoxelTerrain.toggleAO();
 
-        float y = player.isFlying ? 0 : -0.015f;
-        float speed = 0.0175f;
-
-        if(Gdx.input.isKeyPressed(Keys.SPACE)) {
-            if(player.onGround) {
-                y = 0.2f;
-            } else if(player.isFlying) {
-                y = 0.03f;
-            }
-        }
-
-        if(Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) && player.isFlying) {
-            y = -0.03f;
-        }
-
-        noam.set(camera.direction).nor();
-        float angle = MathUtils.atan2(noam.x, noam.z);
-
-//        player.instance.nodes.first().rotation.set(Vector3.Y,angle);
-//        player.instance.calculateTransforms();
-
-        direction.set(MathUtils.sin(angle),0,MathUtils.cos(angle));
-        add.setZero();
-
-        temp.set(direction);
-        
-        if(Gdx.input.isKeyPressed(Keys.W)) add.add(temp.scl(speed * (Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) ? (player.isFlying ? 3f : 1.5f) : 1)));
-        if(Gdx.input.isKeyPressed(Keys.S)) add.add(temp.scl(-speed));
-
-        temp.set(direction.rotate(Vector3.Y,-90));
-
-        if(Gdx.input.isKeyPressed(Keys.A)) add.add(temp.scl(-speed * (Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) ? (player.isFlying ? 1.5f : 1f) : 1)));
-        if(Gdx.input.isKeyPressed(Keys.D)) add.add(temp.scl(speed * (Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) ? (player.isFlying ? 1.5f : 1f) : 1)));
-
-        if(!add.equals(Vector3.Zero) && Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) && Gdx.input.isKeyPressed(Keys.W)) cameraController.targetFOV = 90; // changed from 110 to 90
-        else cameraController.targetFOV = 80; // changed from 90 to 80
-
-        add.y = y;
-        player.applyForce(add);
-        player.update(mapGenerator);
         camera.position.set(player.instance.transform.getTranslation(temp).add(0,0.75f,0));
 
         cameraRaycast();
@@ -263,7 +223,7 @@ public class Main extends ApplicationAdapter {
         ssao.dispose();
         spriteBatch.dispose();
         crosshair.dispose();
-        mapGenerator.dispose();
+        world.dispose();
         skybox.dispose();
 
         modelBatch.dispose();
@@ -313,7 +273,7 @@ public class Main extends ApplicationAdapter {
     
     // Fast, accurate, and simple ray-cast.
     private void cameraRaycast() {
-    	RayInfo info = Raycast.Fastcast(camera, mapGenerator);    	
+    	RayInfo info = Raycast.Fastcast(camera, world);
     	if (info == null) {
     		pickerHit.y = -1; // -1 indicates there's no block been casted.
     		return;
@@ -324,12 +284,12 @@ public class Main extends ApplicationAdapter {
     	
     	pickerHit.set(in);
     	if (Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
-    		if(mapGenerator.blockExists(in.x,in.y,in.z) && mapGenerator.blocks[in.x][in.y][in.z] != Bedrock.id) {
-                mapGenerator.breakBlock(in.x, in.y, in.z);
+    		if(world.blockExists(in.x,in.y,in.z) && world.blocks[in.x][in.y][in.z] != Bedrock.id) {
+                world.breakBlock(in.x, in.y, in.z);
                 regenerateShell(in.x, in.y, in.z);
             }
-    	} else if (!mapGenerator.isOutBound(out.x, out.y, out.z) && Gdx.input.isButtonJustPressed(Buttons.RIGHT)) {
-    		mapGenerator.placeBlock(out.x, out.y, out.z, blockType);
+    	} else if (!world.isOutBound(out.x, out.y, out.z) && Gdx.input.isButtonJustPressed(Buttons.RIGHT)) {
+    		world.placeBlock(out.x, out.y, out.z, blockType);
     		regenerateShell(out.x, out.y, out.z);
     	}
     }

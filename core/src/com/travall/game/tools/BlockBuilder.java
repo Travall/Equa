@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.utils.FloatArray;
 import com.travall.game.blocks.Block;
-import com.travall.game.generation.MapGenerator;
+import com.travall.game.world.World;
 import com.travall.game.glutils.QuadIndexBuffer;
 
 public class BlockBuilder {
@@ -24,9 +24,9 @@ public class BlockBuilder {
 		}
 	};
 	
-	private final MapGenerator map;
+	private final World map;
 	
-	public BlockBuilder(MapGenerator map) {
+	public BlockBuilder(World map) {
 		this.map = map;
 	}
 	

@@ -1,5 +1,8 @@
 package com.travall.game.entities;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
@@ -12,7 +15,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
-import com.travall.game.generation.MapGenerator;
+import com.travall.game.world.World;
+import com.travall.game.tools.FirstPersonCameraController;
 
 public class Player
 {
@@ -54,9 +58,10 @@ public class Player
         return instance.transform.getTranslation(new Vector3());
     }
 
-    public void update(MapGenerator mapGenerator) {
+    public void update(World world, Camera camera, FirstPersonCameraController cameraController) {
+        process(camera,cameraController);
         velocity.add(acceleration);
-        move(mapGenerator, this.velocity.x, this.velocity.y, this.velocity.z);
+        move(world, this.velocity.x, this.velocity.y, this.velocity.z);
         acceleration.setZero();
         
         velocity.x = MathUtils.lerp(this.velocity.x,0,0.2f);
@@ -64,7 +69,50 @@ public class Player
         velocity.z = MathUtils.lerp(this.velocity.z,0,0.2f);
     }
 
-    public void move(MapGenerator mapGenerator, float x, float y, float z) {
+    final Vector3 add = new Vector3(), direction = new Vector3(), noam = new Vector3(), temp = new Vector3();
+    public void process(Camera camera, FirstPersonCameraController cameraController) {
+        float y = this.isFlying ? 0 : -0.015f;
+        float speed = 0.0175f;
+
+        if(Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+            if(this.onGround) {
+                y = 0.2f;
+            } else if(this.isFlying) {
+                y = 0.03f;
+            }
+        }
+
+        if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && this.isFlying) {
+            y = -0.03f;
+        }
+
+        noam.set(camera.direction).nor();
+        float angle = MathUtils.atan2(noam.x, noam.z);
+
+//        player.instance.nodes.first().rotation.set(Vector3.Y,angle);
+//        player.instance.calculateTransforms();
+
+        direction.set(MathUtils.sin(angle),0,MathUtils.cos(angle));
+        add.setZero();
+
+        temp.set(direction);
+
+        if(Gdx.input.isKeyPressed(Input.Keys.W)) add.add(temp.scl(speed * (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? (this.isFlying ? 3f : 1.5f) : 1)));
+        if(Gdx.input.isKeyPressed(Input.Keys.S)) add.add(temp.scl(-speed));
+
+        temp.set(direction.rotate(Vector3.Y,-90));
+
+        if(Gdx.input.isKeyPressed(Input.Keys.A)) add.add(temp.scl(-speed * (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? (this.isFlying ? 1.5f : 1f) : 1)));
+        if(Gdx.input.isKeyPressed(Input.Keys.D)) add.add(temp.scl(speed * (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? (this.isFlying ? 1.5f : 1f) : 1)));
+
+        if(!add.equals(Vector3.Zero) && Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) && Gdx.input.isKeyPressed(Input.Keys.W)) cameraController.targetFOV = 90; // changed from 110 to 90
+        else cameraController.targetFOV = 80; // changed from 90 to 80
+
+        add.y = y;
+        this.applyForce(add);
+    }
+
+    public void move(World world, float x, float y, float z) {
 
         boolean moveX = true;
         boolean moveY = true;
@@ -90,7 +138,7 @@ public class Player
 
                 bintersector = instance.calculateBoundingBox(boundingBoxTemp).mul(transform);
 
-                if(around(mapGenerator,px,py,pz,bintersector)) {
+                if(around(world,px,py,pz,bintersector)) {
                 	transform.translate(-x/temp,0,0);
                     velocity.x = 0;
                 	moveX = false;
@@ -107,7 +155,7 @@ public class Player
 
                 bintersector = instance.calculateBoundingBox(boundingBoxTemp).mul(transform);
 
-                if (around(mapGenerator, px, py, pz, bintersector)) {
+                if (around(world, px, py, pz, bintersector)) {
                 	onGround = true;
                     transform.translate(0, -y/temp, 0);
                     velocity.y = 0;
@@ -125,7 +173,7 @@ public class Player
 
                  bintersector = instance.calculateBoundingBox(boundingBoxTemp).mul(transform);
 
-                 if (around(mapGenerator, px, py, pz, bintersector)) {
+                 if (around(world, px, py, pz, bintersector)) {
                 	 transform.translate(0, 0, -z/temp);
                      velocity.z = 0;
                 	 moveZ = false;
@@ -136,17 +184,17 @@ public class Player
         }
     }
 
-    boolean intersects(MapGenerator mapGenerator, int x, int y, int z, BoundingBox bintersector) {
+    boolean intersects(World world, int x, int y, int z, BoundingBox bintersector) {
         temp2.set(temp1.set(x,y,z)).add(1, 1, 1);
-        return mapGenerator.blockExists(x,y,z) && boundingBox.set(temp1,temp2).intersects(bintersector);
+        return world.blockExists(x,y,z) && boundingBox.set(temp1,temp2).intersects(bintersector);
     }
 
 
-    boolean around(MapGenerator mapGenerator, int x, int y, int z, BoundingBox bintersector) {
+    boolean around(World world, int x, int y, int z, BoundingBox bintersector) {
         for(int xx = x - 1; xx <= x + 1; xx++) {
             for(int yy = y - 2; yy <= y + 2; yy++) {
                 for(int zz = z - 1; zz <= z + 1; zz++) {
-                    if(intersects(mapGenerator,xx,yy,zz,bintersector)) {
+                    if(intersects(world,xx,yy,zz,bintersector)) {
                     	return true;
                     }
                 }
