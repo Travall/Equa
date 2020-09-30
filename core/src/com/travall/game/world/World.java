@@ -35,8 +35,12 @@ public class World implements Disposable {
         this.mapWidth = mapWidth;
         this.mapHeight = mapHeight;
         this.mapLength = mapLength;
+        
+        blocks = new short[mapWidth][mapHeight][mapLength];
+        lights = new byte[mapWidth][mapHeight][mapLength];
+        
         this.waterLevel = waterLevel;
-        this.blockBuilder = new BlockBuilder(this);
+        this.blockBuilder = new BlockBuilder(this, lights);
         this.floodLight = new FloodLight(this, main);
         this.ultimate = new UltimateTexture(new Texture("Tiles/ultimate3.png"));
         BlocksList.ints(ultimate);
@@ -50,10 +54,14 @@ public class World implements Disposable {
         OpenSimplexOctaves DecisionNoise = new OpenSimplexOctaves(8,0.4, random.nextLong());
         OpenSimplexOctaves Decision2Noise = new OpenSimplexOctaves(8,0.4, random.nextLong());
 
+<<<<<<< HEAD:core/src/com/travall/game/world/World.java
         blocks = new short[mapWidth][mapHeight][mapLength];
         lights = new byte[mapWidth][mapHeight][mapLength];
 
         int maxTerrainHeight = Math.round(mapHeight / 1.75f);
+=======
+        int maxTerrainHeight = mapHeight / 2;
+>>>>>>> 3351400c47121fb6eea25ab725f7f03992b11086:core/src/com/travall/game/generation/MapGenerator.java
 
         for(int x = 0; x < mapWidth; x++) {
             for(int z = 0; z < mapLength; z++) {

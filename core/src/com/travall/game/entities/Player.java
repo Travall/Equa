@@ -35,7 +35,7 @@ public class Player
         ModelBuilder modelBuilder = new ModelBuilder();
         Material mat = new Material(ColorAttribute.createDiffuse(1,1,1,1f));
         mat.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
-        Model model = modelBuilder.createBox(0.75f, 1.9f, 0.75f,mat
+        Model model = modelBuilder.createBox(0.7f, 1.85f, 0.7f,mat
                 ,
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
         instance = new ModelInstance(model);
