@@ -5,9 +5,11 @@ import com.travall.game.tools.UltimateTexture;
 
 public class BlocksList {
     // Changed from HashMap to IntMap to avoid object baking from "short" key.
-    public static final IntMap<Block> types = new IntMap<>();
+    private static final IntMap<Block> types = new IntMap<Block>();
     
     private static boolean hasInts;
+    
+    public static final Block AIR = new Air();
     
     public static void ints(UltimateTexture ultimate) {
     	if (hasInts) return;
@@ -26,6 +28,7 @@ public class BlocksList {
     }
 
     public static Block get(short id) {
+    	if (id == 0) return AIR;
         return types.get(id);
     }
 }

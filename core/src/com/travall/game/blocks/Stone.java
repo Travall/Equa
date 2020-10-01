@@ -1,13 +1,19 @@
 package com.travall.game.blocks;
 
+import com.travall.game.blocks.materials.Material;
 import com.travall.game.tools.BlockTextures;
 import com.travall.game.tools.UltimateTexture;
 
 public class Stone extends Block {
     public static short id = 2;
-    public static boolean transparent = false;
 
     public Stone(UltimateTexture ultimate) {
-        super(transparent, new BlockTextures(ultimate.createRegion(1, 1)));
+        this.textures = new BlockTextures(ultimate.createRegion(1, 1));
+        this.material = Material.BLOCK;
+    }
+    
+    @Override
+    public String getName() {
+    	return "Stone";
     }
 }

@@ -30,7 +30,7 @@ public class BlockBuilder {
 		this.map = map;
 	}
 
-	//     v3-----v2
+//     v3-----v2
 //     |       |
 //     |       |
 //     v4-----v1
@@ -73,7 +73,7 @@ public class BlockBuilder {
 
 		float temp; // For optimization by reduce the converting from integer to float.
 		final int x = pos.x, y = pos.y, z = pos.z;
-		final BlockTextures textures = block.textures;
+		final BlockTextures textures = block.getTextures();
 
 		if (renderTop) { // facing Y+
 			final int y1 = y+1;

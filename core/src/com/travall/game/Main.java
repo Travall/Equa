@@ -39,8 +39,8 @@ public class Main extends ApplicationAdapter {
     Skybox skybox;
     ModelBatch shadowBatch;
     World world;
-    int mapWidth = 512; // changed from 128 to 256
-    int mapLength = 512;
+    int mapWidth = 256; // changed from 128 to 256
+    int mapLength = 256;
     int mapHeight = 128;
     int waterLevel = mapHeight / 5; // changed from 4 to 5
     public int chunkShift = 4; // 1 << 4 = 16. I set it back from 32 to 16 due to vertices limitations.
@@ -181,7 +181,7 @@ public class Main extends ApplicationAdapter {
 
         player.update(world,camera,cameraController);
 
-        System.out.println(Gdx.graphics.getFramesPerSecond());
+        //System.out.println(Gdx.graphics.getFramesPerSecond());
     	
         camera.fieldOfView = MathUtils.lerp(camera.fieldOfView,cameraController.targetFOV, 0.2f);
 

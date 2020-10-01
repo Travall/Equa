@@ -1,13 +1,19 @@
 package com.travall.game.blocks;
 
+import com.travall.game.blocks.materials.Material;
 import com.travall.game.tools.BlockTextures;
 import com.travall.game.tools.UltimateTexture;
 
 public class Water extends Block {
     public static short id = 6;
-    public static boolean transparent = true;
 
     public Water(UltimateTexture ultimate) {
-        super(transparent, new BlockTextures(ultimate.createRegion(2, 1)));
+        this.textures = new BlockTextures(ultimate.createRegion(2, 1));
+        this.material = Material.WATER;
+    }
+    
+    @Override
+    public String getName() {
+    	return "Water";
     }
 }
