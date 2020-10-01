@@ -226,6 +226,10 @@ public class World implements Disposable {
         return !isOutBound(x, y, z) && blocks[x][y][z] != 0;
     }
     
+    public short getBlockID(int x, int y, int z) {
+        return isOutBound(x, y, z) ? 0 : blocks[x][y][z];
+    }
+    
     public Block getBlock(int x, int y, int z) {
         return isOutBound(x, y, z) ? BlocksList.AIR : BlocksList.get(blocks[x][y][z]);
     }
