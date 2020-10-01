@@ -1,10 +1,12 @@
 package com.travall.game.blocks;
 
-public class Air extends Block {
-    public static short id = 0;
-    public static boolean transparent = true;
+import com.travall.game.blocks.materials.Material;
 
-    public Air() {
-        super(transparent, null);
-    }
+public class Air extends Block {
+	public static short id = 0;
+	public static boolean transparent = true;
+
+	public Air() {
+		this.material = Material.AIR;
+	}
 }

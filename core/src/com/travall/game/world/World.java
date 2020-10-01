@@ -10,6 +10,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import com.travall.game.Main;
 import com.travall.game.blocks.*;
+import com.travall.game.blocks.materials.Material;
 import com.travall.game.tools.BlockBuilder;
 import com.travall.game.tools.ChunkMesh;
 import com.travall.game.tools.FloodLight;
@@ -172,7 +173,7 @@ public class World implements Disposable {
     	blocks[x][y][z] = id;
 
     	if (block.isSrclight()) { // if place srclight block.
-    		setSrcLight(x, y, z, block.srclight);
+    		setSrcLight(x, y, z, block.getLightLevel());
     		floodLight.newSrclightAt(x, y, z);
     		floodLight.fillSrclight();
     	} else { // if place non-srclight block.
@@ -194,21 +195,22 @@ public class World implements Disposable {
                         pos.set(x,y,z);
                         block = BlocksList.get(blocks[x][y][z]);
 
-                        if  (!blockExists(x + 1, y, z) || (blockExists(x + 1, y, z) && (BlocksList.get(blocks[x + 1][y][z]).transparent || BlocksList.get(blocks[x + 1][y][z]).translucent))
-                                || !blockExists(x - 1, y, z) || (blockExists(x - 1, y, z) && (BlocksList.get(blocks[x - 1][y][z]).transparent || BlocksList.get(blocks[x - 1][y][z]).translucent))
-                                || !blockExists(x, y + 1, z) || (blockExists(x, y + 1, z) && (BlocksList.get(blocks[x][y + 1][z]).transparent || BlocksList.get(blocks[x][y + 1][z]).translucent))
-                                || !blockExists(x, y - 1, z) || (blockExists(x, y - 1, z) && (BlocksList.get(blocks[x][y - 1][z]).transparent || BlocksList.get(blocks[x][y - 1][z]).translucent))
-                                || !blockExists(x, y, z + 1) || (blockExists(x, y, z + 1) && (BlocksList.get(blocks[x][y][z + 1]).transparent || BlocksList.get(blocks[x][y][z + 1]).translucent))
-                                || !blockExists(x, y, z - 1) || (blockExists(x, y, z - 1) && (BlocksList.get(blocks[x][y][z - 1]).transparent) || BlocksList.get(blocks[x][y][z - 1]).translucent)) {
+                        if  (!blockExists(x + 1, y, z) || (blockExists(x + 1, y, z) && (BlocksList.get(blocks[x + 1][y][z]).getMaterial().isTransparent() || BlocksList.get(blocks[x + 1][y][z]).getMaterial().isTranslucent()))
+                                || !blockExists(x - 1, y, z) || (blockExists(x - 1, y, z) && (BlocksList.get(blocks[x - 1][y][z]).getMaterial().isTransparent() || BlocksList.get(blocks[x - 1][y][z]).getMaterial().isTranslucent()))
+                                || !blockExists(x, y + 1, z) || (blockExists(x, y + 1, z) && (BlocksList.get(blocks[x][y + 1][z]).getMaterial().isTransparent() || BlocksList.get(blocks[x][y + 1][z]).getMaterial().isTranslucent()))
+                                || !blockExists(x, y - 1, z) || (blockExists(x, y - 1, z) && (BlocksList.get(blocks[x][y - 1][z]).getMaterial().isTransparent() || BlocksList.get(blocks[x][y - 1][z]).getMaterial().isTranslucent()))
+                                || !blockExists(x, y, z + 1) || (blockExists(x, y, z + 1) && (BlocksList.get(blocks[x][y][z + 1]).getMaterial().isTransparent() || BlocksList.get(blocks[x][y][z + 1]).getMaterial().isTranslucent()))
+                                || !blockExists(x, y, z - 1) || (blockExists(x, y, z - 1) && (BlocksList.get(blocks[x][y][z - 1]).getMaterial().isTransparent()) || BlocksList.get(blocks[x][y][z - 1]).getMaterial().isTranslucent())) {
 
-                            boolean blocksTransparent = block.transparent;
-                            boolean blocksTranslucent = block.translucent;
-                            boolean renderTop = !(blockExists(x, y + 1, z) && (!BlocksList.get(blocks[x][y + 1][z]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x][y + 1][z]).translucent;
-                            boolean renderBottom = !(blockExists(x, y - 1, z) && (!BlocksList.get(blocks[x][y - 1][z]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x][y - 1][z]).translucent;
-                            boolean render1 = !(blockExists(x, y, z - 1) && (!BlocksList.get(blocks[x][y][z - 1]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x][y][z - 1]).translucent;
-                            boolean render2 = !(blockExists(x - 1, y, z) && (!BlocksList.get(blocks[x - 1][y][z]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x - 1][y][z]).translucent;
-                            boolean render3 = !(blockExists(x, y, z + 1) && (!BlocksList.get(blocks[x][y][z + 1]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x][y][z + 1]).translucent;
-                            boolean render4 = !(blockExists(x + 1, y, z) && (!BlocksList.get(blocks[x + 1][y][z]).transparent || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x + 1][y][z]).translucent;
+                        	Material material = block.getMaterial();
+                            boolean blocksTransparent = material.isTransparent();
+                            boolean blocksTranslucent = material.isTranslucent();
+                            boolean renderTop = !(blockExists(x, y + 1, z) && (!BlocksList.get(blocks[x][y + 1][z]).getMaterial().isTransparent() || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x][y + 1][z]).getMaterial().isTranslucent();
+                            boolean renderBottom = !(blockExists(x, y - 1, z) && (!BlocksList.get(blocks[x][y - 1][z]).getMaterial().isTransparent() || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x][y - 1][z]).getMaterial().isTranslucent();
+                            boolean render1 = !(blockExists(x, y, z - 1) && (!BlocksList.get(blocks[x][y][z - 1]).getMaterial().isTransparent() || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x][y][z - 1]).getMaterial().isTranslucent();
+                            boolean render2 = !(blockExists(x - 1, y, z) && (!BlocksList.get(blocks[x - 1][y][z]).getMaterial().isTransparent() || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x - 1][y][z]).getMaterial().isTranslucent();
+                            boolean render3 = !(blockExists(x, y, z + 1) && (!BlocksList.get(blocks[x][y][z + 1]).getMaterial().isTransparent() || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x][y][z + 1]).getMaterial().isTranslucent();
+                            boolean render4 = !(blockExists(x + 1, y, z) && (!BlocksList.get(blocks[x + 1][y][z]).getMaterial().isTransparent() || blocksTransparent)) || blocksTranslucent || BlocksList.get(blocks[x + 1][y][z]).getMaterial().isTranslucent();
 
                             blockBuilder.buildCube(block, pos,renderTop,renderBottom,render1,render2,render3,render4);
                         }
@@ -222,6 +224,14 @@ public class World implements Disposable {
 
     public boolean blockExists(int x, int y, int z) {
         return !isOutBound(x, y, z) && blocks[x][y][z] != 0;
+    }
+    
+    public short getBlockID(int x, int y, int z) {
+        return isOutBound(x, y, z) ? 0 : blocks[x][y][z];
+    }
+    
+    public Block getBlock(int x, int y, int z) {
+        return isOutBound(x, y, z) ? BlocksList.AIR : BlocksList.get(blocks[x][y][z]);
     }
     
     public boolean isOutBound(int x, int y, int z) {

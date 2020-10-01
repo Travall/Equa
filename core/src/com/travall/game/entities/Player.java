@@ -5,7 +5,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
@@ -15,7 +14,9 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
+import com.badlogic.gdx.utils.Array;
 import com.travall.game.world.World;
+import com.travall.game.blocks.Block;
 import com.travall.game.tools.FirstPersonCameraController;
 
 public class Player
@@ -33,7 +34,7 @@ public class Player
 
     public Player(Vector3 position) {
         ModelBuilder modelBuilder = new ModelBuilder();
-        Material mat = new Material(ColorAttribute.createDiffuse(1,1,1,1f));
+        com.badlogic.gdx.graphics.g3d.Material mat = new com.badlogic.gdx.graphics.g3d.Material(ColorAttribute.createDiffuse(1,1,1,1f));
         mat.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
         Model model = modelBuilder.createBox(0.7f, 1.85f, 0.7f,mat
                 ,
@@ -156,7 +157,7 @@ public class Player
                 bintersector = instance.calculateBoundingBox(boundingBoxTemp).mul(transform);
 
                 if (around(world, px, py, pz, bintersector)) {
-                	onGround = true;
+                	onGround = y < 0.0001f;
                     transform.translate(0, -y/temp, 0);
                     velocity.y = 0;
                 	moveY = false;
@@ -185,11 +186,22 @@ public class Player
     }
 
     boolean intersects(World world, int x, int y, int z, BoundingBox bintersector) {
-        temp2.set(temp1.set(x,y,z)).add(1, 1, 1);
-        return world.blockExists(x,y,z) && boundingBox.set(temp1,temp2).intersects(bintersector);
+    	Block block = world.getBlock(x, y, z);
+    	
+    	if (block.getMaterial().hasCollision()) {
+    		Array<BoundingBox> boxes = block.getBoundingBoxes();
+    		if (boxes.isEmpty()) return false;
+    		for (BoundingBox box : boxes) {
+				box.getMin(temp1).add(x, y, z);
+				box.getMax(temp2).add(x, y, z);
+				if (boundingBox.set(temp1, temp2).intersects(bintersector)) return true;
+    		}
+    	}
+        return false;
     }
 
 
+    
     boolean around(World world, int x, int y, int z, BoundingBox bintersector) {
         for(int xx = x - 1; xx <= x + 1; xx++) {
             for(int yy = y - 2; yy <= y + 2; yy++) {
