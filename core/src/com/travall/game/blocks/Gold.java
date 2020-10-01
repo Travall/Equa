@@ -12,9 +12,4 @@ public class Gold extends Block {
 		this.material = Material.BLOCK;
 		this.lightLevel = 15;
 	}
-	
-	@Override
-    public String getName() {
-    	return "Gold";
-    }
 }

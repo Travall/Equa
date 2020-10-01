@@ -5,15 +5,10 @@ import com.travall.game.tools.BlockTextures;
 import com.travall.game.tools.UltimateTexture;
 
 public class Dirt extends Block {
-    public static short id = 3;
+	public static short id = 3;
 
-    public Dirt(UltimateTexture ultimate) {
-    	this.textures = new BlockTextures(ultimate.createRegion(1, 0));
-        this.material = Material.BLOCK;
-    }
-    
-    @Override
-    public String getName() {
-    	return "Dirt";
-    }
+	public Dirt(UltimateTexture ultimate) {
+		this.textures = new BlockTextures(ultimate.createRegion(1, 0));
+		this.material = Material.BLOCK;
+	}
 }

@@ -5,15 +5,10 @@ import com.travall.game.tools.BlockTextures;
 import com.travall.game.tools.UltimateTexture;
 
 public class Water extends Block {
-    public static short id = 6;
+	public static short id = 6;
 
-    public Water(UltimateTexture ultimate) {
-        this.textures = new BlockTextures(ultimate.createRegion(2, 1));
-        this.material = Material.WATER;
-    }
-    
-    @Override
-    public String getName() {
-    	return "Water";
-    }
+	public Water(UltimateTexture ultimate) {
+		this.textures = new BlockTextures(ultimate.createRegion(2, 1));
+		this.material = Material.WATER;
+	}
 }
