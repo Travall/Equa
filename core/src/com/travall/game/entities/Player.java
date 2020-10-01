@@ -16,9 +16,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 import com.travall.game.world.World;
-import com.travall.game.blocks.Air;
 import com.travall.game.blocks.Block;
-import com.travall.game.blocks.materials.Material;
 import com.travall.game.tools.FirstPersonCameraController;
 
 public class Player
@@ -159,7 +157,7 @@ public class Player
                 bintersector = instance.calculateBoundingBox(boundingBoxTemp).mul(transform);
 
                 if (around(world, px, py, pz, bintersector)) {
-                	onGround = true;
+                	onGround = y < 0.0001f;
                     transform.translate(0, -y/temp, 0);
                     velocity.y = 0;
                 	moveY = false;
