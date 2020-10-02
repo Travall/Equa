@@ -8,7 +8,7 @@ public class Leaves extends Block {
 	public static short id = 9;
 
 	public Leaves(UltimateTexture ultimate) {
-		this.textures = new BlockTextures(ultimate.createRegion(2, 2));
+		this.textures = new BlockTextures(ultimate.createRegion(12, 0));
 		this.material = Material.LEAVES;
 	}
 }

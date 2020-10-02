@@ -8,7 +8,7 @@ public class Gold extends Block {
 	public static short id = 7;
 
 	public Gold(UltimateTexture ultimate) {
-		this.textures = new BlockTextures(ultimate.createRegion(3, 1));
+		this.textures = new BlockTextures(ultimate.createRegion(10, 2));
 		this.material = Material.BLOCK;
 		this.lightLevel = 15;
 	}

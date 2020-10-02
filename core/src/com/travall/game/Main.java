@@ -81,8 +81,8 @@ public class Main extends ApplicationAdapter {
         skybox = new Skybox();;
 
         camera = new PerspectiveCamera(90,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-        camera.near = 0.15f; // changed from 0.1f to 0.15f
-        camera.far = 1000f; // changed from 1500f to 1000f
+        camera.near = 0.1f;
+        camera.far = 500f;
         camera.update();
 
         cameraController = new FirstPersonCameraController(camera);

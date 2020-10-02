@@ -8,7 +8,7 @@ public class Log extends Block {
 	public static short id = 8;
 
 	public Log(UltimateTexture ultimate) {
-		this.textures = new BlockTextures(ultimate.createRegion(0, 2), ultimate.createRegion(1, 2));
+		this.textures = new BlockTextures(ultimate.createRegion(12, 2), ultimate.createRegion(12, 1));
 		this.material = Material.BLOCK;
 	}
 }
