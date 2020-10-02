@@ -8,7 +8,7 @@ public class Grass extends Block {
 	public static short id = 4;
 
 	public Grass(UltimateTexture ultimate) {
-		this.textures = new BlockTextures(ultimate.createRegion(3, 0), ultimate.createRegion(2, 0), ultimate.createRegion(1, 0));
+		this.textures = new BlockTextures(ultimate.createRegion(4, 0), ultimate.createRegion(3, 0), ultimate.createRegion(2, 0));
 		this.material = Material.BLOCK;
 	}
 }

@@ -8,7 +8,7 @@ public class Cactus extends Block {
 	public static short id = 10;
 
 	public Cactus(UltimateTexture ultimate) {
-		this.textures = new BlockTextures(ultimate.createRegion(3, 2), ultimate.createRegion(0, 3));
+		this.textures = new BlockTextures(ultimate.createRegion(11, 0), ultimate.createRegion(11, 1), ultimate.createRegion(11, 2));
 		this.material = Material.BLOCK;
 	}
 }

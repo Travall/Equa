@@ -43,7 +43,7 @@ public class World implements Disposable {
         this.waterLevel = waterLevel;
         this.blockBuilder = new BlockBuilder(this);
         this.floodLight = new FloodLight(this, main);
-        this.ultimate = new UltimateTexture(new Texture("Tiles/ultimate3.png"));
+        this.ultimate = new UltimateTexture(new Texture("Tiles/ultimate4.png"));
         BlocksList.ints(ultimate);
         generate(MathUtils.random.nextLong());
     }

@@ -8,7 +8,7 @@ public class Dirt extends Block {
 	public static short id = 3;
 
 	public Dirt(UltimateTexture ultimate) {
-		this.textures = new BlockTextures(ultimate.createRegion(1, 0));
+		this.textures = new BlockTextures(ultimate.createRegion(2, 0));
 		this.material = Material.BLOCK;
 	}
 }

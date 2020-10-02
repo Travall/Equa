@@ -8,7 +8,7 @@ public class Stone extends Block {
 	public static short id = 2;
 
 	public Stone(UltimateTexture ultimate) {
-		this.textures = new BlockTextures(ultimate.createRegion(1, 1));
+		this.textures = new BlockTextures(ultimate.createRegion(1, 0));
 		this.material = Material.BLOCK;
 	}
 }
