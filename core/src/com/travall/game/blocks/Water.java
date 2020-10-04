@@ -1,8 +1,8 @@
 package com.travall.game.blocks;
 
 import com.travall.game.blocks.materials.Material;
-import com.travall.game.tools.BlockTextures;
-import com.travall.game.tools.UltimateTexture;
+import com.travall.game.renderer.block.BlockTextures;
+import com.travall.game.renderer.block.UltimateTexture;
 
 public class Water extends Block {
 	public static short id = 6;

@@ -1,4 +1,4 @@
-package com.travall.game.tools;
+package com.travall.game.renderer;
 
 import static com.badlogic.gdx.Gdx.gl;
 
@@ -9,10 +9,9 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.g3d.decals.Decal;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.GridPoint3;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.FloatArray;
 import com.travall.game.glutils.VBO;
@@ -45,7 +44,7 @@ public final class Picker {
 		Gdx.gl.glUseProgram(0);
 		
 		final FloatArray array = new FloatArray(allFloats);
-		final float tmpN = -0.001f;
+		final float tmpN = -0.003f;
 		float tmpP = (-tmpN)+1f;
 		
 		// facing Y+
@@ -89,12 +88,22 @@ public final class Picker {
 		vbo = new VBO(buffer, context, GL20.GL_STATIC_DRAW, true);
 	}
 	
+	static float sine = 0;
+	
+	
 	public static void render(Camera camera, GridPoint3 position) {
+		
+		sine += 0.15f;
+		if (sine > MathUtils.PI2) {
+			sine -= MathUtils.PI2;
+		}
+		
 		if (position.y == -1) return;
 		gl.glEnable(GL20.GL_BLEND);
 		shader.bind();
 		shader.setUniformMatrix("u_projTrans", camera.combined);
 		shader.setUniformf("u_trans", position.x, position.y, position.z);
+		shader.setUniformf("u_alpha", (MathUtils.sin(sine)*0.1f)+0.25f);
 		vbo.bind();
 		Gdx.gl.glDrawElements(GL20.GL_TRIANGLES, allIndex, GL20.GL_UNSIGNED_SHORT, 0);
 		vbo.unbind(); Gdx.gl30.glBindVertexArray(0);

@@ -1,4 +1,4 @@
-package com.travall.game.tools;
+package com.travall.game.handles;
 
 import static com.badlogic.gdx.math.MathUtils.floor;
 

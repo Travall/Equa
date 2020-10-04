@@ -1,7 +1,7 @@
 package com.travall.game.blocks;
 
 import com.badlogic.gdx.utils.IntMap;
-import com.travall.game.tools.UltimateTexture;
+import com.travall.game.renderer.block.UltimateTexture;
 
 public class BlocksList {
 	// Changed from HashMap to IntMap to avoid object baking from "short" key.

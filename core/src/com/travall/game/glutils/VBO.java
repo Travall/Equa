@@ -72,7 +72,7 @@ public final class VBO implements Disposable
 		gl30.glBindBuffer(GL_ARRAY_BUFFER, bufferHandle);
 		
 		// Upload the data.
-		gl30.glBufferData(GL_ARRAY_BUFFER, 0, buffer, glDraw);
+		if (buffer.limit() != 0) gl30.glBufferData(GL_ARRAY_BUFFER, 0, buffer, glDraw);
 		
 		// Enable vertex attributes and set the pointers.
 		final VertexAttributes attributes = context.getAttrs();

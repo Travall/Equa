@@ -1,4 +1,4 @@
-package com.travall.game.tools;
+package com.travall.game.handles;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;

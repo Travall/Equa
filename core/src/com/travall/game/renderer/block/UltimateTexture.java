@@ -1,4 +1,4 @@
-package com.travall.game.tools;
+package com.travall.game.renderer.block;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;

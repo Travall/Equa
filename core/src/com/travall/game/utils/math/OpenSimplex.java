@@ -1,4 +1,4 @@
-package com.travall.game.tools;
+package com.travall.game.utils.math;
 
 /**
  * K.jpg's original OpenSimplex Noise
