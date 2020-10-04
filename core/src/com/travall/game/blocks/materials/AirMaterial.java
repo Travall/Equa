@@ -12,16 +12,6 @@ class AirMaterial extends Material {
 	}
 
 	@Override
-	public boolean isTransparent() {
-		return false;
-	}
-
-	@Override
-	public boolean isTranslucent() {
-		return false;
-	}
-
-	@Override
 	public boolean canBlockSunRay() {
 		return false;
 	}

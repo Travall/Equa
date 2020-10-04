@@ -1,12 +1,8 @@
-package com.travall.game.tools;
+package com.travall.game.utils;
 
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Queue;
-import com.travall.game.Main;
-import com.travall.game.blocks.Air;
-import com.travall.game.blocks.Block;
 import com.travall.game.blocks.BlocksList;
-import com.travall.game.blocks.materials.Material;
 import com.travall.game.world.World;
 
 public class FloodLight {
@@ -27,11 +23,9 @@ public class FloodLight {
 	private static final Queue<LightDelNode> srclightDelQue = new Queue<LightDelNode>(64);
 	
 	private final World world;
-	private final Main main;
 	
-	public FloodLight(World world, Main main) {
+	public FloodLight(World world) {
 		this.world = world;
-		this.main = main;
 	}
 	
 	public void newSrclightAt(int x, int y, int z) {
@@ -44,9 +38,8 @@ public class FloodLight {
 	
 	public void fillSrclight() {
 		final short[][][] blocks = world.blocks;
-		final int width  = world.mapWidth;
-		final int height = world.mapHeight;
-		final int length = world.mapLength;
+		final int height = World.mapHeight;
+		final int size = World.mapSize;
 		while(srclightQue.notEmpty()) {
 			// get the first node from the queue.
 			LightNode node = srclightQue.removeFirst();
@@ -57,7 +50,7 @@ public class FloodLight {
 			int z = node.z;
 			
 			// Set the chunk dirty.
-			main.regenerateShell(x, y, z);
+			world.setMeshDirtyShellAt(x, y, z);
 			
 			// Get the light value from lightMap at current position
 			int lightLevel = world.getSrcLight(x, y, z);
@@ -82,12 +75,12 @@ public class FloodLight {
 				world.setSrcLight(x-1, y, z, lightLevel-1);
 				srclightQue.addLast(POOL1.obtain().set(x-1, y, z));
 			}
-			if (z+1 < length)
+			if (z+1 < size)
 			if (!BlocksList.get(blocks[x][y][z-1]).getMaterial().canBlockLights() && world.getSrcLight(x, y, z+1)+2 <= lightLevel) {
 				world.setSrcLight(x, y, z+1, lightLevel-1);
 				srclightQue.addLast(POOL1.obtain().set(x, y, z+1));
 			}
-			if (x+1 < width)
+			if (x+1 < size)
 			if (!BlocksList.get(blocks[x+1][y][z]).getMaterial().canBlockLights() && world.getSrcLight(x+1, y, z)+2 <= lightLevel) {
 				world.setSrcLight(x+1, y, z, lightLevel-1);
 				srclightQue.addLast(POOL1.obtain().set(x+1, y, z));
@@ -98,9 +91,8 @@ public class FloodLight {
 	}
 	
 	public void defillSrclight() {
-		final int width  = world.mapWidth;
-		final int height = world.mapHeight;
-		final int length = world.mapLength;
+		final int height = World.mapHeight;
+		final int size = World.mapSize;
 		int neighborLevel;
 		
 		while(srclightDelQue.notEmpty()) {
@@ -113,7 +105,7 @@ public class FloodLight {
 			int lightLevel = node.val;
 			
 			// Set the chunk dirty.
-			main.regenerateShell(x, y, z);
+			world.setMeshDirtyShellAt(x, y, z);
 			
 			if (y+1 < height) {
 				neighborLevel = world.getSrcLight(x, y+1, z);
@@ -151,7 +143,7 @@ public class FloodLight {
 		        	srclightQue.addLast(POOL1.obtain().set(x-1, y, z));
 		        }	
 			}
-			if (z+1 < length) {
+			if (z+1 < size) {
 				neighborLevel = world.getSrcLight(x, y, z+1);
 				if (neighborLevel != 0 && neighborLevel < lightLevel) {
 					world.setSrcLight(x, y, z+1, 0);
@@ -160,7 +152,7 @@ public class FloodLight {
 		        	srclightQue.addLast(POOL1.obtain().set(x, y, z+1));
 		        }	
 			}
-			if (x+1 < width) {
+			if (x+1 < size) {
 				neighborLevel = world.getSrcLight(x+1, y, z);
 				if (neighborLevel != 0 && neighborLevel < lightLevel) {
 					world.setSrcLight(x+1, y, z, 0);

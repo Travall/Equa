@@ -20,22 +20,22 @@ import com.badlogic.gdx.math.Vector3;
 import com.kotcrab.vis.ui.VisUI;
 import com.travall.game.blocks.*;
 import com.travall.game.entities.Player;
+import com.travall.game.handles.FirstPersonCameraController;
+import com.travall.game.handles.Raycast;
+import com.travall.game.handles.VoxelTerrain;
+import com.travall.game.handles.Raycast.RayInfo;
+import com.travall.game.renderer.Picker;
+import com.travall.game.renderer.SSAO;
+import com.travall.game.renderer.Skybox;
+import com.travall.game.utils.BlockPos;
 import com.travall.game.world.World;
-import com.travall.game.tools.ChunkMesh;
-import com.travall.game.tools.FirstPersonCameraController;
-import com.travall.game.tools.Picker;
-import com.travall.game.tools.Raycast;
-import com.travall.game.tools.Raycast.RayInfo;
-import com.travall.game.tools.SSAO;
-import com.travall.game.tools.Skybox;
-import com.travall.game.tools.VoxelTerrain;
 
 public class Main extends ApplicationAdapter {
     PerspectiveCamera camera;
     FirstPersonCameraController cameraController;
     ModelBatch modelBatch;
     AssetManager assetManager;
-    ChunkMesh[][][] chunkMeshes;
+    
     Skybox skybox;
     ModelBatch shadowBatch;
     World world;
@@ -90,16 +90,6 @@ public class Main extends ApplicationAdapter {
 
         shadowBatch = new ModelBatch(new DepthShaderProvider());
 
-        chunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
-        world = new World(this,mapWidth,mapHeight,mapLength,waterLevel);
-        for(int x = 0; x < xChunks; x++) {
-            for(int y = 0; y < yChunks; y++) {
-                for(int z = 0; z < zChunks; z++) {
-                    chunkMeshes[x][y][z] = world.generateShell(x * chunkSizeX,y * chunkSizeY, z * chunkSizeZ, chunkSizeX, chunkSizeY, chunkSizeZ, null);
-                }
-            }
-        }
-
 //        assetManager.load("Models/steve.g3dj",Model.class);
 //        assetManager.finishLoading();
 //
@@ -108,6 +98,7 @@ public class Main extends ApplicationAdapter {
 //        steve.transform.scale(0.3f,0.3f,0.3f);
 //        steve.transform.setTranslation(starting.x,starting.y + 2,starting.z);
 
+        world = new World();
 
         player = new Player(new Vector3(starting.x - 0.5f,starting.y + 3,starting.z - 0.5f));
 
@@ -139,27 +130,7 @@ public class Main extends ApplicationAdapter {
 //      modelBatch.render(player.instance,environment);
 //      modelBatch.end();
         
-        world.getTexture().bind();
-        VoxelTerrain.begin(camera);
-        Gdx.gl.glCullFace(GL20.GL_BACK);
-        Gdx.gl.glEnable(GL20.GL_CULL_FACE);
-        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
-        for(int x = 0; x < chunkMeshes.length; x++) {
-            for(int y = 0; y < chunkMeshes[0].length; y++) {
-                for(int z = 0; z < chunkMeshes[0][0].length; z++) {
-                    ChunkMesh mesh = chunkMeshes[x][y][z];
-                    if (mesh == null) continue;
-                    if (mesh.isDirty) {
-                        world.generateShell(x * chunkSizeX, y * chunkSizeY, z * chunkSizeZ, chunkSizeX, chunkSizeY, chunkSizeZ, mesh);
-                    }
-
-                    if(camera.frustum.boundsInFrustum(x * chunkSizeX, y * chunkSizeY, z * chunkSizeZ, chunkSizeX,chunkSizeY,chunkSizeZ))
-                        mesh.render();
-                }
-            }
-        }
-        Gdx.gl30.glBindVertexArray(0);
-        VoxelTerrain.end();
+        world.render(camera);
         Picker.render(camera, pickerHit);
         Gdx.gl.glDisable(GL20.GL_CULL_FACE);
         
@@ -174,6 +145,7 @@ public class Main extends ApplicationAdapter {
         spriteBatch.end();
         spriteBatch.setShader(null);
         
+        BlockPos.reset(); // Always reset the pool.
         Gdx.gl.glUseProgram(0); // Fix some performance issues.
     }
 
@@ -232,44 +204,6 @@ public class Main extends ApplicationAdapter {
         VoxelTerrain.dispose();
         Picker.dispose();
     }
-
-    public void regenerateShell(int x, int y, int z) {
-        final int indexX = x >> chunkShift;
-        final int indexY = y >> chunkShift;
-        final int indexZ = z >> chunkShift;
-        setMeshDirtyAt(indexX, indexY, indexZ);
-
-        if(x % chunkSizeX == 0 && x > 0) {
-        	setMeshDirtyAt(indexX-1, indexY, indexZ);
-        }
-
-        if((x+1) % (chunkSizeX) == 0 && x < mapWidth-1) {
-        	setMeshDirtyAt(indexX+1, indexY, indexZ);
-        }
-
-        if(y % chunkSizeY == 0 && y > 0) {
-            setMeshDirtyAt(indexX, indexY-1, indexZ);
-        }
-
-        if((y+1) % (chunkSizeY) == 0 && y < mapHeight-1) {
-            setMeshDirtyAt(indexX, indexY+1, indexZ);
-        }
-
-        if(z % chunkSizeZ == 0 && z > 0) {
-        	setMeshDirtyAt(indexX, indexY, indexZ-1);
-        }
-
-        if((z+1) % (chunkSizeZ) == 0 && z < mapLength-1) {
-        	setMeshDirtyAt(indexX, indexY, indexZ+1);
-        }
-    }
-    
-    public void setMeshDirtyAt(int indexX, int indexY, int indexZ) {
-    	if (indexX < 0 || indexX >= xChunks || indexY < 0 || indexY >= yChunks || indexZ < 0 || indexZ >= zChunks)
-    		return;
-
-        if(chunkMeshes[indexX][indexY][indexZ] != null) chunkMeshes[indexX][indexY][indexZ].isDirty = true;
-    }
     
     // Fast, accurate, and simple ray-cast.
     private void cameraRaycast() {
@@ -286,11 +220,11 @@ public class Main extends ApplicationAdapter {
     	if (Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
     		if(world.blockExists(in.x,in.y,in.z) && world.blocks[in.x][in.y][in.z] != Bedrock.id) {
                 world.breakBlock(in.x, in.y, in.z);
-                regenerateShell(in.x, in.y, in.z);
+                world.setMeshDirtyShellAt(in.x, in.y, in.z);
             }
     	} else if (!world.isOutBound(out.x, out.y, out.z) && Gdx.input.isButtonJustPressed(Buttons.RIGHT)) {
     		world.placeBlock(out.x, out.y, out.z, blockType);
-    		regenerateShell(out.x, out.y, out.z);
+    		world.setMeshDirtyShellAt(out.x, out.y, out.z);
     	}
     }
 }

@@ -1,4 +1,4 @@
-package com.travall.game.tools;
+package com.travall.game.world.chunk;
 
 import java.nio.ByteBuffer;
 
@@ -21,10 +21,15 @@ public class ChunkMesh implements Disposable
 
 	public ChunkMesh(ByteBuffer buffer, FloatArray verts, VertContext context, int glDraw) {
 		byteSize = context.getAttrs().vertexSize;
+		if (verts.isEmpty()) {
+			isEmpty = true;
+			buffer.limit(0);
+			vbo = new VBO(buffer, context, glDraw, true);
+			return;
+		}
 		count = (verts.size / byteSize) * 6;
 		BufferUtils.copy(verts.items, buffer, verts.size, 0);
 		vbo = new VBO(buffer, context, glDraw, true);
-		isEmpty = verts.isEmpty();
 	}
 	
 	public void render() {

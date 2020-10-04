@@ -5,12 +5,11 @@ public class Material {
 	/* Static materials */
 	public static final Material AIR = new AirMaterial();
 	public static final Material BLOCK = new Material();
-	public static final Material LEAVES = new Material().setTransparent().setTranslucent();
+	public static final Material LEAVES = new Material().setSolid(false);
 	public static final Material WATER = new WaterMaterial();
-
+	
 	/* Variables */
-	private boolean isTransparent;
-	private boolean isTranslucent;
+	private boolean isSolid = isFullCube();
 
 	/* Getters */
 
@@ -19,40 +18,30 @@ public class Material {
 		return true;
 	}
 
+	/** Is block solid. The default is <code>isFullCube()</code>. */
+	public boolean isSolid() {
+		return isSolid;
+	}
+	
 	/** Is block has Collision. The default is <code>isFullCube()</code>. */
 	public boolean hasCollision() {
 		return isFullCube();
 	}
 
-	/** Is block transparent. The default is false. */
-	public boolean isTransparent() {
-		return isTransparent;
-	}
-
-	/** Is block translucent. The default is false. */
-	public boolean isTranslucent() {
-		return isTranslucent;
-	}
-
-	/** Can it blocks sun's ray. The default is <code>!isTransparent()</code>. */
+	/** Can it blocks sun's ray. The default is <code>isSolid()</code>. */
 	public boolean canBlockSunRay() {
-		return !isTransparent();
+		return isSolid();
 	}
 
-	/** Can it blocks lights. The default is <code>isFullCube()</code>. */
+	/** Can it blocks lights. The default is <code>isSolid()</code>. */
 	public boolean canBlockLights() {
-		return isFullCube();
+		return isSolid();
 	}
-
+	
 	/* Setters */
-
-	protected Material setTransparent() {
-		isTransparent = true;
-		return this;
-	}
-
-	protected Material setTranslucent() {
-		isTranslucent = true;
+	
+	private Material setSolid(boolean bool) {
+		isSolid = bool;
 		return this;
 	}
 
@@ -64,19 +53,10 @@ public class Material {
 	public String toString() {
 		build.setLength(0);
 		build.append("isFullCube: ").append(isFullCube()).append('\n');
+		build.append("isSolid: ").append(isSolid()).append('\n');
 		build.append("hasCollision: ").append(hasCollision()).append('\n');
-		build.append("isTransparent: ").append(isTransparent()).append('\n');
-		build.append("isTranslucent: ").append(isTranslucent()).append('\n');
 		build.append("canBlockSunRay: ").append(canBlockSunRay()).append('\n');
 		build.append("canBlockLights: ").append(canBlockLights()).append('\n');
 		return build.toString();
-	}
-
-	@Override
-	public Material clone() {
-		final Material material = new Material();
-		if (isTransparent)
-			material.setTransparent();
-		return material;
 	}
 }

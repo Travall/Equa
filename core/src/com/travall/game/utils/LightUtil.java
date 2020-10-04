@@ -1,4 +1,4 @@
-package com.travall.game.tools;
+package com.travall.game.utils;
 
 public final class LightUtil {
 	public static final int   fullLight = 15;

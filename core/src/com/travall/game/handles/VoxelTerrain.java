@@ -1,4 +1,4 @@
-package com.travall.game.tools;
+package com.travall.game.handles;
 
 import static com.badlogic.gdx.Gdx.files;
 import static com.badlogic.gdx.graphics.glutils.ShaderProgram.POSITION_ATTRIBUTE;
@@ -16,6 +16,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.travall.game.glutils.QuadIndexBuffer;
 import com.travall.game.glutils.VertContext;
+import com.travall.game.utils.Utils;
 
 // Needs update comments after attribute change.
 /** The static class contains vertex attributes and shader */

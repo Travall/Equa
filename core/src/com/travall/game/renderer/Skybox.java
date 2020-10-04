@@ -1,4 +1,4 @@
-package com.travall.game.tools;
+package com.travall.game.renderer;
 
 import static com.badlogic.gdx.Gdx.files;
 

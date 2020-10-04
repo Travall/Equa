@@ -5,19 +5,13 @@ public class WaterMaterial extends Material {
 	public boolean isFullCube() {
 		return true;
 	}
-
-	@Override
-	public boolean hasCollision() {
+	
+	public boolean isSolid() {
 		return false;
 	}
 
 	@Override
-	public boolean isTransparent() {
-		return true;
-	}
-
-	@Override
-	public boolean isTranslucent() {
+	public boolean hasCollision() {
 		return false;
 	}
 

@@ -17,7 +17,8 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 import com.travall.game.world.World;
 import com.travall.game.blocks.Block;
-import com.travall.game.tools.FirstPersonCameraController;
+import com.travall.game.handles.FirstPersonCameraController;
+import com.travall.game.utils.BlockPos;
 
 public class Player
 {
@@ -185,8 +186,9 @@ public class Player
         }
     }
 
+    private final BlockPos blockPos = new BlockPos();
     boolean intersects(World world, int x, int y, int z, BoundingBox bintersector) {
-    	Block block = world.getBlock(x, y, z);
+    	Block block = world.getBlock(blockPos.set(x, y, z));
     	
     	if (block.getMaterial().hasCollision()) {
     		Array<BoundingBox> boxes = block.getBoundingBoxes();
