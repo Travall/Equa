@@ -1,14 +1,11 @@
 package com.travall.game.blocks;
 
-import static com.travall.game.world.World.world;
-
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.travall.game.blocks.materials.Material;
 import com.travall.game.blocks.models.SlabModel;
 import com.travall.game.renderer.block.UltimateTexture;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.Facing;
-import com.travall.game.utils.Facing.Axis;
 
 public class Slab extends Block {
 	
@@ -21,11 +18,12 @@ public class Slab extends Block {
 	
 	@Override
 	public boolean canAddFace(BlockPos primaray, BlockPos secondary, Facing face) {
-		boolean bool = super.canAddFace(primaray, secondary, face);
-		if (!bool) {
-			bool = face == Facing.UP;
-			if (!bool) bool = face.axis == Axis.Y && world.getBlock(secondary) instanceof Slab;
-		}
-		return bool;
+		if (face == Facing.UP) return true;
+		return super.canAddFace(primaray, secondary, face);
+	}
+	
+	@Override
+	public boolean isFaceSolid(BlockPos pos, Facing face) {
+		return face == Facing.DOWN;
 	}
 }

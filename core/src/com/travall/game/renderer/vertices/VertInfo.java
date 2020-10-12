@@ -28,11 +28,11 @@ public class VertInfo {
 		if (side1 == AmbiantType.DARKEN && side2 == AmbiantType.DARKEN) {
 			twoSides = true;
 			if (bool) return;
-			ambLit = MathUtils.lerp(ambLit, 0f, 1f-AMB[0]);
+			ambLit *= AMB[0];
 			return;
 		}
 		if (bool || corner == AmbiantType.FULLBRIGHT) return;
-		ambLit = MathUtils.lerp(ambLit, 0f, 1f-AMB[side1.value+side2.value+corner.value]);;
+		ambLit *= AMB[side1.value+side2.value+corner.value];;
 	}
 
 	private void smoothLight(int center, int side1, int side2, int corner) {
