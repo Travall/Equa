@@ -1,6 +1,7 @@
 package com.travall.game.renderer.quad;
 
 import static com.travall.game.world.World.world;
+import static com.travall.game.utils.Utils.gamma;
 
 import com.badlogic.gdx.math.Vector3;
 import com.travall.game.blocks.Block;
@@ -8,6 +9,13 @@ import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.Facing;
 
 public class QuadNode extends QuadInfo {
+	
+	public static final float 
+	lightHigh = 1.0f, // old: 1.0f  new: 1.0f
+	lightMed = gamma(0.95), // old: 0.82f new: 0.86f
+	lightLow = gamma(0.9), // old: 0.68f new: 0.75f
+	lightDim = gamma(0.85); // old: 0.6f  new: 0.65f
+	
 	public Facing face;
 	
 	public boolean isInside;
@@ -38,7 +46,7 @@ public class QuadNode extends QuadInfo {
 		
 		switch (face) {
 		case UP:
-			setAmb(1f);
+			setAmb(lightHigh);
 			y1 = isInside ? y : y+1;
 			center.set(x, y1, z);
 			v1.calcLight(block, center, side1.set(x+1, y1, z), side2.set(x, y1, z-1), corner.set(x+1, y1, z-1));
@@ -47,7 +55,7 @@ public class QuadNode extends QuadInfo {
 			v4.calcLight(block, center, side1.set(x+1, y1, z), side2.set(x, y1, z+1), corner.set(x+1, y1, z+1));
 			break;
 		case DOWN:
-			setAmb(0.7f);
+			setAmb(lightDim);
 			y1 = isInside ? y : y-1;
 			center.set(x, y1, z);
 			v1.calcLight(block, center, side1.set(x-1, y1, z), side2.set(x, y1, z-1), corner.set(x-1, y1, z-1));
@@ -56,7 +64,7 @@ public class QuadNode extends QuadInfo {
 			v4.calcLight(block, center, side1.set(x-1, y1, z), side2.set(x, y1, z+1), corner.set(x-1, y1, z+1));
 			break;
 		case SOUTH:
-			setAmb(0.85f);
+			setAmb(lightMed);
 			z1 = isInside ? z : z-1;
 			center.set(x, y, z1);
 			v1.calcLight(block, center, side1.set(x, y-1, z1), side2.set(x-1, y, z1), corner.set(x-1, y-1, z1));
@@ -65,7 +73,7 @@ public class QuadNode extends QuadInfo {
 			v4.calcLight(block, center, side1.set(x, y-1, z1), side2.set(x+1, y, z1), corner.set(x+1, y-1, z1));
 			break;
 		case WEST:
-			setAmb(0.75f);
+			setAmb(lightLow);
 			x1 = isInside ? x : x-1;
 			center.set(x1, y, z);
 			v1.calcLight(block, center, side1.set(x1, y-1, z), side2.set(x1, y, z+1), corner.set(x1, y-1, z+1));
@@ -74,7 +82,7 @@ public class QuadNode extends QuadInfo {
 			v4.calcLight(block, center, side1.set(x1, y-1, z), side2.set(x1, y, z-1), corner.set(x1, y-1, z-1));
 			break;
 		case NORTH:
-			setAmb(0.85f);
+			setAmb(lightMed);
 			z1 = isInside ? z : z+1;
 			center.set(x, y, z1);
 			v1.calcLight(block, center, side1.set(x, y-1, z1), side2.set(x+1, y, z1), corner.set(x+1, y-1, z1));
@@ -83,7 +91,7 @@ public class QuadNode extends QuadInfo {
 			v4.calcLight(block, center, side1.set(x, y-1, z1), side2.set(x-1, y, z1), corner.set(x-1, y-1, z1));
 			break;
 		case EAST:
-			setAmb(0.75f);
+			setAmb(lightLow);
 			x1 = isInside ? x : x+1;
 			center.set(x1, y, z);
 			v1.calcLight(block, center, side1.set(x1, y-1, z), side2.set(x1, y, z-1), corner.set(x1, y-1, z-1));

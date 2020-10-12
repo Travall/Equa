@@ -24,6 +24,7 @@ public class ChunkMesh implements Disposable
 		if (verts.isEmpty()) {
 			isEmpty = true;
 			buffer.limit(0);
+			buffer.position(0);
 			vbo = new VBO(buffer, context, glDraw, true);
 			return;
 		}

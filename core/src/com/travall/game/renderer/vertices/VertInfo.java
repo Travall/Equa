@@ -20,7 +20,7 @@ public class VertInfo {
 		return Float.intBitsToFloat((((int) (255*sunLit)<<16) | ((int) (255*srcLit)<<8) | ((int) (255*ambLit))));
 	}
 
-	private static final float[] AMB = {0.5f, 0.68f, 0.75f, 1f};
+	private static final float[] AMB = {0.5f, 0.65f, 0.75f, 1f};;
 
 	private void vertAO(AmbiantType side1, AmbiantType side2, AmbiantType corner) {
 		final boolean bool = side1 == AmbiantType.FULLBRIGHT || side2 == AmbiantType.FULLBRIGHT;

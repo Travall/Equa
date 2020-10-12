@@ -40,7 +40,7 @@ public final class VBO implements Disposable {
 		BufferUtils.copy(vertices, buffer, count, offset);
 		if (!isBound) gl30.glBindVertexArray(vaoHandle);
 		gl30.glBindBuffer(GL_ARRAY_BUFFER, bufferHandle);
-		gl30.glBufferData(GL_ARRAY_BUFFER, buffer.limit(), buffer, glDraw);
+		gl30.glBufferData(GL_ARRAY_BUFFER, 0, buffer, glDraw);
 		if (!isBound) gl30.glBindVertexArray(0);
 	}
 
@@ -55,11 +55,7 @@ public final class VBO implements Disposable {
 		isBound = false;
 	}
 
-	/**
-	 * Upload to GPU.
-	 * 
-	 * @param context
-	 */
+	/** Upload to GPU. */
 	private void upload(VertContext context, boolean usingQuadIndex) {
 		// Create the VAO handle.
 		tmpHandle.clear();
@@ -74,7 +70,7 @@ public final class VBO implements Disposable {
 		gl30.glBindBuffer(GL_ARRAY_BUFFER, bufferHandle);
 
 		// Upload the data.
-		if (buffer.limit() != 0) gl30.glBufferData(GL_ARRAY_BUFFER, 0, buffer, glDraw);
+		if (buffer.hasRemaining()) gl30.glBufferData(GL_ARRAY_BUFFER, 0, buffer, glDraw);
 
 		// Enable vertex attributes and set the pointers.
 		final VertexAttributes attributes = context.getAttrs();

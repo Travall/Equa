@@ -14,7 +14,6 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
-import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.kotcrab.vis.ui.VisUI;
@@ -51,8 +50,6 @@ public class Main extends ApplicationAdapter {
     int xChunks = mapWidth/chunkSizeX;
     int yChunks = mapHeight/chunkSizeY;
     int zChunks = mapLength/chunkSizeZ;
-
-    final BlockPos pickerHit = new BlockPos();
 
     Block blockType;
 
@@ -136,7 +133,7 @@ public class Main extends ApplicationAdapter {
 //      modelBatch.end();
         
         world.render(camera);
-        Picker.render(camera, pickerHit);
+        Picker.render(camera);
         Gdx.gl.glDisable(GL20.GL_CULL_FACE);
         
         ssao.end();
@@ -215,14 +212,15 @@ public class Main extends ApplicationAdapter {
     private void cameraRaycast() {
     	RayInfo info = Raycast.shot(camera, world);
     	if (info == null) {
-    		pickerHit.y = -1; // -1 indicates there's no block been casted.
+    		Picker.hasHit = false;
     		return;
     	}
+    	Picker.hasHit = true;
+    	Picker.rayInfo.set(info);
     	
     	BlockPos in =  info.in;
     	BlockPos out = info.out;
     	
-    	pickerHit.set(in);
     	if (Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
     		if(world.blockExists(in.x,in.y,in.z) && !BlocksList.equals(world.blocks[in.x][in.y][in.z], BlocksList.BEDROCK)) {
                 world.breakBlock(in.x, in.y, in.z);

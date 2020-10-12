@@ -15,7 +15,7 @@ import com.travall.game.world.World;
 
 public class Raycast {
 	private static final float LENGHT = 32.0f;
-	private static final float STEPS  = 0.01f;
+	private static final float STEPS  = 0.02f;
 	private static final RayInfo info = new RayInfo();
 	private static final Vector3 pos  = new Vector3();
 	private static final Vector3 nor  = new Vector3();
@@ -129,7 +129,10 @@ public class Raycast {
 						face = Facing.SOUTH;
 					}
 
-					if (face != null) break;
+					if (face != null) {
+						info.boxHit.set(staticBox);
+						break;
+					}
 				}
 			}
 
@@ -146,6 +149,7 @@ public class Raycast {
 			info.face = face;
 			info.in.set(inBlock);
 			info.out.set(inBlock).add(face.offset);
+			info.blockHit = block;
 			return info;
 		}
 		
@@ -159,5 +163,15 @@ public class Raycast {
 		public final BlockPos in  = new BlockPos();
 		
 		public Facing face;
+		
+		public final BoundingBox boxHit = new BoundingBox();
+		public Block blockHit;
+		
+		public void set(RayInfo info) {
+			out.set(info.out);
+			in.set(info.in);
+			boxHit.set(info.boxHit);
+			blockHit = info.blockHit;
+		}
 	}
 }
