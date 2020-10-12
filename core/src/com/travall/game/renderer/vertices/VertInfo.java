@@ -2,7 +2,6 @@ package com.travall.game.renderer.vertices;
 
 import static com.travall.game.world.World.world;
 
-import com.badlogic.gdx.math.MathUtils;
 import com.travall.game.blocks.Block;
 import com.travall.game.utils.AmbiantType;
 import com.travall.game.utils.BlockPos;
@@ -32,7 +31,7 @@ public class VertInfo {
 			return;
 		}
 		if (bool || corner == AmbiantType.FULLBRIGHT) return;
-		ambLit *= AMB[side1.value+side2.value+corner.value];;
+		ambLit *= AMB[side1.value + side2.value + corner.value];
 	}
 
 	private void smoothLight(int center, int side1, int side2, int corner) {
