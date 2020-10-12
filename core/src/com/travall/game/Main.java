@@ -14,7 +14,6 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
-import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.kotcrab.vis.ui.VisUI;
@@ -22,11 +21,12 @@ import com.travall.game.blocks.*;
 import com.travall.game.entities.Player;
 import com.travall.game.handles.FirstPersonCameraController;
 import com.travall.game.handles.Raycast;
-import com.travall.game.handles.VoxelTerrain;
 import com.travall.game.handles.Raycast.RayInfo;
 import com.travall.game.renderer.Picker;
 import com.travall.game.renderer.SSAO;
 import com.travall.game.renderer.Skybox;
+import com.travall.game.renderer.block.UltimateTexture;
+import com.travall.game.renderer.vertices.VoxelTerrain;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.world.World;
 
@@ -51,9 +51,7 @@ public class Main extends ApplicationAdapter {
     int yChunks = mapHeight/chunkSizeY;
     int zChunks = mapLength/chunkSizeZ;
 
-    final GridPoint3 pickerHit = new GridPoint3();
-
-    short blockType = Log.id;
+    Block blockType;
 
     Player player;
 
@@ -67,6 +65,10 @@ public class Main extends ApplicationAdapter {
     @Override
     public void create () {
     	VoxelTerrain.ints(); // Must ints it first.
+    	UltimateTexture.texture = new Texture("Tiles/ultimate4.png");
+    	BlocksList.ints();
+    	blockType = BlocksList.SLAB;
+    	
         assetManager = new AssetManager();
 
         DefaultShader.Config defaultConfig = new DefaultShader.Config();
@@ -131,7 +133,7 @@ public class Main extends ApplicationAdapter {
 //      modelBatch.end();
         
         world.render(camera);
-        Picker.render(camera, pickerHit);
+        Picker.render(camera);
         Gdx.gl.glDisable(GL20.GL_CULL_FACE);
         
         ssao.end();
@@ -171,12 +173,13 @@ public class Main extends ApplicationAdapter {
             player.isFlying = !player.isFlying;
         }
 
-        if(Gdx.input.isKeyPressed(Keys.Q)) blockType = Log.id;
-        if(Gdx.input.isKeyPressed(Keys.E)) blockType = Gold.id;
+        if(Gdx.input.isKeyPressed(Keys.Q)) blockType = BlocksList.SLAB;
+        if(Gdx.input.isKeyPressed(Keys.E)) blockType = BlocksList.SAND;
 
         if(Gdx.input.isKeyJustPressed(Keys.P)) VoxelTerrain.toggleAO();
 
-        camera.position.set(player.instance.transform.getTranslation(temp).add(0,0.75f,0));
+        camera.position.set(player.getPosition());
+        camera.position.add(0f, 1.65f, 0f);
 
         cameraRaycast();
     }
@@ -207,24 +210,23 @@ public class Main extends ApplicationAdapter {
     
     // Fast, accurate, and simple ray-cast.
     private void cameraRaycast() {
-    	RayInfo info = Raycast.Fastcast(camera, world);
+    	RayInfo info = Raycast.shot(camera, world);
     	if (info == null) {
-    		pickerHit.y = -1; // -1 indicates there's no block been casted.
+    		Picker.hasHit = false;
     		return;
     	}
+    	Picker.hasHit = true;
+    	Picker.rayInfo.set(info);
     	
-    	GridPoint3 in =  info.in;
-    	GridPoint3 out = info.out;
+    	BlockPos in =  info.in;
+    	BlockPos out = info.out;
     	
-    	pickerHit.set(in);
     	if (Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
-    		if(world.blockExists(in.x,in.y,in.z) && world.blocks[in.x][in.y][in.z] != Bedrock.id) {
+    		if(world.blockExists(in.x,in.y,in.z) && !BlocksList.equals(world.blocks[in.x][in.y][in.z], BlocksList.BEDROCK)) {
                 world.breakBlock(in.x, in.y, in.z);
-                world.setMeshDirtyShellAt(in.x, in.y, in.z);
             }
     	} else if (!world.isOutBound(out.x, out.y, out.z) && Gdx.input.isButtonJustPressed(Buttons.RIGHT)) {
     		world.placeBlock(out.x, out.y, out.z, blockType);
-    		world.setMeshDirtyShellAt(out.x, out.y, out.z);
     	}
     }
 }

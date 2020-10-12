@@ -19,4 +19,8 @@ public class Utils {
 		}
 		return locations;
 	}
+    
+    public static float gamma(double num) {
+    	return (float)Math.pow(num, 2.2);
+    }
 }

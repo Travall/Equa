@@ -3,18 +3,16 @@ package com.travall.game.world;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.RandomXS128;
 import com.badlogic.gdx.utils.Disposable;
 import com.travall.game.blocks.*;
-import com.travall.game.handles.VoxelTerrain;
 import com.travall.game.renderer.block.UltimateTexture;
+import com.travall.game.renderer.vertices.VoxelTerrain;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.FloodLight;
-import com.travall.game.utils.LightUtil;
 import com.travall.game.utils.Utils;
 import com.travall.game.utils.math.OpenSimplexOctaves;
 import com.travall.game.world.chunk.ChunkBuilder;
@@ -40,7 +38,6 @@ public final class World implements Disposable {
 	private byte[][][] lights;
 	ChunkBuilder blockBuilder;
 	FloodLight floodLight;
-	public UltimateTexture ultimate;
 	GridPoint3 pos = new GridPoint3();
 
 	ChunkMesh[][][] chunkMeshes;
@@ -50,14 +47,13 @@ public final class World implements Disposable {
 
 		blocks = new short[mapSize][mapHeight][mapSize];
 		lights = new byte[mapSize][mapHeight][mapSize];
+		chunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
 
 		this.blockBuilder = new ChunkBuilder(this);
 		this.floodLight = new FloodLight(this);
-		this.ultimate = new UltimateTexture(new Texture("Tiles/ultimate3.png"));
-		BlocksList.ints(ultimate);
+		BlocksList.ints();
 		generate(MathUtils.random.nextLong());
 
-		chunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
 		for (int x = 0; x < xChunks; x++)
 		for (int y = 0; y < yChunks; y++)
 		for (int z = 0; z < zChunks; z++) {
@@ -94,35 +90,32 @@ public final class World implements Disposable {
 				int yValue = (Math.round(height / 1) * 1);
 
 				if (steep2 > 0.5 && yValue > waterLevel) {
-					if (random.nextInt(100) >= 99 && x > 0 && z > 0 && x < mapSize - 1 && z < mapSize - 1) {
-						blocks[x][yValue + 1][z] = Log.id;
-						blocks[x][yValue + 2][z] = Log.id;
-						blocks[x][yValue + 3][z] = Log.id;
+					if (random.nextInt(100) >= 99 && x > 0 && z > 0 && x <= mapSize && z <= mapSize) {
+						setBlock(x, yValue+1, z, BlocksList.LOG);
+						setBlock(x, yValue+2, z, BlocksList.LOG);
+						setBlock(x, yValue+3, z, BlocksList.LOG);
 
 						for (int xx = x - 2; xx <= x + 2; xx++) {
 							for (int zz = z - 2; zz <= z + 2; zz++) {
-								if (x > 1 && z > 1 && x < mapSize - 2 && z < mapSize - 2)
-									blocks[xx][yValue + 4][zz] = Leaves.id;
+								setBlock(xx, yValue+4, zz, BlocksList.LEAVES);
 							}
 						}
 
 						for (int xx = x - 1; xx <= x + 1; xx++) {
 							for (int zz = z - 1; zz <= z + 1; zz++) {
-								if (x > 0 && z > 0 && x < mapSize - 1 && z < mapSize - 1)
-									blocks[xx][yValue + 5][zz] = Leaves.id;
+								setBlock(xx, yValue+5, zz, BlocksList.LEAVES);
 							}
 						}
 
-						blocks[x][yValue + 4][z] = Log.id;
-						blocks[x][yValue + 6][z] = Leaves.id;
+						setBlock(x, yValue+4, z, BlocksList.LOG);
+						setBlock(x, yValue+6, z, BlocksList.LEAVES);
 
 					}
 				} else if (steep < 0.3 && steep2 < 0.5) {
-					if (random.nextInt(100) >= 99 && x > 0 && z > 0 && x < mapSize && z < mapSize
-							&& yValue > waterLevel) {
-						blocks[x][yValue + 1][z] = Cactus.id;
-						blocks[x][yValue + 2][z] = Cactus.id;
-						blocks[x][yValue + 3][z] = Cactus.id;
+					if (random.nextInt(100) >= 99 && yValue > waterLevel) {
+						setBlock(x, yValue+1, z, BlocksList.CACTUS);
+						setBlock(x, yValue+2, z, BlocksList.CACTUS);
+						setBlock(x, yValue+3, z, BlocksList.CACTUS);
 					}
 				}
 
@@ -131,21 +124,21 @@ public final class World implements Disposable {
 					boolean caveTerritory = (caves >= maxTerrainHeight - (height - i) && caves > maxTerrainHeight / 2
 							&& i > 0);
 					if (i == 0) {
-						blocks[x][i][z] = Bedrock.id;
+						setBlock(x, i, z, BlocksList.BEDROCK);
 					} else {
 						if (i == yValue && i >= waterLevel) {
 							if (steep < 0.3 && steep2 < 0.5) {
-								blocks[x][i][z] = Sand.id;
+								setBlock(x, i, z, BlocksList.SAND);
 							} else {
-								blocks[x][i][z] = Grass.id;
+								setBlock(x, i, z, BlocksList.GRASS);
 							}
 						} else if (!caveTerritory) {
 							if (steep < 0.3 && steep2 < 0.5) {
-								blocks[x][i][z] = Sand.id;
+								setBlock(x, i, z, BlocksList.SAND);
 							} else if (caves >= maxTerrainHeight - (height - i) * 10) {
-								blocks[x][i][z] = Stone.id;
+								setBlock(x, i, z, BlocksList.STONE);
 							} else {
-								blocks[x][i][z] = Dirt.id;
+								setBlock(x, i, z, BlocksList.DIRT);
 							}
 
 						}
@@ -156,8 +149,8 @@ public final class World implements Disposable {
 					double caves = Utils.normalize(CaveNoise.getNoise(x, (int) (j), z), maxTerrainHeight);
 					boolean caveTerritory = (caves >= maxTerrainHeight - (height - j) && caves > maxTerrainHeight / 2
 							&& j > 0);
-					if (blocks[x][j][z] == Air.id && !caveTerritory) {
-						blocks[x][j][z] = Water.id;
+					if (blocks[x][j][z] == 0 && !caveTerritory) {
+						setBlock(x, j, z, BlocksList.WATER);
 					} else {
 						break;
 					}
@@ -167,7 +160,7 @@ public final class World implements Disposable {
 	}
 
 	public void render(Camera camera) {
-		getTexture().bind();
+		UltimateTexture.texture.bind();
         VoxelTerrain.begin(camera);
         Gdx.gl.glCullFace(GL20.GL_BACK);
         Gdx.gl.glEnable(GL20.GL_CULL_FACE);
@@ -195,35 +188,42 @@ public final class World implements Disposable {
 		blocks[x][y][z] = 0;
 
 		if (block.isSrclight()) { // if break srclight block.
-			floodLight.delSrclightAt(x, y, z, getSrcLight(x, y, z));
+			floodLight.delSrclightAt(x, y, z);
 			setSrcLight(x, y, z, 0);
 			floodLight.defillSrclight();
 			floodLight.fillSrclight();
 		} else { // if break non-srclight block.
-			if (y + 1 < mapHeight) floodLight.newSrclightAt(x, y + 1, z);
-			if (y - 1 >= 0) floodLight.newSrclightAt(x, y - 1, z);
-			if (z - 1 >= 0) floodLight.newSrclightAt(x, y, z - 1);
-			if (x - 1 >= 0) floodLight.newSrclightAt(x - 1, y, z);
-			if (z + 1 < mapSize) floodLight.newSrclightAt(x, y, z + 1);
-			if (x + 1 < mapSize) floodLight.newSrclightAt(x + 1, y, z);
+			if (y+1 < mapHeight) floodLight.newSrclightAt(x, y+1, z);
+			if (y-1 >= 0) floodLight.newSrclightAt(x, y-1, z);
+			if (z-1 >= 0) floodLight.newSrclightAt(x, y, z-1);
+			if (x-1 >= 0) floodLight.newSrclightAt(x-1, y, z);
+			if (z+1 < mapSize) floodLight.newSrclightAt(x, y, z +1);
+			if (x+1 < mapSize) floodLight.newSrclightAt(x+1, y, z);
 			floodLight.fillSrclight();
 		}
+		
+		setMeshDirtyShellAt(x, y, z);
 	}
 
-	public void placeBlock(int x, int y, int z, short id) {
-		Block block = BlocksList.get(id);
-		blocks[x][y][z] = id;
+	public void placeBlock(int x, int y, int z, Block block) {
+		if (block.isAir()) {
+			breakBlock(x, y, z);
+			return;
+		}
+		blocks[x][y][z] = (short)block.getID();
 
 		if (block.isSrclight()) { // if place srclight block.
 			setSrcLight(x, y, z, block.getLightLevel());
 			floodLight.newSrclightAt(x, y, z);
 			floodLight.fillSrclight();
 		} else { // if place non-srclight block.
-			floodLight.delSrclightAt(x, y, z, getSrcLight(x, y, z));
+			floodLight.delSrclightAt(x, y, z);
 			setSrcLight(x, y, z, 0);
 			floodLight.defillSrclight();
 			floodLight.fillSrclight();
 		}
+		
+		setMeshDirtyShellAt(x, y, z);
 	}
 
 	public void setMeshDirtyShellAt(int x, int y, int z) {
@@ -269,8 +269,20 @@ public final class World implements Disposable {
 		return !isOutBound(x, y, z) && blocks[x][y][z] != 0;
 	}
 
-	public short getBlockID(int x, int y, int z) {
+	public short getBlockRaw(int x, int y, int z) {
 		return isOutBound(x, y, z) ? 0 : blocks[x][y][z];
+	}
+	
+	public void setBlockRaw(int x, int y, int z, short blockID) {
+		if (isOutBound(x, y, z)) return;
+		
+		blocks[x][y][z] = blockID;
+	}
+	
+	public void setBlock(int x, int y, int z, Block block) {
+		if (isOutBound(x, y, z)) return;
+				
+		blocks[x][y][z] = (short)block.getID();
 	}
 
 	public Block getBlock(BlockPos pos) {
@@ -281,13 +293,12 @@ public final class World implements Disposable {
 		return x < 0 || y < 0 || z < 0 || x >= mapSize || y >= mapHeight || z >= mapSize;
 	}
 
+	public int getLight(BlockPos pos) {
+		return getLight(pos.x, pos.y, pos.z);
+	}
+	
 	public int getLight(int x, int y, int z) {
 		return isOutBound(x, y, z) ? 0xF0 : lights[x][y][z] & 0xFF;
-	}
-
-	// Get the bits XXXX0000
-	public int getSunLight(int x, int y, int z) {
-		return LightUtil.getSunLight(lights[x][y][z]);
 	}
 
 	// Set the bits XXXX0000
@@ -295,24 +306,13 @@ public final class World implements Disposable {
 		lights[x][y][z] = (byte) ((lights[x][y][z] & 0xF) | (val << 4));
 	}
 
-	// Get the bits 0000XXXX
-	public int getSrcLight(int x, int y, int z) {
-		return LightUtil.getSrcLight(lights[x][y][z]);
-	}
-
 	// Set the bits 0000XXXX
 	public void setSrcLight(int x, int y, int z, int val) {
 		lights[x][y][z] = (byte) ((lights[x][y][z] & 0xF0) | val); // Check this
 	}
 
-	public Texture getTexture() {
-		return ultimate.currentTexture;
-	}
-
 	@Override
-	public void dispose() {
-		ultimate.dispose();
-		
+	public void dispose() {		
 		for (int x = 0; x < xChunks; x++)
 		for (int y = 0; y < yChunks; y++)
 		for (int z = 0; z < zChunks; z++) {

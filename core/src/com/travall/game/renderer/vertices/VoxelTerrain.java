@@ -1,4 +1,4 @@
-package com.travall.game.handles;
+package com.travall.game.renderer.vertices;
 
 import static com.badlogic.gdx.Gdx.files;
 import static com.badlogic.gdx.graphics.glutils.ShaderProgram.POSITION_ATTRIBUTE;

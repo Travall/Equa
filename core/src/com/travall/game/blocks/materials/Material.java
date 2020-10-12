@@ -7,6 +7,7 @@ public class Material {
 	public static final Material BLOCK = new Material();
 	public static final Material LEAVES = new Material().setSolid(false);
 	public static final Material WATER = new WaterMaterial();
+	public static final Material SLAB = new SlabMaterial();
 	
 	/* Variables */
 	private boolean isSolid = isFullCube();
@@ -18,7 +19,8 @@ public class Material {
 		return true;
 	}
 
-	/** Is block solid. The default is <code>isFullCube()</code>. */
+	/** Is block solid. The default is <code>isSolid = isFullCube()</code>. If not true, then it's transparent block. 
+	 * @return true if this block has all side solid. Else return false for transparently or custom solid sides. */
 	public boolean isSolid() {
 		return isSolid;
 	}
@@ -28,14 +30,19 @@ public class Material {
 		return isFullCube();
 	}
 
-	/** Can it blocks sun's ray. The default is <code>isSolid()</code>. */
+	/** Can it blocks sun's ray. The default is <code>canBlockLights()</code>. */
 	public boolean canBlockSunRay() {
-		return isSolid();
+		return canBlockLights();
 	}
 
-	/** Can it blocks lights. The default is <code>isSolid()</code>. */
+	/** Can it blocks flood lights. The default is <code>isSolid()</code>. */
 	public boolean canBlockLights() {
 		return isSolid();
+	}
+	
+	/** Get blend type. */
+	public BlendType getBlendType() {
+		return isSolid() ? BlendType.SOLID : BlendType.CLEAR;
 	}
 	
 	/* Setters */
@@ -47,7 +54,7 @@ public class Material {
 
 	/* Utilities */
 
-	protected static final StringBuilder build = new StringBuilder();
+	private static final StringBuilder build = new StringBuilder();
 
 	@Override
 	public String toString() {
@@ -57,6 +64,17 @@ public class Material {
 		build.append("hasCollision: ").append(hasCollision()).append('\n');
 		build.append("canBlockSunRay: ").append(canBlockSunRay()).append('\n');
 		build.append("canBlockLights: ").append(canBlockLights()).append('\n');
+		build.append("getBlendType: ").append(getBlendType()).append('\n');
 		return build.toString();
+	}
+	
+	public static enum BlendType {
+		SOLID(true), CLEAR(false), TRANS(false);
+		
+		public final boolean isSoild;
+
+		private BlendType(boolean isSoild) {
+			this.isSoild = isSoild;
+		}
 	}
 }

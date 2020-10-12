@@ -16,15 +16,6 @@ public final class BlockPos {
 	
 	/** Create a unsafe BlockPos. */
 	public static BlockPos newBlockPos() {
-		return getBlockPos();
-	}
-
-	/** Create a unsafe BlockPos. */
-	public static BlockPos newBlockPos(int x, int y, int z) {
-		return getBlockPos().set(x, y, z);
-	}
-	
-	private static BlockPos getBlockPos() {
 		if (position >= MAX_BUFFER_SIZE) return new BlockPos();
 		final BlockPos blockPos = TABLE[position++];
 		return blockPos == null ? TABLE[position] = new BlockPos().setUnsafe() : blockPos;
@@ -80,15 +71,51 @@ public final class BlockPos {
 		this.z = 0;
 		return this;
 	}
+	
+	public BlockPos offset(Facing face) {
+		return offset(face.offset);
+	}
+	
+	public BlockPos offset(Facing face, int num) {
+		final BlockPos offset = face.offset;
+		return offset(offset.x*num, offset.y*num, offset.z*num);
+	}
 
 	public BlockPos offset(BlockPos pos) {
 		return offset(pos.x, pos.y, pos.z);
 	}
 
+	/** Create a offset BlockPos from BlockPos's pool. Use blockPos.copy() to store the BlockPos. */
 	public BlockPos offset(int x, int y, int z) {
+		return newBlockPos().set(this.x + x, this.y + y, this.z + z);
+	}
+	
+	public BlockPos add(BlockPos pos) {
+		return add(pos.x, pos.y, pos.z);
+	}
+
+	public BlockPos add(int x, int y, int z) {
 		this.x += x;
 		this.y += y;
 		this.z += z;
+		return this;
+	}
+	
+	public BlockPos sub(BlockPos pos) {
+		return sub(pos.x, pos.y, pos.z);
+	}
+
+	public BlockPos sub(int x, int y, int z) {
+		this.x -= x;
+		this.y -= y;
+		this.z -= z;
+		return this;
+	}
+	
+	public BlockPos negate() {
+		x = -x;
+		y = -y;
+		z = -z;
 		return this;
 	}
 	
@@ -110,6 +137,11 @@ public final class BlockPos {
 			return p.x == x && p.y == y && p.z == z;
 		}
 		return false;
+	}
+	
+	@Override
+	public String toString() {
+		return "("+x+", "+y+", "+x+")";
 	}
 	
 	public BlockPos copy() {
