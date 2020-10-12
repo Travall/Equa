@@ -56,7 +56,6 @@ public class Raycast {
 			
 			info.in.set(x, y, z).add(offset);
 			info.out.set(lx, ly, lz).add(offset);
-			System.out.println();
 			return info;
 		}
 		

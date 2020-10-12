@@ -1,6 +1,5 @@
 package com.travall.game.utils.math;
 
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Pool;
 

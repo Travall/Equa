@@ -14,13 +14,13 @@ public enum Facing {
 	/** Facing X- */
 	WEST (3, Axis.X,  new BlockPos(-1, 0, 0));
 	
-	private final int ID;
+	private final int num;
 	
 	public final Axis axis;
 	public final BlockPos offset;
 	
-	private Facing(int ID, Axis axis, BlockPos offset) {
-		this.ID = ID;
+	private Facing(int num, Axis axis, BlockPos offset) {
+		this.num = num;
 		this.offset = offset;
 		this.axis = axis;
 	}
@@ -45,11 +45,9 @@ public enum Facing {
 		}
 	}
 	
-	public Facing rotate(int num) {
-		if (ID == -1) return this;
-		int newID = (ID+num)%4;
-		newID += newID<0 ? 4 : 0;
-		switch (newID) {
+	public Facing rotate(int rotate) {
+		if (num == -1) return this;
+		switch ((num+rotate)&3) {
 		case 0:  return NORTH;
 		case 1:  return EAST;
 		case 2:  return SOUTH;
