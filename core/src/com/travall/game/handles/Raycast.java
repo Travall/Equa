@@ -15,7 +15,7 @@ import com.travall.game.world.World;
 
 public class Raycast {
 	private static final float LENGHT = 32.0f;
-	private static final float STEPS  = 0.02f;
+	private static final float STEPS  = 0.01f;
 	private static final RayInfo info = new RayInfo();
 	private static final Vector3 pos  = new Vector3();
 	private static final Vector3 nor  = new Vector3();
