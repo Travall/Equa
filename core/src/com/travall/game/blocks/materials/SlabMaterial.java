@@ -1,19 +1,19 @@
 package com.travall.game.blocks.materials;
 
-public class WaterMaterial extends Material {
+public class SlabMaterial extends Material {
 	@Override
 	public boolean isFullCube() {
-		return true;
+		return false;
 	}
 	
 	@Override
 	public boolean isSolid() {
 		return false;
 	}
-
+	
 	@Override
 	public boolean hasCollision() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -24,10 +24,5 @@ public class WaterMaterial extends Material {
 	@Override
 	public boolean canBlockLights() {
 		return false;
-	}
-	
-	@Override
-	public BlendType getBlendType() {
-		return BlendType.TRANS;
 	}
 }

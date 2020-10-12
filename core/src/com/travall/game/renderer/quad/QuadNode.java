@@ -1,0 +1,98 @@
+package com.travall.game.renderer.quad;
+
+import static com.travall.game.world.World.world;
+
+import com.badlogic.gdx.math.Vector3;
+import com.travall.game.blocks.Block;
+import com.travall.game.utils.BlockPos;
+import com.travall.game.utils.Facing;
+
+public class QuadNode extends QuadInfo {
+	public Facing face;
+	
+	public boolean isInside;
+	
+	final Vector3
+	p1 = new Vector3(),
+	p2 = new Vector3(),
+	p3 = new Vector3(),
+	p4 = new Vector3();
+	
+	private final BlockPos
+	center = new BlockPos(),
+	side1  = new BlockPos(),
+	side2  = new BlockPos(),
+	corner = new BlockPos();
+
+	public void rect(QuadBuilder builder, BlockPos pos) {
+		final int x = pos.x, y = pos.y, z = pos.z;
+		final Block block = world.getBlock(pos);
+		
+		int x1, y1, z1;
+		
+		final float xf = x, yf = y, zf = z; 
+		p1.set(v1.x+xf, v1.y+yf, v1.z+zf);
+		p2.set(v2.x+xf, v2.y+yf, v2.z+zf);
+		p3.set(v3.x+xf, v3.y+yf, v3.z+zf);
+		p4.set(v4.x+xf, v4.y+yf, v4.z+zf);
+		
+		switch (face) {
+		case UP:
+			setAmb(1f);
+			y1 = isInside ? y : y+1;
+			center.set(x, y1, z);
+			v1.calcLight(block, center, side1.set(x+1, y1, z), side2.set(x, y1, z-1), corner.set(x+1, y1, z-1));
+			v2.calcLight(block, center, side1.set(x-1, y1, z), side2.set(x, y1, z-1), corner.set(x-1, y1, z-1));
+			v3.calcLight(block, center, side1.set(x-1, y1, z), side2.set(x, y1, z+1), corner.set(x-1, y1, z+1));
+			v4.calcLight(block, center, side1.set(x+1, y1, z), side2.set(x, y1, z+1), corner.set(x+1, y1, z+1));
+			break;
+		case DOWN:
+			setAmb(0.7f);
+			y1 = isInside ? y : y-1;
+			center.set(x, y1, z);
+			v1.calcLight(block, center, side1.set(x-1, y1, z), side2.set(x, y1, z-1), corner.set(x-1, y1, z-1));
+			v2.calcLight(block, center, side1.set(x+1, y1, z), side2.set(x, y1, z-1), corner.set(x+1, y1, z-1));
+			v3.calcLight(block, center, side1.set(x+1, y1, z), side2.set(x, y1, z+1), corner.set(x+1, y1, z+1));
+			v4.calcLight(block, center, side1.set(x-1, y1, z), side2.set(x, y1, z+1), corner.set(x-1, y1, z+1));
+			break;
+		case SOUTH:
+			setAmb(0.85f);
+			z1 = isInside ? z : z-1;
+			center.set(x, y, z1);
+			v1.calcLight(block, center, side1.set(x, y-1, z1), side2.set(x-1, y, z1), corner.set(x-1, y-1, z1));
+			v2.calcLight(block, center, side1.set(x, y+1, z1), side2.set(x-1, y, z1), corner.set(x-1, y+1, z1));
+			v3.calcLight(block, center, side1.set(x, y+1, z1), side2.set(x+1, y, z1), corner.set(x+1, y+1, z1));
+			v4.calcLight(block, center, side1.set(x, y-1, z1), side2.set(x+1, y, z1), corner.set(x+1, y-1, z1));
+			break;
+		case WEST:
+			setAmb(0.75f);
+			x1 = isInside ? x : x-1;
+			center.set(x1, y, z);
+			v1.calcLight(block, center, side1.set(x1, y-1, z), side2.set(x1, y, z+1), corner.set(x1, y-1, z+1));
+			v2.calcLight(block, center, side1.set(x1, y+1, z), side2.set(x1, y, z+1), corner.set(x1, y+1, z+1));
+			v3.calcLight(block, center, side1.set(x1, y+1, z), side2.set(x1, y, z-1), corner.set(x1, y+1, z-1));
+			v4.calcLight(block, center, side1.set(x1, y-1, z), side2.set(x1, y, z-1), corner.set(x1, y-1, z-1));
+			break;
+		case NORTH:
+			setAmb(0.85f);
+			z1 = isInside ? z : z+1;
+			center.set(x, y, z1);
+			v1.calcLight(block, center, side1.set(x, y-1, z1), side2.set(x+1, y, z1), corner.set(x+1, y-1, z1));
+			v2.calcLight(block, center, side1.set(x, y+1, z1), side2.set(x+1, y, z1), corner.set(x+1, y+1, z1));
+			v3.calcLight(block, center, side1.set(x, y+1, z1), side2.set(x-1, y, z1), corner.set(x-1, y+1, z1));
+			v4.calcLight(block, center, side1.set(x, y-1, z1), side2.set(x-1, y, z1), corner.set(x-1, y-1, z1));
+			break;
+		case EAST:
+			setAmb(0.75f);
+			x1 = isInside ? x : x+1;
+			center.set(x1, y, z);
+			v1.calcLight(block, center, side1.set(x1, y-1, z), side2.set(x1, y, z-1), corner.set(x1, y-1, z-1));
+			v2.calcLight(block, center, side1.set(x1, y+1, z), side2.set(x1, y, z-1), corner.set(x1, y+1, z-1));
+			v3.calcLight(block, center, side1.set(x1, y+1, z), side2.set(x1, y, z+1), corner.set(x1, y+1, z+1));
+			v4.calcLight(block, center, side1.set(x1, y-1, z), side2.set(x1, y, z+1), corner.set(x1, y-1, z+1));
+			break;
+		}
+		
+		builder.rect(this);
+	}
+}

@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.FloatArray;
 import com.travall.game.glutils.VBO;
 import com.travall.game.glutils.VertContext;
+import com.travall.game.utils.BlockPos;
 
 public final class Picker {
 	
@@ -91,18 +92,18 @@ public final class Picker {
 	static float sine = 0;
 	
 	
-	public static void render(Camera camera, GridPoint3 position) {
+	public static void render(Camera camera, BlockPos pickerHit) {
 		
 		sine += 0.15f;
 		if (sine > MathUtils.PI2) {
 			sine -= MathUtils.PI2;
 		}
 		
-		if (position.y == -1) return;
+		if (pickerHit.y == -1) return;
 		gl.glEnable(GL20.GL_BLEND);
 		shader.bind();
 		shader.setUniformMatrix("u_projTrans", camera.combined);
-		shader.setUniformf("u_trans", position.x, position.y, position.z);
+		shader.setUniformf("u_trans", pickerHit.x, pickerHit.y, pickerHit.z);
 		shader.setUniformf("u_alpha", (MathUtils.sin(sine)*0.1f)+0.25f);
 		vbo.bind();
 		Gdx.gl.glDrawElements(GL20.GL_TRIANGLES, allIndex, GL20.GL_UNSIGNED_SHORT, 0);

@@ -1,5 +1,7 @@
 package com.travall.game.utils;
 
+import static com.travall.game.utils.LightUtil.*;
+
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Queue;
 import com.travall.game.blocks.BlocksList;
@@ -32,14 +34,15 @@ public class FloodLight {
 		srclightQue.addLast(POOL1.obtain().set(x, y, z));
 	}
 	
-	public void delSrclightAt(int x, int y, int z, int val) {
-		srclightDelQue.addLast(POOL2.obtain().set(x, y, z, val));
+	public void delSrclightAt(int x, int y, int z) {
+		srclightDelQue.addLast(POOL2.obtain().set(x, y, z, toSrcLight(world.getLight(x, y, z))));
 	}
 	
 	public void fillSrclight() {
 		final short[][][] blocks = world.blocks;
 		final int height = World.mapHeight;
 		final int size = World.mapSize;
+		
 		while(srclightQue.notEmpty()) {
 			// get the first node from the queue.
 			LightNode node = srclightQue.removeFirst();
@@ -53,35 +56,35 @@ public class FloodLight {
 			world.setMeshDirtyShellAt(x, y, z);
 			
 			// Get the light value from lightMap at current position
-			int lightLevel = world.getSrcLight(x, y, z);
+			int lightLevel = toSrcLight(world.getLight(x, y, z));
 			
 			if (y+1 < height)
-			if (!BlocksList.get(blocks[x][y+1][z]).getMaterial().canBlockLights() && world.getSrcLight(x, y+1, z)+2 <= lightLevel) {
+			if (!BlocksList.get(blocks[x][y+1][z]).getMaterial().canBlockLights() && toSrcLight(world.getLight(x, y+1, z))+2 <= lightLevel) {
 				world.setSrcLight(x, y+1, z, lightLevel-1);
 				srclightQue.addLast(POOL1.obtain().set(x, y+1, z));
 			}
 			if (y-1 >= 0)
-			if (!BlocksList.get(blocks[x][y-1][z]).getMaterial().canBlockLights() && world.getSrcLight(x, y-1, z)+2 <= lightLevel) {
+			if (!BlocksList.get(blocks[x][y-1][z]).getMaterial().canBlockLights() && toSrcLight(world.getLight(x, y-1, z))+2 <= lightLevel) {
 				world.setSrcLight(x, y-1, z, lightLevel-1);
 				srclightQue.addLast(POOL1.obtain().set(x, y-1, z));
 			}
 			if (z-1 >= 0)
-			if (!BlocksList.get(blocks[x][y][z-1]).getMaterial().canBlockLights() && world.getSrcLight(x, y, z-1)+2 <= lightLevel) {
+			if (!BlocksList.get(blocks[x][y][z-1]).getMaterial().canBlockLights() && toSrcLight(world.getLight(x, y, z-1))+2 <= lightLevel) {
 				world.setSrcLight(x, y, z-1, lightLevel-1);
 				srclightQue.addLast(POOL1.obtain().set(x, y, z-1));
 			}
 			if (x-1 >= 0)
-			if (!BlocksList.get(blocks[x-1][y][z]).getMaterial().canBlockLights() && world.getSrcLight(x-1, y, z)+2 <= lightLevel) {
+			if (!BlocksList.get(blocks[x-1][y][z]).getMaterial().canBlockLights() && toSrcLight(world.getLight(x-1, y, z))+2 <= lightLevel) {
 				world.setSrcLight(x-1, y, z, lightLevel-1);
 				srclightQue.addLast(POOL1.obtain().set(x-1, y, z));
 			}
 			if (z+1 < size)
-			if (!BlocksList.get(blocks[x][y][z-1]).getMaterial().canBlockLights() && world.getSrcLight(x, y, z+1)+2 <= lightLevel) {
+			if (!BlocksList.get(blocks[x][y][z+1]).getMaterial().canBlockLights() && toSrcLight(world.getLight(x, y, z+1))+2 <= lightLevel) {
 				world.setSrcLight(x, y, z+1, lightLevel-1);
 				srclightQue.addLast(POOL1.obtain().set(x, y, z+1));
 			}
 			if (x+1 < size)
-			if (!BlocksList.get(blocks[x+1][y][z]).getMaterial().canBlockLights() && world.getSrcLight(x+1, y, z)+2 <= lightLevel) {
+			if (!BlocksList.get(blocks[x+1][y][z]).getMaterial().canBlockLights() && toSrcLight(world.getLight(x+1, y, z))+2 <= lightLevel) {
 				world.setSrcLight(x+1, y, z, lightLevel-1);
 				srclightQue.addLast(POOL1.obtain().set(x+1, y, z));
 			}
@@ -108,7 +111,7 @@ public class FloodLight {
 			world.setMeshDirtyShellAt(x, y, z);
 			
 			if (y+1 < height) {
-				neighborLevel = world.getSrcLight(x, y+1, z);
+				neighborLevel = toSrcLight(world.getLight(x, y+1, z));
 				if (neighborLevel != 0 && neighborLevel < lightLevel) {
 					world.setSrcLight(x, y+1, z, 0);
 					srclightDelQue.addLast(POOL2.obtain().set(x, y+1, z, neighborLevel));
@@ -117,7 +120,7 @@ public class FloodLight {
 		        }	
 			}
 			if (y-1 >= 0) {
-				neighborLevel = world.getSrcLight(x, y-1, z);
+				neighborLevel = toSrcLight(world.getLight(x, y-1, z));
 				if (neighborLevel != 0 && neighborLevel < lightLevel) {
 					world.setSrcLight(x, y-1, z, 0);
 					srclightDelQue.addLast(POOL2.obtain().set(x, y-1, z, neighborLevel));
@@ -126,7 +129,7 @@ public class FloodLight {
 		        }	
 			}
 			if (z-1 >= 0) {
-				neighborLevel = world.getSrcLight(x, y, z-1);
+				neighborLevel = toSrcLight(world.getLight(x, y, z-1));
 				if (neighborLevel != 0 && neighborLevel < lightLevel) {
 					world.setSrcLight(x, y, z-1, 0);
 					srclightDelQue.addLast(POOL2.obtain().set(x, y, z-1, neighborLevel));
@@ -135,7 +138,7 @@ public class FloodLight {
 		        }	
 			}
 			if (x-1 >= 0) {
-				neighborLevel = world.getSrcLight(x-1, y, z);
+				neighborLevel = toSrcLight(world.getLight(x-1, y, z));
 				if (neighborLevel != 0 && neighborLevel < lightLevel) {
 					world.setSrcLight(x-1, y, z, 0);
 					srclightDelQue.addLast(POOL2.obtain().set(x-1, y, z, neighborLevel));
@@ -144,7 +147,7 @@ public class FloodLight {
 		        }	
 			}
 			if (z+1 < size) {
-				neighborLevel = world.getSrcLight(x, y, z+1);
+				neighborLevel = toSrcLight(world.getLight(x, y, z+1));
 				if (neighborLevel != 0 && neighborLevel < lightLevel) {
 					world.setSrcLight(x, y, z+1, 0);
 					srclightDelQue.addLast(POOL2.obtain().set(x, y, z+1, neighborLevel));
@@ -153,7 +156,7 @@ public class FloodLight {
 		        }	
 			}
 			if (x+1 < size) {
-				neighborLevel = world.getSrcLight(x+1, y, z);
+				neighborLevel = toSrcLight(world.getLight(x+1, y, z));
 				if (neighborLevel != 0 && neighborLevel < lightLevel) {
 					world.setSrcLight(x+1, y, z, 0);
 					srclightDelQue.addLast(POOL2.obtain().set(x+1, y, z, neighborLevel));

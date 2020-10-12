@@ -5,7 +5,11 @@ class AirMaterial extends Material {
 	public boolean isFullCube() {
 		return false;
 	}
-
+	
+	@Override
+	public boolean isSolid() {
+		return false;
+	}
 	@Override
 	public boolean hasCollision() {
 		return false;

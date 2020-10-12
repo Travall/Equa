@@ -5,12 +5,12 @@ public final class LightUtil {
 	public static final float lightScl  = fullLight;
 	
 	/** Get the bits XXXX0000 */
-	public static int getSunLight(int light) {
-	    return (light >>> 4) & 0xF;
+	public static int toSunLight(int light) {
+	    return light >>> 4;
 	}
 	
 	/** Get the bits 0000XXXX */
-	public static int getSrcLight(int light) {
+	public static int toSrcLight(int light) {
 	    return light & 0xF;
 	}
 }
