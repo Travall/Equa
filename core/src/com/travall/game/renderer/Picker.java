@@ -32,7 +32,7 @@ public final class Picker {
 	private static VBO vbo;
 	private static ShaderProgram shader;
 	
-	public static final RayInfo rayInfo = new RayInfo();
+	public static RayInfo rayInfo = new RayInfo();
 	public static boolean hasHit;
 	
 	public static void ints() {

@@ -5,7 +5,7 @@ import static com.travall.game.world.World.world;
 import com.travall.game.blocks.Block;
 import com.travall.game.utils.AmbiantType;
 import com.travall.game.utils.BlockPos;
-import com.travall.game.utils.LightUtil;
+import com.travall.game.utils.BlockUtils;
 
 public class VertInfo {
 	/** Positions */
@@ -38,28 +38,28 @@ public class VertInfo {
 		int light;
 		int lightTotal, lightCount = 1;
 
-		final int centerLight = LightUtil.toSrcLight(center);
+		final int centerLight = BlockUtils.toSrcLight(center);
 		lightTotal = centerLight;
 
-		light = LightUtil.toSrcLight(side1);
+		light = BlockUtils.toSrcLight(side1);
 		if (light != 0) {
 			lightCount++;
 			lightTotal += light;
 		}
 
-		light = LightUtil.toSrcLight(side2);
+		light = BlockUtils.toSrcLight(side2);
 		if (light != 0) {
 			lightCount++;
 			lightTotal += light;
 		}
 
-		light = LightUtil.toSrcLight(corner);
+		light = BlockUtils.toSrcLight(corner);
 		if (!twoSides && (light != 0 || centerLight == 1)) {
 			lightCount++;
 			lightTotal += (light == 1 && centerLight == 1) ? 0 : light;
 		}
 
-		srcLit = lightCount == 1 ? lightTotal / LightUtil.lightScl : (lightTotal / lightCount) / LightUtil.lightScl;
+		srcLit = lightCount == 1 ? lightTotal / BlockUtils.lightScl : (lightTotal / lightCount) / BlockUtils.lightScl;
 	}
 
 	public void calcLight(Block block, BlockPos center, BlockPos side1, BlockPos side2, BlockPos corner) {
@@ -67,7 +67,7 @@ public class VertInfo {
 		if (!block.isSrclight())
 			vertAO(world.getBlock(side1).getAmbiantType(), world.getBlock(side2).getAmbiantType(), world.getBlock(corner).getAmbiantType());
 		
-		smoothLight(world.getLight(center), world.getLight(side1), world.getLight(side2), world.getLight(corner));
+		smoothLight(world.getData(center), world.getData(side1), world.getData(side2), world.getData(corner));
 	}
 
 	public void setPos(float x, float y, float z) {

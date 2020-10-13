@@ -1,5 +1,7 @@
 package com.travall.game;
 
+import static com.travall.game.world.World.world;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
@@ -31,66 +33,54 @@ import com.travall.game.utils.BlockPos;
 import com.travall.game.world.World;
 
 public class Main extends ApplicationAdapter {
-    PerspectiveCamera camera;
-    FirstPersonCameraController cameraController;
-    ModelBatch modelBatch;
-    AssetManager assetManager;
-    
-    Skybox skybox;
-    ModelBatch shadowBatch;
-    World world;
-    int mapWidth = 256; // changed from 128 to 256
-    int mapLength = 256;
-    int mapHeight = 128;
-    int waterLevel = mapHeight / 5; // changed from 4 to 5
-    public int chunkShift = 4; // 1 << 4 = 16. I set it back from 32 to 16 due to vertices limitations.
-    public int chunkSizeX = 1<<chunkShift;
-    public int chunkSizeY = 1<<chunkShift;
-    public int chunkSizeZ = 1<<chunkShift;
-    int xChunks = mapWidth/chunkSizeX;
-    int yChunks = mapHeight/chunkSizeY;
-    int zChunks = mapLength/chunkSizeZ;
+	
+	PerspectiveCamera camera;
+	FirstPersonCameraController cameraController;
+	ModelBatch modelBatch;
+	AssetManager assetManager;
 
-    Block blockType;
+	Skybox skybox;
+	ModelBatch shadowBatch;
+	World world;
 
-    Player player;
+	Block blockType;
 
-    Vector3 temp = new Vector3();
+	Player player;
 
-    SSAO ssao;
-    SpriteBatch spriteBatch;
-    Texture crosshair;
+	Vector3 temp = new Vector3();
 
+	SSAO ssao;
+	SpriteBatch spriteBatch;
+	Texture crosshair;
 
-    @Override
-    public void create () {
-    	VoxelTerrain.ints(); // Must ints it first.
-    	UltimateTexture.texture = new Texture("Tiles/ultimate4.png");
-    	BlocksList.ints();
-    	blockType = BlocksList.SLAB;
-    	
-        assetManager = new AssetManager();
+	@Override
+	public void create() {
+		VoxelTerrain.ints(); // Must ints it first.
+		UltimateTexture.texture = new Texture("Tiles/ultimate4.png");
+		BlocksList.ints();
+		blockType = BlocksList.SLAB;
 
-        DefaultShader.Config defaultConfig = new DefaultShader.Config();
-        defaultConfig.numDirectionalLights = 2;
-        defaultConfig.fragmentShader = Gdx.files.internal("Shaders/frag.glsl").readString();
-        defaultConfig.vertexShader = Gdx.files.internal("Shaders/vert.glsl").readString();
+		assetManager = new AssetManager();
 
-        modelBatch = new ModelBatch(new DefaultShaderProvider(defaultConfig));
+		DefaultShader.Config defaultConfig = new DefaultShader.Config();
+		defaultConfig.numDirectionalLights = 2;
+		defaultConfig.fragmentShader = Gdx.files.internal("Shaders/frag.glsl").readString();
+		defaultConfig.vertexShader = Gdx.files.internal("Shaders/vert.glsl").readString();
 
-        Vector3 starting = new Vector3(mapWidth/2,mapHeight,mapLength/2);
+		modelBatch = new ModelBatch(new DefaultShaderProvider(defaultConfig));
 
-        skybox = new Skybox();;
+		skybox = new Skybox();
+		;
 
-        camera = new PerspectiveCamera(90,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-        camera.near = 0.1f;
-        camera.far = 500f;
-        camera.update();
+		camera = new PerspectiveCamera(90, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		camera.near = 0.1f;
+		camera.far = 500f;
+		camera.update();
 
-        cameraController = new FirstPersonCameraController(camera);
-        Gdx.input.setInputProcessor(cameraController);
+		cameraController = new FirstPersonCameraController(camera);
+		Gdx.input.setInputProcessor(cameraController);
 
-        shadowBatch = new ModelBatch(new DepthShaderProvider());
+		shadowBatch = new ModelBatch(new DepthShaderProvider());
 
 //        assetManager.load("Models/steve.g3dj",Model.class);
 //        assetManager.finishLoading();
@@ -100,133 +90,145 @@ public class Main extends ApplicationAdapter {
 //        steve.transform.scale(0.3f,0.3f,0.3f);
 //        steve.transform.setTranslation(starting.x,starting.y + 2,starting.z);
 
-        world = new World();
+		world = new World();
+		Vector3 starting = new Vector3(World.mapSize / 2, World.mapHeight, World.mapSize / 2);
+		player = new Player(starting);
 
-        player = new Player(new Vector3(starting.x - 0.5f,starting.y + 3,starting.z - 0.5f));
+		ssao = new SSAO(camera);
+		ssao.setEnable(false); // Enable or disable the SSAO.
 
-        ssao = new SSAO(camera);
-        ssao.setEnable(false); // Enable or disable the SSAO.
+		spriteBatch = new SpriteBatch();
 
-        spriteBatch = new SpriteBatch();
+		Gdx.input.setCursorCatched(true);
 
-        Gdx.input.setCursorCatched(true);
-        
-        crosshair = new Texture("crosshair.png");
-        
-        Picker.ints();
-    }
+		crosshair = new Texture("crosshair.png");
 
-    Texture text;
-    @Override
-    public void render () {
-        update();
-        camera.update(); // Update the camera projection
+		Picker.ints();
+	}
 
-        ssao.begin();
-        Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-        
-        skybox.render(camera);
-        
+	StringBuilder build = new StringBuilder();
+
+	@Override
+	public void render() {
+		update();
+		camera.update(); // Update the camera projection
+
+		ssao.begin();
+		Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+
+		skybox.render(camera);
+
 //      modelBatch.begin(camera);
 //      modelBatch.render(player.instance,environment);
 //      modelBatch.end();
-        
-        world.render(camera);
-        Picker.render(camera);
-        Gdx.gl.glDisable(GL20.GL_CULL_FACE);
-        
-        ssao.end();
-        Gdx.gl.glDisable(GL20.GL_CULL_FACE);
-        Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
-        ssao.render();
+
+		world.render(camera);
+		Picker.render(camera);
+		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
+
+		ssao.end();
+		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
+		Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
+		ssao.render();
 
 //        spriteBatch.setShader(ssaoShaderProgram);
-        spriteBatch.begin();
-        spriteBatch.draw(crosshair,(Gdx.graphics.getWidth() / 2) - 8, (Gdx.graphics.getHeight() / 2) - 8);
-        spriteBatch.end();
-        spriteBatch.setShader(null);
-        
-        BlockPos.reset(); // Always reset the pool.
-        Gdx.gl.glUseProgram(0); // Fix some performance issues.
-    }
+		spriteBatch.begin();
+		spriteBatch.draw(crosshair, (Gdx.graphics.getWidth() / 2) - 8, (Gdx.graphics.getHeight() / 2) - 8);
+		spriteBatch.end();
+		spriteBatch.setShader(null);
 
-    private void update() {
+		BlockPos.reset(); // Always reset the pool.
+		Gdx.gl.glUseProgram(0); // Fix some performance issues.
+	}
 
-        player.update(world,camera,cameraController);
+	private void update() {
 
-        //System.out.println(Gdx.graphics.getFramesPerSecond());
-    	
-        camera.fieldOfView = MathUtils.lerp(camera.fieldOfView,cameraController.targetFOV, 0.2f);
+		player.update(world, camera, cameraController);
 
-        if (Gdx.input.isKeyJustPressed(Keys.F11)){
-            Graphics.DisplayMode currentMode = Gdx.graphics.getDisplayMode();
+		// System.out.println(Gdx.graphics.getFramesPerSecond());
 
-            if(Gdx.graphics.isFullscreen()) {
-                Gdx.graphics.setWindowedMode(800,600);
-            } else {
-                Gdx.graphics.setFullscreenMode(currentMode);
-            }
-        }
+		camera.fieldOfView = MathUtils.lerp(camera.fieldOfView, cameraController.targetFOV, 0.2f);
 
-        if (Gdx.input.isKeyJustPressed(Keys.F)) {
-            player.isFlying = !player.isFlying;
-        }
+		if (Gdx.input.isKeyJustPressed(Keys.F11)) {
+			Graphics.DisplayMode currentMode = Gdx.graphics.getDisplayMode();
 
-        if(Gdx.input.isKeyPressed(Keys.Q)) blockType = BlocksList.SLAB;
-        if(Gdx.input.isKeyPressed(Keys.E)) blockType = BlocksList.SAND;
+			if (Gdx.graphics.isFullscreen()) {
+				Gdx.graphics.setWindowedMode(800, 600);
+			} else {
+				Gdx.graphics.setFullscreenMode(currentMode);
+			}
+		}
 
-        if(Gdx.input.isKeyJustPressed(Keys.P)) VoxelTerrain.toggleAO();
+		if (Gdx.input.isKeyJustPressed(Keys.F)) {
+			player.isFlying = !player.isFlying;
+		}
 
-        camera.position.set(player.getPosition());
-        camera.position.add(0f, 1.65f, 0f);
+		if (Gdx.input.isKeyPressed(Keys.Q))
+			blockType = BlocksList.SLAB;
+		if (Gdx.input.isKeyPressed(Keys.E))
+			blockType = BlocksList.GOLD;
 
-        cameraRaycast();
-    }
+		if (Gdx.input.isKeyJustPressed(Keys.P))
+			VoxelTerrain.toggleAO();
 
-    @Override
-    public void resize(int width, int height) {
-        spriteBatch.getProjectionMatrix().setToOrtho2D(0,0,width,height);
-        ssao.resize(width, height);
-        camera.viewportWidth = width;
-        camera.viewportHeight = height;
-        camera.update();
-    }
+		camera.position.set(player.getPosition());
+		camera.position.add(0f, 1.65f, 0f);
 
-    @Override
-    public void dispose () {
-        ssao.dispose();
-        spriteBatch.dispose();
-        crosshair.dispose();
-        world.dispose();
-        skybox.dispose();
+		cameraRaycast();
+	}
 
-        modelBatch.dispose();
-        assetManager.dispose();
-        VisUI.dispose();
-        VoxelTerrain.dispose();
-        Picker.dispose();
-    }
-    
-    // Fast, accurate, and simple ray-cast.
-    private void cameraRaycast() {
-    	RayInfo info = Raycast.shot(camera, world);
-    	if (info == null) {
-    		Picker.hasHit = false;
-    		return;
-    	}
-    	Picker.hasHit = true;
-    	Picker.rayInfo.set(info);
-    	
-    	BlockPos in =  info.in;
-    	BlockPos out = info.out;
-    	
-    	if (Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
-    		if(world.blockExists(in.x,in.y,in.z) && !BlocksList.equals(world.blocks[in.x][in.y][in.z], BlocksList.BEDROCK)) {
-                world.breakBlock(in.x, in.y, in.z);
-            }
-    	} else if (!world.isOutBound(out.x, out.y, out.z) && Gdx.input.isButtonJustPressed(Buttons.RIGHT)) {
-    		world.placeBlock(out.x, out.y, out.z, blockType);
-    	}
-    }
+	@Override
+	public void resize(int width, int height) {
+		spriteBatch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
+		ssao.resize(width, height);
+		camera.viewportWidth = width;
+		camera.viewportHeight = height;
+		camera.update();
+	}
+
+	@Override
+	public void dispose() {
+		ssao.dispose();
+		spriteBatch.dispose();
+		crosshair.dispose();
+		world.dispose();
+		skybox.dispose();
+
+		modelBatch.dispose();
+		assetManager.dispose();
+		VisUI.dispose();
+		VoxelTerrain.dispose();
+		Picker.dispose();
+		UltimateTexture.dispose();
+	}
+
+	// Fast, accurate, and simple ray-cast.
+	private void cameraRaycast() {
+		final RayInfo info = Raycast.shot(camera, world);
+		if (info == null) {
+			Picker.hasHit = false;
+			return;
+		}
+		Picker.hasHit = true;
+		Picker.rayInfo = info;
+		if (Gdx.input.justTouched()) {
+			final int button = 
+			Gdx.input.isButtonPressed(Buttons.LEFT) ? Buttons.LEFT : 
+			Gdx.input.isButtonPressed(Buttons.RIGHT) ? Buttons.RIGHT : -1;
+			
+			if (button != -1) {
+				if (!blockType.onClick(player, info, button)) {
+					if (button == Buttons.RIGHT) {
+						if (!world.isOutBound(info.out.x, info.out.y, info.out.z) 
+						&& world.isAirBlock(info.out.x, info.out.y, info.out.z)) {
+							blockType.onPlace(player, info);
+						}
+					} else if (button == Buttons.LEFT){
+						world.breakBlock(info.in);
+					}
+				}
+			}
+		}
+	}
 }
