@@ -8,6 +8,8 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.travall.game.blocks.materials.Material;
 import com.travall.game.blocks.models.IBlockModel;
+import com.travall.game.entities.Player;
+import com.travall.game.handles.Raycast.RayInfo;
 import com.travall.game.utils.AmbiantType;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.Facing;
@@ -102,6 +104,19 @@ public class Block {
 	/** Call when entity collide to the block. */
 	public void onEntityCollide(BlockPos pos) {
 		
+	}
+	
+	/** Call when player click on the block. 
+	 * @return true to stop placing the block (onPlace). */
+	public boolean onClick(Player player, RayInfo rayInfo, int button) {
+		return false;
+	}
+	
+	/** Place the block. 
+	 *  @return true if player has successfully place the block. */
+	public boolean onPlace(Player player, RayInfo rayInfo) {		
+		world.placeBlock(rayInfo.out, this);
+		return true;
 	}
 	
 	public AmbiantType getAmbiantType() {

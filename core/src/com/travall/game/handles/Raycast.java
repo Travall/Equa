@@ -34,7 +34,7 @@ public class Raycast {
 		offset.set(floor(rayPos.x), floor(rayPos.y), floor(rayPos.z));
 		
 		// if Block is inside the player, then cast that block
-		if (map.blockExists(offset.x, offset.y, offset.z)) {
+		if (!map.isAirBlock(offset.x, offset.y, offset.z)) {
 			info.in.set(offset);
 			info.out.set(offset);
 			return info;
@@ -49,7 +49,7 @@ public class Raycast {
 			pos.add(nor);
 			if ((y = floor(pos.y)) == ly && (x = floor(pos.x)) == lx && (z = floor(pos.z)) == lz) continue;
 			
-			if (!map.blockExists(x+offset.x, y+offset.y, z+offset.z)) {
+			if (!map.isAirBlock(x+offset.x, y+offset.y, z+offset.z)) {
 				lx = x; ly = y; lz = z;
 				continue;
 			}
@@ -129,7 +129,7 @@ public class Raycast {
 					}
 
 					if (face != null) {
-						info.boxHit.set(staticBox);
+						info.boxHit = staticBox;
 						break;
 					}
 				}
@@ -163,14 +163,7 @@ public class Raycast {
 		
 		public Facing face;
 		
-		public final BoundingBox boxHit = new BoundingBox();
+		public BoundingBox boxHit;
 		public Block blockHit;
-		
-		public void set(RayInfo info) {
-			out.set(info.out);
-			in.set(info.in);
-			boxHit.set(info.boxHit);
-			blockHit = info.blockHit;
-		}
 	}
 }

@@ -1,5 +1,7 @@
 package com.travall.game.world;
 
+import static com.travall.game.utils.BlockUtils.*;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
@@ -34,26 +36,22 @@ public final class World implements Disposable {
 
 	public static final int waterLevel = mapHeight / 5; // changed from 4 to 5
 
-	public short[][][] blocks;
-	private byte[][][] lights;
-	ChunkBuilder blockBuilder;
-	FloodLight floodLight;
-	GridPoint3 pos = new GridPoint3();
+	final public int[][][] data;
+	final ChunkBuilder blockBuilder;
+	final FloodLight floodLight;
+	final GridPoint3 pos = new GridPoint3();
 
-	ChunkMesh[][][] chunkMeshes;
+	final ChunkMesh[][][] chunkMeshes;
 
 	public World() {
 		World.world = this;
 
-		blocks = new short[mapSize][mapHeight][mapSize];
-		lights = new byte[mapSize][mapHeight][mapSize];
-		chunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
-
+		this.data = new int[mapSize][mapHeight][mapSize];
 		this.blockBuilder = new ChunkBuilder(this);
 		this.floodLight = new FloodLight(this);
-		BlocksList.ints();
 		generate(MathUtils.random.nextLong());
 
+		chunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
 		for (int x = 0; x < xChunks; x++)
 		for (int y = 0; y < yChunks; y++)
 		for (int z = 0; z < zChunks; z++) {
@@ -67,9 +65,6 @@ public final class World implements Disposable {
 		OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5, 0.25, random.nextLong());
 		OpenSimplexOctaves DecisionNoise = new OpenSimplexOctaves(8, 0.4, random.nextLong());
 		OpenSimplexOctaves Decision2Noise = new OpenSimplexOctaves(8, 0.4, random.nextLong());
-
-		blocks = new short[mapSize][mapHeight][mapSize];
-		lights = new byte[mapSize][mapHeight][mapSize];
 
 		int maxTerrainHeight = Math.round(mapHeight / 1.8f);
 
@@ -149,7 +144,7 @@ public final class World implements Disposable {
 					double caves = Utils.normalize(CaveNoise.getNoise(x, (int) (j), z), maxTerrainHeight);
 					boolean caveTerritory = (caves >= maxTerrainHeight - (height - j) && caves > maxTerrainHeight / 2
 							&& j > 0);
-					if (blocks[x][j][z] == 0 && !caveTerritory) {
+					if (isAirBlock(x, j, z) && !caveTerritory) {
 						setBlock(x, j, z, BlocksList.WATER);
 					} else {
 						break;
@@ -183,9 +178,10 @@ public final class World implements Disposable {
         VoxelTerrain.end();
 	}
 
-	public void breakBlock(int x, int y, int z) {
-		Block block = BlocksList.get(blocks[x][y][z]);
-		blocks[x][y][z] = 0;
+	public void breakBlock(BlockPos pos) {
+		final int x = pos.x, y = pos.y, z = pos.z;
+		Block block = BlocksList.get(data[x][y][z]);
+		setBlock(x, y, z, BlocksList.AIR);
 
 		if (block.isSrclight()) { // if break srclight block.
 			floodLight.delSrclightAt(x, y, z);
@@ -205,12 +201,13 @@ public final class World implements Disposable {
 		setMeshDirtyShellAt(x, y, z);
 	}
 
-	public void placeBlock(int x, int y, int z, Block block) {
+	public void placeBlock(BlockPos pos, Block block) {
 		if (block.isAir()) {
-			breakBlock(x, y, z);
+			breakBlock(pos);
 			return;
 		}
-		blocks[x][y][z] = (short)block.getID();
+		final int x = pos.x, y = pos.y, z = pos.z;
+		setBlock(x, y, z, block);
 
 		if (block.isSrclight()) { // if place srclight block.
 			setSrcLight(x, y, z, block.getLightLevel());
@@ -265,50 +262,40 @@ public final class World implements Disposable {
 			chunkMeshes[indexX][indexY][indexZ].isDirty = true;
 	}
 
-	public boolean blockExists(int x, int y, int z) {
-		return !isOutBound(x, y, z) && blocks[x][y][z] != 0;
-	}
-
-	public short getBlockRaw(int x, int y, int z) {
-		return isOutBound(x, y, z) ? 0 : blocks[x][y][z];
-	}
-	
-	public void setBlockRaw(int x, int y, int z, short blockID) {
-		if (isOutBound(x, y, z)) return;
-		
-		blocks[x][y][z] = blockID;
+	public boolean isAirBlock(int x, int y, int z) {
+		return isOutBound(x, y, z) || toBlockID(data[x][y][z]) == 0;
 	}
 	
 	public void setBlock(int x, int y, int z, Block block) {
 		if (isOutBound(x, y, z)) return;
 				
-		blocks[x][y][z] = (short)block.getID();
+		data[x][y][z] = (data[x][y][z] & ID_INV) | block.getID();
 	}
 
 	public Block getBlock(BlockPos pos) {
-		return isOutBound(pos.x, pos.y, pos.z) ? BlocksList.AIR : BlocksList.get(blocks[pos.x][pos.y][pos.z]);
+		return isOutBound(pos.x, pos.y, pos.z) ? BlocksList.AIR : BlocksList.get(data[pos.x][pos.y][pos.z]);
 	}
 
 	public boolean isOutBound(int x, int y, int z) {
 		return x < 0 || y < 0 || z < 0 || x >= mapSize || y >= mapHeight || z >= mapSize;
 	}
 
-	public int getLight(BlockPos pos) {
-		return getLight(pos.x, pos.y, pos.z);
+	public int getData(BlockPos pos) {
+		return getData(pos.x, pos.y, pos.z);
 	}
 	
-	public int getLight(int x, int y, int z) {
-		return isOutBound(x, y, z) ? 0xF0 : lights[x][y][z] & 0xFF;
+	public int getData(int x, int y, int z) {
+		return isOutBound(x, y, z) ? 0xF0000000 : data[x][y][z];
 	}
 
 	// Set the bits XXXX0000
 	public void setSunLight(int x, int y, int z, int val) {
-		lights[x][y][z] = (byte) ((lights[x][y][z] & 0xF) | (val << 4));
+		data[x][y][z] = (data[x][y][z] & SUN_INV) | (val << SUN_SHIFT);
 	}
 
 	// Set the bits 0000XXXX
 	public void setSrcLight(int x, int y, int z, int val) {
-		lights[x][y][z] = (byte) ((lights[x][y][z] & 0xF0) | val); // Check this
+		data[x][y][z] = (data[x][y][z] & SRC_INV) | (val << SRC_SHIFT);
 	}
 
 	@Override

@@ -12,4 +12,10 @@ public final class UltimateTexture {
 	public static TextureRegion createRegion(int indexX, int indexY) {
 		return new TextureRegion(texture, indexX*regionSize, indexY*regionSize, regionSize, regionSize);
 	}
+
+	public static void dispose() {
+		if (texture == null) return;
+		texture.dispose();
+		texture = null;
+	}
 }
