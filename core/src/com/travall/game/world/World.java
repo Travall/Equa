@@ -19,6 +19,7 @@ import com.travall.game.utils.Utils;
 import com.travall.game.utils.math.OpenSimplexOctaves;
 import com.travall.game.world.chunk.ChunkBuilder;
 import com.travall.game.world.chunk.ChunkMesh;
+import com.travall.game.world.chunk.CombinedChunk;
 
 public final class World implements Disposable {
 	/** Easy world access. */
@@ -41,7 +42,8 @@ public final class World implements Disposable {
 	final FloodLight floodLight;
 	final GridPoint3 pos = new GridPoint3();
 
-	final ChunkMesh[][][] chunkMeshes;
+	final ChunkMesh[][][] opaqueChunkMeshes;
+	final ChunkMesh[][][] transparentChunkMeshes;
 
 	public World() {
 		World.world = this;
@@ -51,11 +53,14 @@ public final class World implements Disposable {
 		this.floodLight = new FloodLight(this);
 		generate(MathUtils.random.nextLong());
 
-		chunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
+		opaqueChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
+		transparentChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
 		for (int x = 0; x < xChunks; x++)
 		for (int y = 0; y < yChunks; y++)
 		for (int z = 0; z < zChunks; z++) {
-			chunkMeshes[x][y][z] = blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, null);
+			CombinedChunk combinedChunk = (blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, null,null));
+			opaqueChunkMeshes[x][y][z] = combinedChunk.opaque;
+			transparentChunkMeshes[x][y][z] = combinedChunk.transparent;
 		}
 	}
 
@@ -159,18 +164,22 @@ public final class World implements Disposable {
         VoxelTerrain.begin(camera);
         Gdx.gl.glCullFace(GL20.GL_BACK);
         Gdx.gl.glEnable(GL20.GL_CULL_FACE);
-        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
-        for(int x = 0; x < chunkMeshes.length; x++) {
-            for(int y = 0; y < chunkMeshes[0].length; y++) {
-                for(int z = 0; z < chunkMeshes[0][0].length; z++) {
-                    ChunkMesh mesh = chunkMeshes[x][y][z];
+		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
+        for(int x = 0; x < opaqueChunkMeshes.length; x++) {
+            for(int y = 0; y < opaqueChunkMeshes[0].length; y++) {
+                for(int z = 0; z < opaqueChunkMeshes[0][0].length; z++) {
+					ChunkMesh mesh = opaqueChunkMeshes[x][y][z];
+					ChunkMesh mesh2 = transparentChunkMeshes[x][y][z];
                     if (mesh == null) continue;
                     if (mesh.isDirty) {
-                    	blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, chunkMeshes[x][y][z]);
+                    	blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, opaqueChunkMeshes[x][y][z],transparentChunkMeshes[x][y][z]);
                     }
 
                     if(camera.frustum.boundsInFrustum(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize,chunkSize,chunkSize))
-                        mesh.render();
+                    	Gdx.gl.glDisable(GL20.GL_BLEND);
+						mesh.render();
+						Gdx.gl.glEnable(GL20.GL_BLEND);
+						mesh2.render();
                 }
             }
         }
@@ -258,8 +267,11 @@ public final class World implements Disposable {
 		if (indexX < 0 || indexX >= xChunks || indexY < 0 || indexY >= yChunks || indexZ < 0 || indexZ >= zChunks)
 			return;
 
-		if (chunkMeshes[indexX][indexY][indexZ] != null)
-			chunkMeshes[indexX][indexY][indexZ].isDirty = true;
+		if (opaqueChunkMeshes[indexX][indexY][indexZ] != null)
+			opaqueChunkMeshes[indexX][indexY][indexZ].isDirty = true;
+
+		if (transparentChunkMeshes[indexX][indexY][indexZ] != null)
+			transparentChunkMeshes[indexX][indexY][indexZ].isDirty = true;
 	}
 
 	public boolean isAirBlock(int x, int y, int z) {
@@ -303,7 +315,8 @@ public final class World implements Disposable {
 		for (int x = 0; x < xChunks; x++)
 		for (int y = 0; y < yChunks; y++)
 		for (int z = 0; z < zChunks; z++) {
-			chunkMeshes[x][y][z].dispose();
+			opaqueChunkMeshes[x][y][z].dispose();
+			transparentChunkMeshes[x][y][z].dispose();
 		}
 		
 		World.world = null;

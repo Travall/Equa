@@ -12,7 +12,7 @@ public class QuadBuilder extends QuadInfo {
 
 	private static final int maxFloats = QuadIndexBuffer.maxVertex*VoxelTerrain.floatSize;
 
-	private static final FloatArray vertices = new FloatArray(256) {
+	private final FloatArray vertices = new FloatArray(256) {
 		protected float[] resize (int newSize) {
 			if (items.length == maxFloats) throw new IllegalStateException("Max vertex size has been reached!");
 			return super.resize(Math.min(newSize, maxFloats));
