@@ -167,7 +167,7 @@ public class Main extends ApplicationAdapter {
 		if (Gdx.input.isKeyPressed(Keys.Q))
 			blockType = BlocksList.SLAB;
 		if (Gdx.input.isKeyPressed(Keys.E))
-			blockType = BlocksList.GOLD;
+			blockType = BlocksList.WATER;
 
 		if (Gdx.input.isKeyJustPressed(Keys.P))
 			VoxelTerrain.toggleAO();
