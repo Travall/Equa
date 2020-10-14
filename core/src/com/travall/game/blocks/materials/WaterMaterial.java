@@ -3,7 +3,7 @@ package com.travall.game.blocks.materials;
 public class WaterMaterial extends Material {
 	@Override
 	public boolean isFullCube() {
-		return true;
+		return false;
 	}
 	
 	@Override

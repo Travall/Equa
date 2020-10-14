@@ -149,11 +149,9 @@ public final class World implements Disposable {
 
 				for (int j = waterLevel; j > 0; j--) {
 					double caves = Utils.normalize(CaveNoise.getNoise(x, (int) (j), z), maxTerrainHeight);
-					boolean caveTerritory = (caves >= maxTerrainHeight - (height - j) && caves > maxTerrainHeight / 2
-							&& j > 0);
-					Block blockType = j == waterLevel ?  BlocksList.WATERTOP : BlocksList.WATER;
+					boolean caveTerritory = (caves >= maxTerrainHeight - (height - j) && caves > maxTerrainHeight / 2 && j > 0);
 					if (isAirBlock(x, j, z) && !caveTerritory) {
-						setBlock(x, j, z, blockType);
+						setBlock(x, j, z, BlocksList.WATER);
 					} else {
 						break;
 					}
