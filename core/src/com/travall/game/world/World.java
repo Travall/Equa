@@ -1,15 +1,13 @@
 package com.travall.game.world;
 
 import static com.badlogic.gdx.math.MathUtils.floor;
+import static com.badlogic.gdx.math.MathUtils.map;
 import static com.travall.game.utils.BlockUtils.*;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.math.GridPoint3;
-import com.badlogic.gdx.math.Interpolation;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.RandomXS128;
+import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.Disposable;
 import com.travall.game.blocks.Block;
 import com.travall.game.blocks.BlocksList;
@@ -70,6 +68,7 @@ public final class World implements Disposable {
 		final RandomXS128 random = new RandomXS128(seed);
 		OpenSimplexOctaves BaseNoise = new OpenSimplexOctaves(8, 0.5, random.nextLong()); // changed from 0.45 to 0.43
 		OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5, 0.25, random.nextLong());
+		OpenSimplexOctaves FloatingIslandNoise = new OpenSimplexOctaves(6, 0.25, random.nextLong());
 		OpenSimplexOctaves DecisionNoise = new OpenSimplexOctaves(8, 0.4, random.nextLong());
 		OpenSimplexOctaves Decision2Noise = new OpenSimplexOctaves(8, 0.4, random.nextLong());
 
@@ -91,35 +90,6 @@ public final class World implements Disposable {
 
 				int yValue = (Math.round(height / 1) * 1);
 
-				if (steep2 > 0.5 && yValue > waterLevel) {
-					if (random.nextInt(100) >= 99 && x > 0 && z > 0 && x <= mapSize && z <= mapSize) {
-						setBlock(x, yValue+1, z, BlocksList.LOG);
-						setBlock(x, yValue+2, z, BlocksList.LOG);
-						setBlock(x, yValue+3, z, BlocksList.LOG);
-
-						for (int xx = x - 2; xx <= x + 2; xx++) {
-							for (int zz = z - 2; zz <= z + 2; zz++) {
-								setBlock(xx, yValue+4, zz, BlocksList.LEAVES);
-							}
-						}
-
-						for (int xx = x - 1; xx <= x + 1; xx++) {
-							for (int zz = z - 1; zz <= z + 1; zz++) {
-								setBlock(xx, yValue+5, zz, BlocksList.LEAVES);
-							}
-						}
-
-						setBlock(x, yValue+4, z, BlocksList.LOG);
-						setBlock(x, yValue+6, z, BlocksList.LEAVES);
-
-					}
-				} else if (steep < 0.3 && steep2 < 0.5) {
-					if (random.nextInt(100) >= 99 && yValue > waterLevel) {
-						setBlock(x, yValue+1, z, BlocksList.CACTUS);
-						setBlock(x, yValue+2, z, BlocksList.CACTUS);
-						setBlock(x, yValue+3, z, BlocksList.CACTUS);
-					}
-				}
 
 				for (int i = yValue; i >= 0; i--) {
 					double caves = Utils.normalize(CaveNoise.getNoise(x, (int) (i), z), maxTerrainHeight);
@@ -154,6 +124,55 @@ public final class World implements Disposable {
 						setBlock(x, j, z, BlocksList.WATER);
 					} else {
 						break;
+					}
+				}
+
+				for(int j = mapHeight; j > mapHeight / 2; j--) {
+					if(FloatingIslandNoise.getNoise(x,j,z) > 0.13) {
+						if(isAirBlock(x,j,z)) {
+							if(isAirBlock(x,j+1,z)) {
+								setBlock(x,j,z,BlocksList.GRASS);
+							} else if(getBlock(new BlockPos(x,j+1,z)) == BlocksList.GRASS) {
+								setBlock(x,j,z,BlocksList.DIRT);
+							} else {
+								setBlock(x,j,z,BlocksList.STONE);
+							}
+						}
+					}
+				}
+
+
+				for(int j = mapHeight; j > 0; j--) {
+					if(!isAirBlock(x,j,z)) {
+						if(getBlock(new BlockPos(x,j,z)) == BlocksList.GRASS) {
+							if (random.nextInt(100) == 1 && x > 0 && z > 0 && x <= mapSize && z <= mapSize) {
+								setBlock(x, j+1, z, BlocksList.LOG);
+								setBlock(x, j+2, z, BlocksList.LOG);
+								setBlock(x, j+3, z, BlocksList.LOG);
+
+								for (int xx = x - 2; xx <= x + 2; xx++) {
+									for (int zz = z - 2; zz <= z + 2; zz++) {
+										setBlock(xx, j+4, zz, BlocksList.LEAVES);
+									}
+								}
+
+								for (int xx = x - 1; xx <= x + 1; xx++) {
+									for (int zz = z - 1; zz <= z + 1; zz++) {
+										setBlock(xx, j+5, zz, BlocksList.LEAVES);
+									}
+								}
+
+								setBlock(x, j+4, z, BlocksList.LOG);
+								setBlock(x, j+6, z, BlocksList.LEAVES);
+
+							}
+						} else if (getBlock(new BlockPos(x,j,z)) == BlocksList.SAND && isAirBlock(x,j+1,z)) {
+							if (random.nextInt(200) == 1 && j > waterLevel) {
+								setBlock(x, j+1, z, BlocksList.CACTUS);
+								setBlock(x, j+2, z, BlocksList.CACTUS);
+								setBlock(x, j+3, z, BlocksList.CACTUS);
+							}
+						}
 					}
 				}
 			}

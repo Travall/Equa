@@ -6,5 +6,5 @@
 uniform float u_alpha;
 
 void main() {
-	gl_FragColor = vec4(vec3(1.0), u_alpha);
+	gl_FragColor = vec4(vec3(0.0), u_alpha);
 }

@@ -68,7 +68,9 @@ public final class Picker {
 		shader.setUniformf("u_alpha", (MathUtils.sin(sine)*0.1f)+0.25f);
 		vbo.bind();
 		updateVertex();
-		Gdx.gl.glDrawElements(GL20.GL_TRIANGLES, allIndex, GL20.GL_UNSIGNED_SHORT, 0);
+		Gdx.gl.glLineWidth(5);
+		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
+		Gdx.gl.glDrawElements(GL20.GL_LINE_STRIP, allIndex, GL20.GL_UNSIGNED_SHORT, 0);
 		vbo.unbind(); Gdx.gl30.glBindVertexArray(0);
 		Gdx.gl.glUseProgram(0);
 		gl.glDisable(GL20.GL_BLEND);
