@@ -7,6 +7,11 @@ public class WaterMaterial extends Material {
 	}
 	
 	@Override
+	public boolean isTransparent() {
+		return true;
+	}
+	
+	@Override
 	public boolean isSolid() {
 		return false;
 	}
@@ -24,10 +29,5 @@ public class WaterMaterial extends Material {
 	@Override
 	public boolean canBlockLights() {
 		return false;
-	}
-	
-	@Override
-	public BlendType getBlendType() {
-		return BlendType.TRANS;
 	}
 }

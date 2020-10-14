@@ -18,6 +18,11 @@ public class Material {
 	public boolean isFullCube() {
 		return true;
 	}
+	
+	/** Is block transparent, then put block model in transparent mesh. */
+	public boolean isTransparent() {
+		return false;
+	}
 
 	/** Is block solid. The default is <code>isSolid = isFullCube()</code>. If not true, then it's transparent block. 
 	 * @return true if this block has all side solid. Else return false for transparently or custom solid sides. */
@@ -40,11 +45,6 @@ public class Material {
 		return isSolid();
 	}
 	
-	/** Get blend type. */
-	public BlendType getBlendType() {
-		return isSolid() ? BlendType.SOLID : BlendType.CLEAR;
-	}
-	
 	/* Setters */
 	
 	private Material setSolid(boolean bool) {
@@ -64,17 +64,6 @@ public class Material {
 		build.append("hasCollision: ").append(hasCollision()).append('\n');
 		build.append("canBlockSunRay: ").append(canBlockSunRay()).append('\n');
 		build.append("canBlockLights: ").append(canBlockLights()).append('\n');
-		build.append("getBlendType: ").append(getBlendType()).append('\n');
 		return build.toString();
-	}
-	
-	public static enum BlendType {
-		SOLID(true), CLEAR(false), TRANS(false);
-		
-		public final boolean isSoild;
-
-		private BlendType(boolean isSoild) {
-			this.isSoild = isSoild;
-		}
 	}
 }
