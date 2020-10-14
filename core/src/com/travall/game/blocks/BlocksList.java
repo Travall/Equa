@@ -18,7 +18,8 @@ public final class BlocksList {
 	LOG = new Log(ID++),
 	LEAVES = new Leaves(ID++),
 	CACTUS = new Cactus(ID++),
-	SLAB = new Slab(ID++);
+	SLAB = new Slab(ID++),
+	WATERTOP = new WaterTop(ID++);
 	
 	public static final int SIZE = ID;
 	private static final Block[] blocks = new Block[SIZE];
@@ -38,6 +39,7 @@ public final class BlocksList {
 		addBlock(LEAVES);
 		addBlock(CACTUS);
 		addBlock(SLAB);
+		addBlock(WATERTOP);
 
 		hasInts = true;
 	}
