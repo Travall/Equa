@@ -2,154 +2,55 @@ package com.travall.game.renderer;
 
 import static com.badlogic.gdx.Gdx.gl;
 
-import java.nio.FloatBuffer;
-
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.VertexAttribute;
-import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.collision.BoundingBox;
-import com.badlogic.gdx.utils.BufferUtils;
-import com.badlogic.gdx.utils.FloatArray;
-import com.travall.game.glutils.VBO;
-import com.travall.game.glutils.VertContext;
 import com.travall.game.handles.Raycast.RayInfo;
 
 public final class Picker {
 	
-	private static final VertexAttributes attributes = new VertexAttributes(VertexAttribute.Position());
-	
-	private static final int allVextices = 4*6; // 4*6 = full-cube
-	private static final int allFloats = allVextices*3; // 3 = positions (floats)
-	private static final int allIndex = (allVextices/4)*6; // 3 = positions (floats)
-	private static final FloatArray array = new FloatArray(allFloats);
-	private static final Vector3 out = new Vector3();
-	
-	private static VBO vbo;
-	private static ShaderProgram shader;
-	
 	public static RayInfo rayInfo = new RayInfo();
 	public static boolean hasHit;
 	
+	private static ShapeRenderer shape;
+	private static final PerspectiveCamera pickCam = new PerspectiveCamera();
+	
 	public static void ints() {
-		shader = new ShaderProgram(Gdx.files.internal("Shaders/picker.vert"), Gdx.files.internal("Shaders/picker.frag"));
-		final VertContext context = new VertContext() {
-			public ShaderProgram getShader() {
-				return shader;
-			}
-			public VertexAttributes getAttrs() {
-				return attributes;
-			}
-		};
-		
-		final FloatBuffer buffer = BufferUtils.newFloatBuffer(allFloats);
-		buffer.position(0);
-		buffer.limit(0);
-		vbo = new VBO(buffer, context, GL20.GL_DYNAMIC_DRAW, true);
+		shape = new ShapeRenderer(100);
+		shape.setAutoShapeType(true);
+		shape.setColor(0f, 0f, 0f, 0.6f);
+		pickCam.far = 510;
+		pickCam.near = 0.101f;
 	}
 	
-	static float sine = 0;
-	
-	public static void render(Camera camera) {
-		sine += 0.15f;
-		if (sine > MathUtils.PI2) {
-			sine -= MathUtils.PI2;
-		}
+	public static void render(PerspectiveCamera camera) {
 		if (!hasHit) return;
-		
+		Gdx.gl.glLineWidth(2);
 		gl.glEnable(GL20.GL_BLEND);
-		shader.bind();
-		shader.setUniformMatrix("u_projTrans", camera.combined);
-		shader.setUniformf("u_trans", rayInfo.in.x, rayInfo.in.y, rayInfo.in.z);
-		shader.setUniformf("u_alpha", (MathUtils.sin(sine)*0.1f)+0.25f);
-		vbo.bind();
-		updateVertex();
-		Gdx.gl.glLineWidth(5);
-		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
-		Gdx.gl.glDrawElements(GL20.GL_LINE_STRIP, allIndex, GL20.GL_UNSIGNED_SHORT, 0);
-		vbo.unbind(); Gdx.gl30.glBindVertexArray(0);
-		Gdx.gl.glUseProgram(0);
+		intsCam(camera);
+		shape.setProjectionMatrix(pickCam.combined);
+		shape.begin(ShapeType.Line);
+		final BoundingBox box = rayInfo.boxHit;
+		final float x = rayInfo.in.x, y = rayInfo.in.y, z = rayInfo.in.z+1;
+		shape.box(box.min.x+x, box.min.y+y, box.min.z+z, box.max.x, box.max.y, box.max.z);
+		shape.end();
 		gl.glDisable(GL20.GL_BLEND);
 	}
 	
-	private static void updateVertex() {
-		array.clear();
-		
-		final BoundingBox box = rayInfo.boxHit;
-		final float tmpP = 0.003f; // extend the box.
-		final float tmpN = -tmpP;
-		final Vector3 out = Picker.out;
-		
-		// facing Y+
-		box.getCorner110(out);
-		array.add(tmpP+out.x, tmpP+out.y, tmpN+out.z);
-		box.getCorner010(out);
-		array.add(tmpN+out.x, tmpP+out.y, tmpN+out.z);
-		box.getCorner011(out);
-		array.add(tmpN+out.x, tmpP+out.y, tmpP+out.z);
-		box.getCorner111(out);
-		array.add(tmpP+out.x, tmpP+out.y, tmpP+out.z);
-		
-		// facing Y-
-		box.getCorner000(out);
-		array.add(tmpN+out.x, tmpN+out.y, tmpN+out.z);
-		box.getCorner100(out);
-		array.add(tmpP+out.x, tmpN+out.y, tmpN+out.z);
-		box.getCorner101(out);
-		array.add(tmpP+out.x, tmpN+out.y, tmpP+out.z);
-		box.getCorner001(out);
-		array.add(tmpN+out.x, tmpN+out.y, tmpP+out.z);
-		
-		// facing Z-
-		box.getCorner000(out);
-		array.add(tmpN+out.x, tmpN+out.y, tmpN+out.z);
-		box.getCorner010(out);
-		array.add(tmpN+out.x, tmpP+out.y, tmpN+out.z);
-		box.getCorner110(out);
-		array.add(tmpP+out.x, tmpP+out.y, tmpN+out.z);
-		box.getCorner100(out);
-		array.add(tmpP+out.x, tmpN+out.y, tmpN+out.z);
-		
-		// facing X-
-		box.getCorner001(out);
-		array.add(tmpN+out.x, tmpN+out.y, tmpP+out.z);
-		box.getCorner011(out);
-		array.add(tmpN+out.x, tmpP+out.y, tmpP+out.z);
-		box.getCorner010(out);
-		array.add(tmpN+out.x, tmpP+out.y, tmpN+out.z);
-		box.getCorner000(out);
-		array.add(tmpN+out.x, tmpN+out.y, tmpN+out.z);
-		
-		// facing Z+
-		box.getCorner101(out);
-		array.add(tmpP+out.x, tmpN+out.y, tmpP+out.z);
-		box.getCorner111(out);
-		array.add(tmpP+out.x, tmpP+out.y, tmpP+out.z);
-		box.getCorner011(out);
-		array.add(tmpN+out.x, tmpP+out.y, tmpP+out.z);
-		box.getCorner001(out);
-		array.add(tmpN+out.x, tmpN+out.y, tmpP+out.z);
-		
-		// facing X+
-		box.getCorner100(out);
-		array.add(tmpP+out.x, tmpN+out.y, tmpN+out.z);
-		box.getCorner110(out);
-		array.add(tmpP+out.x, tmpP+out.y, tmpN+out.z);
-		box.getCorner111(out);
-		array.add(tmpP+out.x, tmpP+out.y, tmpP+out.z);
-		box.getCorner101(out);
-		array.add(tmpP+out.x, tmpN+out.y, tmpP+out.z);
-		
-		vbo.setVertices(array.items, 0, allFloats);
+	private static void intsCam(PerspectiveCamera camera) {
+		pickCam.position.set(camera.position);
+		pickCam.direction.set(camera.direction);
+		pickCam.up.set(camera.up);
+		pickCam.fieldOfView = camera.fieldOfView;
+		pickCam.viewportWidth = camera.viewportWidth;
+		pickCam.viewportHeight = camera.viewportHeight;
+		pickCam.update(false);
 	}
 
 	public static void dispose() {
-		shader.dispose();
-		vbo.dispose();
-		vbo = null; // Tells JVM to remove/dispose FloatBuffer.
+		shape.dispose();
 	}
 }

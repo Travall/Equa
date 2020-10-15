@@ -35,7 +35,7 @@ public final class QuadIndexBuffer
 		// Upload the buffer to GPU, and let JVM dispose the buffer from RAM after finish uploading.
 		bufferHandle = gl.glGenBuffer();
 		gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferHandle);
-		gl.glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer.limit(), buffer, GL_STATIC_DRAW);
+		gl.glBufferData(GL_ELEMENT_ARRAY_BUFFER, 0, buffer, GL_STATIC_DRAW);
 		gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 	
