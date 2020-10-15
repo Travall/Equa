@@ -56,7 +56,7 @@ public class Main extends ApplicationAdapter {
 	@Override
 	public void create() {
 		VoxelTerrain.ints(); // Must ints it first.
-		UltimateTexture.texture = new Texture("Tiles/ultimate4.png");
+		UltimateTexture.texture = new Texture("Tiles/ultimate5.png");
 		BlocksList.ints();
 		blockType = BlocksList.SLAB;
 
