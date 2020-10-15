@@ -8,7 +8,8 @@ public class Material {
 	public static final Material LEAVES = new Material().setSolid(false);
 	public static final Material WATER = new WaterMaterial();
 	public static final Material SLAB = new SlabMaterial();
-	
+	public static final Material CACTUS = new CactusMaterial();
+
 	/* Variables */
 	private boolean isSolid = isFullCube();
 
