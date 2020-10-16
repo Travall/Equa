@@ -8,9 +8,11 @@ import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
@@ -31,6 +33,8 @@ import com.travall.game.renderer.block.UltimateTexture;
 import com.travall.game.renderer.vertices.VoxelTerrain;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.world.World;
+
+import java.awt.*;
 
 public class Main extends ApplicationAdapter {
 	
@@ -56,6 +60,10 @@ public class Main extends ApplicationAdapter {
 	Texture texture1;
 	Texture texture2;
 	boolean bool;
+
+	float increase = 0;
+
+	BitmapFont font;
 
 	@Override
 	public void create() {
@@ -104,6 +112,8 @@ public class Main extends ApplicationAdapter {
 		ssao.setEnable(false); // Enable or disable the SSAO.
 
 		spriteBatch = new SpriteBatch();
+		font = new BitmapFont();
+		font.setColor(Color.WHITE);
 
 		Gdx.input.setCursorCatched(true);
 
@@ -118,6 +128,7 @@ public class Main extends ApplicationAdapter {
 	public void render() {
 		update();
 		camera.update(); // Update the camera projection
+		cameraController.update(player.isWalking);
 
 		ssao.begin();
 		Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
@@ -141,6 +152,7 @@ public class Main extends ApplicationAdapter {
 //        spriteBatch.setShader(ssaoShaderProgram);
 		spriteBatch.begin();
 		spriteBatch.draw(crosshair, (Gdx.graphics.getWidth() / 2) - 8, (Gdx.graphics.getHeight() / 2) - 8);
+		font.draw(spriteBatch, "Velocity x: " + player.getVelocity().x, 20, Gdx.graphics.getHeight() - 20);
 		spriteBatch.end();
 		spriteBatch.setShader(null);
 
@@ -149,6 +161,8 @@ public class Main extends ApplicationAdapter {
 	}
 
 	private void update() {
+
+		increase+= 0.15f;
 
 		player.update(world, camera, cameraController);
 

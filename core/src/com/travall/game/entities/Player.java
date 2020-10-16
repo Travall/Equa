@@ -23,6 +23,7 @@ public class Player {
 
 	public boolean onGround;
 	public boolean isFlying = false;
+	public boolean isWalking = false;
 
 	public Player(Vector3 position) {
 		setPosition(position);
@@ -48,15 +49,25 @@ public class Player {
 		return position;
 	}
 
+	public Vector3 getVelocity() {
+		return velocity;
+	}
+
 	public void update(World world, Camera camera, FirstPersonCameraController cameraController) {
 		process(camera, cameraController);
 		velocity.add(acceleration);
 		move(world, this.velocity.x, this.velocity.y, this.velocity.z);
 		acceleration.setZero();
 
+
+
 		velocity.x = MathUtils.lerp(this.velocity.x, 0, 0.2f);
 		velocity.y = isFlying ? MathUtils.lerp(this.velocity.y, 0, 0.1f) : MathUtils.lerp(this.velocity.y, 0, 0.01f);
 		velocity.z = MathUtils.lerp(this.velocity.z, 0, 0.2f);
+
+		if(velocity.dst(Vector3.Zero) < 0.001) velocity.set(Vector3.Zero);
+
+		this.isWalking = (velocity.x != 0 || velocity.z != 0);
 	}
 
 	final Vector3 add = new Vector3(), direction = new Vector3(), noam = new Vector3(), temp = new Vector3();
