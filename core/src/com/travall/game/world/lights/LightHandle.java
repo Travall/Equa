@@ -2,9 +2,20 @@ package com.travall.game.world.lights;
 
 import static com.travall.game.world.World.*;
 
+import com.badlogic.gdx.math.GridPoint3;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pool;
 import com.travall.game.utils.BlockPos;
 
 public final class LightHandle {
+	
+	private static final Pool<GridPoint3> POOL = new Pool<GridPoint3>() {
+		protected GridPoint3 newObject() {
+			return new GridPoint3();
+		}
+	};
+	
+	private final static Array<GridPoint3> rayUpdate = new Array<>();
 
 	public static void newSrclightAt(int x, int y, int z, int light) {
 		world.setSrcLight(x, y, z, light);
@@ -24,6 +35,10 @@ public final class LightHandle {
 	public static void delSunlightAt(int x, int y, int z) {
 		SunLight.delSunlightAt(x, y, z);
 		world.setSunLight(x, y, z, 0);
+	}
+	
+	public static void newRaySunlightAt(int x, int y, int z) {
+		rayUpdate.add(POOL.obtain().set(x, y, z));
 	}
 	
 	public static void newSrclightShellAt(int x, int y, int z) {
@@ -48,6 +63,7 @@ public final class LightHandle {
 	}
 	
 	public static void newSunlightShellAt(int x, int y, int z) {
+		SunLight.newSunlightAt(x, y, z);
 		if (y+1 < mapHeight) {
 			SunLight.newSunlightAt(x, y+1, z);
 		}
@@ -73,7 +89,7 @@ public final class LightHandle {
 	}
 	
 	private static final BlockPos blockPos = new BlockPos();
-	public static void skyRay(int x, int z, int height, boolean canBlockSunRay) {
+	public static void skyRay(int x, int z, int height) {
 		final int start = world.shadowMap[x][z];
 		if (start > height) return;
 		for (short y = (short)height; y >= 0; y--)
@@ -98,20 +114,17 @@ public final class LightHandle {
 			}
 		}
 	}
-
-	public static void fillSrclight() {
-		SrcLight.fillSrclight();
-	}
 	
-	public static void fillSunlight(boolean updateMesh) {
-		SunLight.fillSunlight(updateMesh);
-	}
-	
-	public static void defillSrclight() {
+	public static void calculateLights() {
+		for (GridPoint3 pos : rayUpdate) {
+			skyRay(pos.x, pos.z, pos.y);
+			POOL.free(pos);
+		}
+		rayUpdate.size = 0;
+		
 		SrcLight.defillSrclight();
-	}
-
-	public static void defillSunlight() {
+		SrcLight.fillSrclight();
 		SunLight.defillSunlight();
+		SunLight.fillSunlight(true);
 	}
 }
