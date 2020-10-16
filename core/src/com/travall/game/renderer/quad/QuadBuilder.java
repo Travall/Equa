@@ -18,6 +18,12 @@ public class QuadBuilder extends QuadInfo {
 			return super.resize(Math.min(newSize, maxFloats));
 		}
 	};
+	
+	public final Vector3
+	p1 = new Vector3(),
+	p2 = new Vector3(),
+	p3 = new Vector3(),
+	p4 = new Vector3();
 
 //     v3-----v2
 //     |       |
@@ -62,10 +68,6 @@ public class QuadBuilder extends QuadInfo {
 	}
 	
 	public void rect(final QuadNode node) {
-		final Vector3 p1 = node.p1;
-		final Vector3 p2 = node.p2;
-		final Vector3 p3 = node.p3;
-		final Vector3 p4 = node.p4;
 		final TextureRegion region = node.region;
 		
 		vertices.add(p1.x, p1.y, p1.z, node.v1.packData());

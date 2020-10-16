@@ -11,9 +11,6 @@ public class Material {
 	public static final Material CACTUS = new CactusMaterial();
 	public static final Material DIAGONAL = new DiagonalMaterial();
 
-	/* Variables */
-	private boolean isSolid = isFullCube();
-
 	/* Getters */
 
 	/** Is full cube. The default is true. */
@@ -29,7 +26,7 @@ public class Material {
 	/** Is block solid. The default is <code>isSolid = isFullCube()</code>. If not true, then it's transparent block. 
 	 * @return true if this block has all side solid. Else return false for transparently or custom solid sides. */
 	public boolean isSolid() {
-		return isSolid;
+		return isFullCube();
 	}
 	
 	/** Is block has Collision. The default is <code>isFullCube()</code>. */
@@ -45,13 +42,6 @@ public class Material {
 	/** Can it blocks flood lights. The default is <code>isSolid()</code>. */
 	public boolean canBlockLights() {
 		return isSolid();
-	}
-	
-	/* Setters */
-	
-	private Material setSolid(boolean bool) {
-		isSolid = bool;
-		return this;
 	}
 
 	/* Utilities */

@@ -157,34 +157,8 @@ public final class World implements Disposable {
 			}
 		}
 		
-		// creating shadow map.
 		for (int x = 0; x < mapSize; x++)
 		for (int z = 0; z < mapSize; z++) {
-			for (int y = mapHeight-1; y >= 0; y--) {
-				if (BlocksList.get(data[x][y][z]).getMaterial().canBlockSunRay()) {
-					shadowMap[x][z] = (short)y;
-					break;
-				}
-				setSunLight(x, y, z, 15);
-			}
-		}
-		
-		// adding filling nodes.
-		for (int x = 0; x < mapSize; x++)
-		for (int z = 0; z < mapSize; z++) {
-			for (int y = shadowMap[x][z]; y >= 0; y--) {
-				final Material material = BlocksList.get(data[x][y][z]).getMaterial();
-				if (material.canBlockSunRay() && material.canBlockLights()) {
-					continue;
-				}
-				if (getShadow(x+1, z) < y || getShadow(x, z+1) < y ||
-					getShadow(x-1, z) < y || getShadow(x, z-1) < y || getShadow(x, z) < y+1) {
-					
-					LightHandle.newSunlightAt(x, y, z, 14);
-				}
-				continue;
-			}
-
 			// Foliage
 			for(int j = mapHeight; j > 0; j--) {
 				if(!isAirBlock(x,j,z)) {
@@ -246,12 +220,36 @@ public final class World implements Disposable {
 					}
 				}
 			}
-				
 		}
 		
-		LightHandle.fillSunlight(false);
-
-
+		// creating shadow map.
+		for (int x = 0; x < mapSize; x++)
+		for (int z = 0; z < mapSize; z++) {
+			for (int y = mapHeight-1; y >= 0; y--) {
+				if (BlocksList.get(data[x][y][z]).getMaterial().canBlockSunRay()) {
+					shadowMap[x][z] = (short)y;
+					break;
+				}
+				setSunLight(x, y, z, 15);
+			}
+		}
+		
+		// adding filling nodes.
+		for (int x = 0; x < mapSize; x++)
+		for (int z = 0; z < mapSize; z++) {
+			for (int y = shadowMap[x][z]; y >= 0; y--) {
+				final Material material = BlocksList.get(data[x][y][z]).getMaterial();
+				if (material.canBlockSunRay() && material.canBlockLights()) {
+					continue;
+				}
+				if (getShadow(x+1, z) < y || getShadow(x, z+1) < y ||
+					getShadow(x-1, z) < y || getShadow(x, z-1) < y || getShadow(x, z) < y+1) {
+					
+					LightHandle.newSunlightAt(x, y, z, 14);
+				}
+				continue;
+			}
+		}
 	}
 	
 	public short getShadow(int x, int z) {
@@ -263,6 +261,7 @@ public final class World implements Disposable {
 
 	private final BlockPos blockPos = new BlockPos();
 	public void render(Camera camera) {
+		LightHandle.calculateLights(); // Calculate lights.
 		
 		UltimateTexture.texture.bind();
         VoxelTerrain.begin(camera);
@@ -315,18 +314,12 @@ public final class World implements Disposable {
 
 		if (block.isSrclight()) { // if break srclight block.
 			LightHandle.delSrclightAt(x, y, z);
-			LightHandle.defillSrclight();
-			LightHandle.fillSrclight();
 		} else { // if break non-srclight block.
 			LightHandle.newSrclightShellAt(x, y, z);
-			LightHandle.fillSrclight();
 		}
 		
-		LightHandle.skyRay(x, z, y, block.getMaterial().canBlockSunRay());
-		LightHandle.newSunlightAt(x, y, z, toSunLight(data[x][y][z]));
+		LightHandle.newRaySunlightAt(x, y, z);
 		LightHandle.newSunlightShellAt(x, y, z);
-		LightHandle.defillSunlight();
-		LightHandle.fillSunlight(true);
 		setMeshDirtyShellAt(x, y, z);
 	}
 
@@ -340,19 +333,14 @@ public final class World implements Disposable {
 
 		if (block.isSrclight()) { // if place srclight block.
 			LightHandle.newSrclightAt(x, y, z, block.getLightLevel());
-			LightHandle.fillSrclight();
 		} else { // if place non-srclight block.
 			LightHandle.delSrclightAt(x, y, z);
-			LightHandle.defillSrclight();
-			LightHandle.fillSrclight();
 		}
 		
 		
 		if (block.getMaterial().canBlockLights() || block.getMaterial().canBlockSunRay()) {
+			LightHandle.newRaySunlightAt(x, y, z);
 			LightHandle.delSunlightAt(x, y, z);
-			LightHandle.skyRay(x, z, y, block.getMaterial().canBlockSunRay());
-			LightHandle.defillSunlight();
-			LightHandle.fillSunlight(true);
 		}
 		
 		setMeshDirtyShellAt(x, y, z);

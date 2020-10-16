@@ -13,7 +13,7 @@ public class DiagonalMaterial extends Material {
 
 	@Override
 	public boolean isTransparent() {
-		return true;
+		return false;
 	}
 	
 	@Override
