@@ -3,7 +3,6 @@ package com.travall.game.renderer.quad;
 import static com.travall.game.world.World.world;
 import static com.travall.game.utils.Utils.gamma;
 
-import com.badlogic.gdx.math.Vector3;
 import com.travall.game.blocks.Block;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.Facing;
@@ -20,12 +19,6 @@ public class QuadNode extends QuadInfo {
 	
 	public boolean isInside;
 	
-	final Vector3
-	p1 = new Vector3(),
-	p2 = new Vector3(),
-	p3 = new Vector3(),
-	p4 = new Vector3();
-	
 	private final BlockPos
 	center = new BlockPos(),
 	side1  = new BlockPos(),
@@ -39,10 +32,10 @@ public class QuadNode extends QuadInfo {
 		int x1, y1, z1;
 		
 		final float xf = x, yf = y, zf = z; 
-		p1.set(v1.x+xf, v1.y+yf, v1.z+zf);
-		p2.set(v2.x+xf, v2.y+yf, v2.z+zf);
-		p3.set(v3.x+xf, v3.y+yf, v3.z+zf);
-		p4.set(v4.x+xf, v4.y+yf, v4.z+zf);
+		builder.p1.set(v1.x+xf, v1.y+yf, v1.z+zf);
+		builder.p2.set(v2.x+xf, v2.y+yf, v2.z+zf);
+		builder.p3.set(v3.x+xf, v3.y+yf, v3.z+zf);
+		builder.p4.set(v4.x+xf, v4.y+yf, v4.z+zf);
 		
 		setAmb(lightHigh);
 		switch (face) {

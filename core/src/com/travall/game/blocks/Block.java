@@ -50,7 +50,7 @@ public class Block {
 	}
 
 	/** Get material of this block. */
-	public Material getMaterial() {
+	public final Material getMaterial() {
 		return material;
 	}
 	

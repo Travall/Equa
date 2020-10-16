@@ -13,7 +13,7 @@ public class CactusMaterial extends Material {
 
 	@Override
 	public boolean isTransparent() {
-		return true;
+		return false;
 	}
 	
 	@Override
