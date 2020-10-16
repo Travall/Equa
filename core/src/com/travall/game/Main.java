@@ -56,6 +56,10 @@ public class Main extends ApplicationAdapter {
 	SSAO ssao;
 	SpriteBatch spriteBatch;
 	Texture crosshair;
+	
+	Texture texture1;
+	Texture texture2;
+	boolean bool;
 
 	float increase = 0;
 
@@ -64,9 +68,11 @@ public class Main extends ApplicationAdapter {
 	@Override
 	public void create() {
 		VoxelTerrain.ints(); // Must ints it first.
-		UltimateTexture.texture = new Texture("Tiles/ultimate5.png");
+		UltimateTexture.texture = new Texture("Tiles/ultimate6.png");
+		texture2 = UltimateTexture.texture;
+		texture1 = new Texture("Tiles/ultimate5.png");
 		BlocksList.ints();
-		blockType = BlocksList.SLAB;
+		blockType = BlocksList.STONE;
 
 		assetManager = new AssetManager();
 
@@ -129,18 +135,18 @@ public class Main extends ApplicationAdapter {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
 		skybox.render(camera);
+		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 
-//      modelBatch.begin(camera);
-//      modelBatch.render(player.instance,environment);
-//      modelBatch.end();
-
+		if (Gdx.input.isKeyJustPressed(Keys.F1)) bool = !bool;
+		UltimateTexture.texture = bool ? texture2 : texture1;
 		world.render(camera);
 		Picker.render(camera);
 		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
-
+		
+		
 		ssao.end();
-		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
 		Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
+		
 		ssao.render();
 
 //        spriteBatch.setShader(ssaoShaderProgram);
@@ -179,9 +185,9 @@ public class Main extends ApplicationAdapter {
 		}
 
 		if (Gdx.input.isKeyPressed(Keys.Q))
-			blockType = BlocksList.SLAB;
+			blockType = BlocksList.STONE;
 		if (Gdx.input.isKeyPressed(Keys.E))
-			blockType = BlocksList.WATER;
+			blockType = BlocksList.GOLD;
 
 		if (Gdx.input.isKeyJustPressed(Keys.P))
 			VoxelTerrain.toggleAO();
@@ -214,7 +220,9 @@ public class Main extends ApplicationAdapter {
 		VisUI.dispose();
 		VoxelTerrain.dispose();
 		Picker.dispose();
-		UltimateTexture.dispose();
+		texture1.dispose();
+		texture2.dispose();
+		//UltimateTexture.dispose();
 	}
 
 	// Fast, accurate, and simple ray-cast.

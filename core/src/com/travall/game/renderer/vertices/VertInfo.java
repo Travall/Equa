@@ -38,7 +38,7 @@ public class VertInfo {
 		int light;
 		int lightTotal, lightCount = 1;
 
-		final int centerLight = BlockUtils.toSrcLight(center);
+		int centerLight = BlockUtils.toSrcLight(center);
 		lightTotal = centerLight;
 
 		light = BlockUtils.toSrcLight(side1);
@@ -60,6 +60,30 @@ public class VertInfo {
 		}
 
 		srcLit = lightCount == 1 ? lightTotal / BlockUtils.lightScl : (lightTotal / lightCount) / BlockUtils.lightScl;
+		
+		lightCount = 1;
+		centerLight = BlockUtils.toSunLight(center);
+		lightTotal = centerLight;
+
+		light = BlockUtils.toSunLight(side1);
+		if (light != 0) {
+			lightCount++;
+			lightTotal += light;
+		}
+
+		light = BlockUtils.toSunLight(side2);
+		if (light != 0) {
+			lightCount++;
+			lightTotal += light;
+		}
+
+		light = BlockUtils.toSunLight(corner);
+		if (!twoSides && (light != 0 || centerLight == 1)) {
+			lightCount++;
+			lightTotal += (light == 1 && centerLight == 1) ? 0 : light;
+		}
+
+		sunLit = lightCount == 1 ? lightTotal / BlockUtils.lightScl : (lightTotal / lightCount) / BlockUtils.lightScl;
 	}
 
 	public void calcLight(Block block, BlockPos center, BlockPos side1, BlockPos side2, BlockPos corner) {

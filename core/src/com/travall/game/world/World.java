@@ -1,7 +1,6 @@
 package com.travall.game.world;
 
 import static com.badlogic.gdx.math.MathUtils.floor;
-import static com.badlogic.gdx.math.MathUtils.map;
 import static com.travall.game.utils.BlockUtils.*;
 
 import com.badlogic.gdx.Gdx;
@@ -11,15 +10,16 @@ import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.Disposable;
 import com.travall.game.blocks.Block;
 import com.travall.game.blocks.BlocksList;
+import com.travall.game.blocks.materials.Material;
 import com.travall.game.renderer.block.UltimateTexture;
 import com.travall.game.renderer.vertices.VoxelTerrain;
 import com.travall.game.utils.BlockPos;
-import com.travall.game.utils.FloodLight;
 import com.travall.game.utils.Utils;
 import com.travall.game.utils.math.OpenSimplexOctaves;
 import com.travall.game.world.chunk.ChunkBuilder;
 import com.travall.game.world.chunk.ChunkMesh;
 import com.travall.game.world.chunk.CombinedChunk;
+import com.travall.game.world.lights.LightHandle;
 
 public final class World implements Disposable {
 	/** Easy world access. */
@@ -35,11 +35,11 @@ public final class World implements Disposable {
 	public static final int yChunks = mapHeight / chunkSize;
 	public static final int zChunks = mapSize / chunkSize;
 
-	public static final int waterLevel = Math.round(mapHeight/4.5f);
+	public static final int waterLevel = Math.round(mapHeight/4.5f); // 4.5f
 
 	final public int[][][] data;
+	final public short[][] shadowMap;
 	final ChunkBuilder blockBuilder;
-	final FloodLight floodLight;
 	final GridPoint3 pos = new GridPoint3();
 
 	final ChunkMesh[][][] opaqueChunkMeshes;
@@ -49,8 +49,8 @@ public final class World implements Disposable {
 		World.world = this;
 
 		this.data = new int[mapSize][mapHeight][mapSize];
+		this.shadowMap = new short[mapSize][mapSize];
 		this.blockBuilder = new ChunkBuilder(this);
-		this.floodLight = new FloodLight(this);
 		generate(MathUtils.random.nextLong());
 
 		opaqueChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
@@ -68,7 +68,7 @@ public final class World implements Disposable {
 		final RandomXS128 random = new RandomXS128(seed);
 		OpenSimplexOctaves BaseNoise = new OpenSimplexOctaves(8, 0.5, random.nextLong()); // changed from 0.45 to 0.43
 		OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5, 0.25, random.nextLong());
-		OpenSimplexOctaves FloatingIslandNoise = new OpenSimplexOctaves(6, 0.25, random.nextLong());
+		OpenSimplexOctaves FloatingIslandNoise = new OpenSimplexOctaves(6, 0.35, random.nextLong());
 		OpenSimplexOctaves DecisionNoise = new OpenSimplexOctaves(8, 0.4, random.nextLong());
 		OpenSimplexOctaves Decision2Noise = new OpenSimplexOctaves(8, 0.4, random.nextLong());
 
@@ -127,8 +127,8 @@ public final class World implements Disposable {
 					}
 				}
 
-				for(int j = mapHeight; j > mapHeight / 2; j--) {
-					if(FloatingIslandNoise.getNoise(x,j,z) > 0.13) {
+				for(int j = mapHeight; j > mapHeight / 5; j--) {
+					if(FloatingIslandNoise.getNoise(x,j,z) > 0.175) {
 						if(isAirBlock(x,j,z)) {
 							if(isAirBlock(x,j+1,z)) {
 								setBlock(x,j,z,BlocksList.GRASS);
@@ -177,15 +177,54 @@ public final class World implements Disposable {
 				}
 			}
 		}
+		
+		// creating shadow map.
+		for (int x = 0; x < mapSize; x++)
+		for (int z = 0; z < mapSize; z++) {
+			for (int y = mapHeight-1; y >= 0; y--) {
+				if (BlocksList.get(data[x][y][z]).getMaterial().canBlockSunRay()) {
+					shadowMap[x][z] = (short)y;
+					break;
+				}
+				setSunLight(x, y, z, 15);
+			}
+		}
+		
+		// adding filling nodes.
+		for (int x = 0; x < mapSize; x++)
+		for (int z = 0; z < mapSize; z++) {
+			for (int y = shadowMap[x][z]; y >= 0; y--) {
+				final Material material = BlocksList.get(data[x][y][z]).getMaterial();
+				if (material.canBlockSunRay() && material.canBlockLights()) {
+					continue;
+				}
+				if (getShadow(x+1, z) < y || getShadow(x, z+1) < y ||
+					getShadow(x-1, z) < y || getShadow(x, z-1) < y || getShadow(x, z) < y+1) {
+					
+					LightHandle.newSunlightAt(x, y, z, 14);
+				}
+				continue;
+			}
+				
+		}
+		
+		LightHandle.fillSunlight(false);
+	}
+	
+	public short getShadow(int x, int z) {
+		if (x < 0 || z < 0 || x >= mapSize || z >= mapSize)
+			return 0;
+		
+		return shadowMap[x][z];
 	}
 
 	private final BlockPos blockPos = new BlockPos();
 	public void render(Camera camera) {
+		
 		UltimateTexture.texture.bind();
         VoxelTerrain.begin(camera);
         Gdx.gl.glCullFace(GL20.GL_BACK);
         Gdx.gl.glEnable(GL20.GL_CULL_FACE);
-		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 		Gdx.gl.glDisable(GL20.GL_BLEND);
         for(int x = 0; x < xChunks; x++)
         for(int y = 0; y < yChunks; y++)
@@ -232,20 +271,19 @@ public final class World implements Disposable {
 		setBlock(x, y, z, BlocksList.AIR);
 
 		if (block.isSrclight()) { // if break srclight block.
-			floodLight.delSrclightAt(x, y, z);
-			setSrcLight(x, y, z, 0);
-			floodLight.defillSrclight();
-			floodLight.fillSrclight();
+			LightHandle.delSrclightAt(x, y, z);
+			LightHandle.defillSrclight();
+			LightHandle.fillSrclight();
 		} else { // if break non-srclight block.
-			if (y+1 < mapHeight) floodLight.newSrclightAt(x, y+1, z);
-			if (y-1 >= 0) floodLight.newSrclightAt(x, y-1, z);
-			if (z-1 >= 0) floodLight.newSrclightAt(x, y, z-1);
-			if (x-1 >= 0) floodLight.newSrclightAt(x-1, y, z);
-			if (z+1 < mapSize) floodLight.newSrclightAt(x, y, z +1);
-			if (x+1 < mapSize) floodLight.newSrclightAt(x+1, y, z);
-			floodLight.fillSrclight();
+			LightHandle.newSrclightShellAt(x, y, z);
+			LightHandle.fillSrclight();
 		}
 		
+		LightHandle.skyRay(x, z, y, block.getMaterial().canBlockSunRay());
+		LightHandle.newSunlightAt(x, y, z, toSunLight(data[x][y][z]));
+		LightHandle.newSunlightShellAt(x, y, z);
+		LightHandle.defillSunlight();
+		LightHandle.fillSunlight(true);
 		setMeshDirtyShellAt(x, y, z);
 	}
 
@@ -258,14 +296,20 @@ public final class World implements Disposable {
 		setBlock(x, y, z, block);
 
 		if (block.isSrclight()) { // if place srclight block.
-			setSrcLight(x, y, z, block.getLightLevel());
-			floodLight.newSrclightAt(x, y, z);
-			floodLight.fillSrclight();
+			LightHandle.newSrclightAt(x, y, z, block.getLightLevel());
+			LightHandle.fillSrclight();
 		} else { // if place non-srclight block.
-			floodLight.delSrclightAt(x, y, z);
-			setSrcLight(x, y, z, 0);
-			floodLight.defillSrclight();
-			floodLight.fillSrclight();
+			LightHandle.delSrclightAt(x, y, z);
+			LightHandle.defillSrclight();
+			LightHandle.fillSrclight();
+		}
+		
+		
+		if (block.getMaterial().canBlockLights() || block.getMaterial().canBlockSunRay()) {
+			LightHandle.delSunlightAt(x, y, z);
+			LightHandle.skyRay(x, z, y, block.getMaterial().canBlockSunRay());
+			LightHandle.defillSunlight();
+			LightHandle.fillSunlight(true);
 		}
 		
 		setMeshDirtyShellAt(x, y, z);

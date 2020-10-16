@@ -5,7 +5,7 @@ public class Material {
 	/* Static materials */
 	public static final Material AIR = new AirMaterial();
 	public static final Material BLOCK = new Material();
-	public static final Material LEAVES = new Material().setSolid(false);
+	public static final Material LEAVES = new LeavesMaterial();
 	public static final Material WATER = new WaterMaterial();
 	public static final Material SLAB = new SlabMaterial();
 	public static final Material CACTUS = new CactusMaterial();
