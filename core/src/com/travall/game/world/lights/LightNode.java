@@ -2,7 +2,7 @@ package com.travall.game.world.lights;
 
 import com.badlogic.gdx.utils.Pool;
 
-public class LightNode {
+final class LightNode {
 	static final Pool<LightNode> POOL = new Pool<LightNode>(64) {
 		protected LightNode newObject() {
 			return new LightNode();
@@ -19,5 +19,11 @@ public class LightNode {
 		this.y = y;
 		this.z = z;
 		return this;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		final LightNode node = (LightNode)obj;
+		return node.x == x && node.y == y && node.z == z;
 	}
 }

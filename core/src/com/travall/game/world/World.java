@@ -19,14 +19,13 @@ import com.travall.game.utils.math.OpenSimplexOctaves;
 import com.travall.game.world.chunk.ChunkBuilder;
 import com.travall.game.world.chunk.ChunkMesh;
 import com.travall.game.world.chunk.CombinedChunk;
-import com.travall.game.world.lights.FloodLight;
-import com.travall.game.world.lights.SunLight;
+import com.travall.game.world.lights.LightHandle;
 
 public final class World implements Disposable {
 	/** Easy world access. */
 	public static World world;
 
-	public static final int mapSize = 512;
+	public static final int mapSize = 256;
 	public static final int mapHeight = 128;
 
 	public static final int chunkShift = 4; // 1 << 4 = 16. I set it back from 32 to 16 due to vertices limitations.
@@ -129,7 +128,7 @@ public final class World implements Disposable {
 				}
 
 				for(int j = mapHeight; j > mapHeight / 5; j--) {
-					if(FloatingIslandNoise.getNoise(x,j,z) > 0.18) {
+					if(FloatingIslandNoise.getNoise(x,j,z) > 0.175) {
 						if(isAirBlock(x,j,z)) {
 							if(isAirBlock(x,j+1,z)) {
 								setBlock(x,j,z,BlocksList.GRASS);
@@ -202,15 +201,14 @@ public final class World implements Disposable {
 				if (getShadow(x+1, z) < y || getShadow(x, z+1) < y ||
 					getShadow(x-1, z) < y || getShadow(x, z-1) < y || getShadow(x, z) < y+1) {
 					
-					setSunLight(x, y, z, 14);
-					SunLight.newSunlightAt(x, y, z);
+					LightHandle.newSunlightAt(x, y, z, 14);
 				}
 				continue;
 			}
 				
 		}
 		
-		SunLight.fillSunlight();
+		LightHandle.fillSunlight(false);
 	}
 	
 	public short getShadow(int x, int z) {
@@ -273,20 +271,19 @@ public final class World implements Disposable {
 		setBlock(x, y, z, BlocksList.AIR);
 
 		if (block.isSrclight()) { // if break srclight block.
-			FloodLight.delSrclightAt(x, y, z);
-			setSrcLight(x, y, z, 0);
-			FloodLight.defillSrclight();
-			FloodLight.fillSrclight();
+			LightHandle.delSrclightAt(x, y, z);
+			LightHandle.defillSrclight();
+			LightHandle.fillSrclight();
 		} else { // if break non-srclight block.
-			if (y+1 < mapHeight) FloodLight.newSrclightAt(x, y+1, z);
-			if (y-1 >= 0) FloodLight.newSrclightAt(x, y-1, z);
-			if (z-1 >= 0) FloodLight.newSrclightAt(x, y, z-1);
-			if (x-1 >= 0) FloodLight.newSrclightAt(x-1, y, z);
-			if (z+1 < mapSize) FloodLight.newSrclightAt(x, y, z +1);
-			if (x+1 < mapSize) FloodLight.newSrclightAt(x+1, y, z);
-			FloodLight.fillSrclight();
+			LightHandle.newSrclightShellAt(x, y, z);
+			LightHandle.fillSrclight();
 		}
 		
+		LightHandle.skyRay(x, z, y, block.getMaterial().canBlockSunRay());
+		LightHandle.newSunlightAt(x, y, z, toSunLight(data[x][y][z]));
+		LightHandle.newSunlightShellAt(x, y, z);
+		LightHandle.defillSunlight();
+		LightHandle.fillSunlight(true);
 		setMeshDirtyShellAt(x, y, z);
 	}
 
@@ -299,14 +296,20 @@ public final class World implements Disposable {
 		setBlock(x, y, z, block);
 
 		if (block.isSrclight()) { // if place srclight block.
-			setSrcLight(x, y, z, block.getLightLevel());
-			FloodLight.newSrclightAt(x, y, z);
-			FloodLight.fillSrclight();
+			LightHandle.newSrclightAt(x, y, z, block.getLightLevel());
+			LightHandle.fillSrclight();
 		} else { // if place non-srclight block.
-			FloodLight.delSrclightAt(x, y, z);
-			setSrcLight(x, y, z, 0);
-			FloodLight.defillSrclight();
-			FloodLight.fillSrclight();
+			LightHandle.delSrclightAt(x, y, z);
+			LightHandle.defillSrclight();
+			LightHandle.fillSrclight();
+		}
+		
+		
+		if (block.getMaterial().canBlockLights() || block.getMaterial().canBlockSunRay()) {
+			LightHandle.delSunlightAt(x, y, z);
+			LightHandle.skyRay(x, z, y, block.getMaterial().canBlockSunRay());
+			LightHandle.defillSunlight();
+			LightHandle.fillSunlight(true);
 		}
 		
 		setMeshDirtyShellAt(x, y, z);

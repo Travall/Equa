@@ -52,13 +52,19 @@ public class Main extends ApplicationAdapter {
 	SSAO ssao;
 	SpriteBatch spriteBatch;
 	Texture crosshair;
+	
+	Texture texture1;
+	Texture texture2;
+	boolean bool;
 
 	@Override
 	public void create() {
 		VoxelTerrain.ints(); // Must ints it first.
-		UltimateTexture.texture = new Texture("Tiles/ultimate5.png");
+		UltimateTexture.texture = new Texture("Tiles/ultimate6.png");
+		texture2 = UltimateTexture.texture;
+		texture1 = new Texture("Tiles/ultimate5.png");
 		BlocksList.ints();
-		blockType = BlocksList.SLAB;
+		blockType = BlocksList.STONE;
 
 		assetManager = new AssetManager();
 
@@ -120,6 +126,8 @@ public class Main extends ApplicationAdapter {
 		skybox.render(camera);
 		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 
+		if (Gdx.input.isKeyJustPressed(Keys.F1)) bool = !bool;
+		UltimateTexture.texture = bool ? texture2 : texture1;
 		world.render(camera);
 		Picker.render(camera);
 		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
@@ -163,7 +171,7 @@ public class Main extends ApplicationAdapter {
 		}
 
 		if (Gdx.input.isKeyPressed(Keys.Q))
-			blockType = BlocksList.SLAB;
+			blockType = BlocksList.STONE;
 		if (Gdx.input.isKeyPressed(Keys.E))
 			blockType = BlocksList.GOLD;
 
@@ -198,7 +206,9 @@ public class Main extends ApplicationAdapter {
 		VisUI.dispose();
 		VoxelTerrain.dispose();
 		Picker.dispose();
-		UltimateTexture.dispose();
+		texture1.dispose();
+		texture2.dispose();
+		//UltimateTexture.dispose();
 	}
 
 	// Fast, accurate, and simple ray-cast.

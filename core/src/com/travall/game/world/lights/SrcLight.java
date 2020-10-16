@@ -7,7 +7,7 @@ import com.badlogic.gdx.utils.Queue;
 import com.travall.game.blocks.BlocksList;
 import com.travall.game.world.World;
 
-public final class FloodLight {	
+final class SrcLight {	
 	private static final Queue<LightNode>    srclightQue    = new Queue<LightNode>(64);
 	private static final Queue<LightDelNode> srclightDelQue = new Queue<LightDelNode>(64);
 	
@@ -16,7 +16,7 @@ public final class FloodLight {
 	}
 	
 	public static void delSrclightAt(int x, int y, int z) {
-		srclightDelQue.addLast(LightDelNode.POOL.obtain().set(x, y, z, toSrcLight(world.data[x][y][z])));
+		srclightDelQue.addLast(LightDelNode.POOL.obtain().set(x, y, z, (byte)toSrcLight(world.data[x][y][z])));
 	}
 	
 	public static void fillSrclight() {
@@ -78,7 +78,7 @@ public final class FloodLight {
 		final int[][][] data = world.data;
 		final int height = World.mapHeight;
 		final int size = World.mapSize;
-		int neighborLevel;
+		byte neighborLevel;
 		
 		while(srclightDelQue.notEmpty()) {
 			LightDelNode node = srclightDelQue.removeFirst();
@@ -87,13 +87,13 @@ public final class FloodLight {
 			final int x = node.x;
 			final int y = node.y;
 			final int z = node.z;
-			final int lightLevel = node.val;
+			final byte lightLevel = node.val;
 			
 			// Set the chunk dirty.
 			world.setMeshDirtyShellAt(x, y, z);
 			
 			if (y+1 < height) {
-				neighborLevel = toSrcLight(data[x][y+1][z]);
+				neighborLevel = (byte)toSrcLight(data[x][y+1][z]);
 				if (neighborLevel != 0 && neighborLevel < lightLevel) {
 					world.setSrcLight(x, y+1, z, 0);
 					srclightDelQue.addLast(LightDelNode.POOL.obtain().set(x, y+1, z, neighborLevel));
@@ -102,7 +102,7 @@ public final class FloodLight {
 		        }	
 			}
 			if (y-1 >= 0) {
-				neighborLevel = toSrcLight(data[x][y-1][z]);
+				neighborLevel = (byte)toSrcLight(data[x][y-1][z]);
 				if (neighborLevel != 0 && neighborLevel < lightLevel) {
 					world.setSrcLight(x, y-1, z, 0);
 					srclightDelQue.addLast(LightDelNode.POOL.obtain().set(x, y-1, z, neighborLevel));
@@ -111,7 +111,7 @@ public final class FloodLight {
 		        }	
 			}
 			if (z-1 >= 0) {
-				neighborLevel = toSrcLight(data[x][y][z-1]);
+				neighborLevel = (byte)toSrcLight(data[x][y][z-1]);
 				if (neighborLevel != 0 && neighborLevel < lightLevel) {
 					world.setSrcLight(x, y, z-1, 0);
 					srclightDelQue.addLast(LightDelNode.POOL.obtain().set(x, y, z-1, neighborLevel));
@@ -120,7 +120,7 @@ public final class FloodLight {
 		        }	
 			}
 			if (x-1 >= 0) {
-				neighborLevel = toSrcLight(data[x-1][y][z]);
+				neighborLevel = (byte)toSrcLight(data[x-1][y][z]);
 				if (neighborLevel != 0 && neighborLevel < lightLevel) {
 					world.setSrcLight(x-1, y, z, 0);
 					srclightDelQue.addLast(LightDelNode.POOL.obtain().set(x-1, y, z, neighborLevel));
@@ -129,7 +129,7 @@ public final class FloodLight {
 		        }	
 			}
 			if (z+1 < size) {
-				neighborLevel = toSrcLight(data[x][y][z+1]);
+				neighborLevel = (byte)toSrcLight(data[x][y][z+1]);
 				if (neighborLevel != 0 && neighborLevel < lightLevel) {
 					world.setSrcLight(x, y, z+1, 0);
 					srclightDelQue.addLast(LightDelNode.POOL.obtain().set(x, y, z+1, neighborLevel));
@@ -138,7 +138,7 @@ public final class FloodLight {
 		        }	
 			}
 			if (x+1 < size) {
-				neighborLevel = toSrcLight(data[x+1][y][z]);
+				neighborLevel = (byte)toSrcLight(data[x+1][y][z]);
 				if (neighborLevel != 0 && neighborLevel < lightLevel) {
 					world.setSrcLight(x+1, y, z, 0);
 					srclightDelQue.addLast(LightDelNode.POOL.obtain().set(x+1, y, z, neighborLevel));
