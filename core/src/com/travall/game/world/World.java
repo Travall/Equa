@@ -25,8 +25,8 @@ public final class World implements Disposable {
 	/** Easy world access. */
 	public static World world;
 
-	public static final int mapSize = 256;
-	public static final int mapHeight = 128;
+	public static final int mapSize = 512;
+	public static final int mapHeight = 256;
 
 	public static final int chunkShift = 4; // 1 << 4 = 16. I set it back from 32 to 16 due to vertices limitations.
 	public static final int chunkSize = 1 << chunkShift;
@@ -41,6 +41,7 @@ public final class World implements Disposable {
 	final public short[][] shadowMap;
 	final ChunkBuilder blockBuilder;
 	final GridPoint3 pos = new GridPoint3();
+	final BlockPos tmpBlockPos = new BlockPos();
 
 	final ChunkMesh[][][] opaqueChunkMeshes;
 	final ChunkMesh[][][] transparentChunkMeshes;
@@ -66,9 +67,9 @@ public final class World implements Disposable {
 
 	private void generate(long seed) {
 		final RandomXS128 random = new RandomXS128(seed);
-		OpenSimplexOctaves BaseNoise = new OpenSimplexOctaves(8, 0.5, random.nextLong()); // changed from 0.45 to 0.43
+		OpenSimplexOctaves BaseNoise = new OpenSimplexOctaves(8, 0.4, random.nextLong());
 		OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5, 0.25, random.nextLong());
-		OpenSimplexOctaves FloatingIslandNoise = new OpenSimplexOctaves(6, 0.35, random.nextLong());
+		OpenSimplexOctaves FloatingIslandNoise = new OpenSimplexOctaves(7, 0.35, random.nextLong());
 		OpenSimplexOctaves DecisionNoise = new OpenSimplexOctaves(8, 0.4, random.nextLong());
 		OpenSimplexOctaves Decision2Noise = new OpenSimplexOctaves(8, 0.4, random.nextLong());
 
@@ -81,33 +82,41 @@ public final class World implements Disposable {
 				double decision = Utils.normalize(DecisionNoise.getNoise(x, z), 1);
 				double decision2 = Utils.normalize(Decision2Noise.getNoise(x, z), 1);
 
-				float steep = Interpolation.exp10
-						.apply(Interpolation.exp5.apply((Interpolation.exp10.apply((float) decision))));
-				float steep2 = Interpolation.exp10
-						.apply(Interpolation.exp5.apply((Interpolation.exp10.apply((float) decision2))));
+				float steep = Interpolation.exp5.apply(Interpolation.exp5.apply((Interpolation.exp5.apply((float) decision))));
+				float steep2 = Interpolation.exp5.apply(Interpolation.exp5.apply((Interpolation.exp10.apply((float) decision2))));
 
 				float height = MathUtils.lerp((float) base, (float) mountain, steep);
 
 				int yValue = (Math.round(height / 1) * 1);
 
+				boolean sandDone = false;
 
 				for (int i = yValue; i >= 0; i--) {
-					double caves = Utils.normalize(CaveNoise.getNoise(x, (int) (i), z), maxTerrainHeight);
+					double caves = Utils.normalize(CaveNoise.getNoise(x, (i), z), maxTerrainHeight);
 					boolean caveTerritory = (caves >= maxTerrainHeight - (height - i) && caves > maxTerrainHeight / 2
 							&& i > 0);
+
+ 					if((getBlock(tmpBlockPos.set(x,i+1,z)) == BlocksList.SAND && getBlock(tmpBlockPos.set(x,i+2,z)) == BlocksList.SAND && getBlock(tmpBlockPos.set(x,i+3,z)) == BlocksList.SAND && getBlock(tmpBlockPos.set(x,i+4,z)) == BlocksList.SAND)) sandDone = true;
+
 					if (i == 0) {
 						setBlock(x, i, z, BlocksList.BEDROCK);
 					} else {
 						if (i == yValue && i >= waterLevel) {
 							if (steep < 0.3 && steep2 < 0.5) {
 								setBlock(x, i, z, BlocksList.SAND);
+								if(random.nextInt(100) == 1) {
+									setBlock(x,i+1,z,BlocksList.SHRUB);
+								}
 							} else {
 								setBlock(x, i, z, BlocksList.GRASS);
+								if(random.nextInt(10) == 1) {
+									setBlock(x,i+1,z,BlocksList.TALLGRASS);
+								}
 							}
 						} else if (!caveTerritory) {
-							if (steep < 0.3 && steep2 < 0.5) {
+							if (steep < 0.3 && steep2 < 0.5 && !sandDone) {
 								setBlock(x, i, z, BlocksList.SAND);
-							} else if (caves >= maxTerrainHeight - (height - i) * 10) {
+							} else if (caves >= maxTerrainHeight - (height - i) * 14) {
 								setBlock(x, i, z, BlocksList.STONE);
 							} else {
 								setBlock(x, i, z, BlocksList.DIRT);
@@ -117,6 +126,7 @@ public final class World implements Disposable {
 					}
 				}
 
+				// Water
 				for (int j = waterLevel; j > 0; j--) {
 					double caves = Utils.normalize(CaveNoise.getNoise(x, (int) (j), z), maxTerrainHeight);
 					boolean caveTerritory = (caves >= maxTerrainHeight - (height - j) && caves > maxTerrainHeight / 2 && j > 0);
@@ -127,50 +137,19 @@ public final class World implements Disposable {
 					}
 				}
 
-				for(int j = mapHeight; j > mapHeight / 5; j--) {
+				// Floating Islands
+				for(int j = mapHeight-7; j > maxTerrainHeight * 1.5f; j--) {
 					if(FloatingIslandNoise.getNoise(x,j,z) > 0.175) {
 						if(isAirBlock(x,j,z)) {
 							if(isAirBlock(x,j+1,z)) {
 								setBlock(x,j,z,BlocksList.GRASS);
+								if(random.nextInt(10) == 1) {
+									setBlock(x,j+1,z,BlocksList.TALLGRASS);
+								}
 							} else if(getBlock(new BlockPos(x,j+1,z)) == BlocksList.GRASS) {
 								setBlock(x,j,z,BlocksList.DIRT);
 							} else {
 								setBlock(x,j,z,BlocksList.STONE);
-							}
-						}
-					}
-				}
-
-
-				for(int j = mapHeight; j > 0; j--) {
-					if(!isAirBlock(x,j,z)) {
-						if(getBlock(new BlockPos(x,j,z)) == BlocksList.GRASS) {
-							if (random.nextInt(100) == 1 && x > 0 && z > 0 && x <= mapSize && z <= mapSize) {
-								setBlock(x, j+1, z, BlocksList.LOG);
-								setBlock(x, j+2, z, BlocksList.LOG);
-								setBlock(x, j+3, z, BlocksList.LOG);
-
-								for (int xx = x - 2; xx <= x + 2; xx++) {
-									for (int zz = z - 2; zz <= z + 2; zz++) {
-										setBlock(xx, j+4, zz, BlocksList.LEAVES);
-									}
-								}
-
-								for (int xx = x - 1; xx <= x + 1; xx++) {
-									for (int zz = z - 1; zz <= z + 1; zz++) {
-										setBlock(xx, j+5, zz, BlocksList.LEAVES);
-									}
-								}
-
-								setBlock(x, j+4, z, BlocksList.LOG);
-								setBlock(x, j+6, z, BlocksList.LEAVES);
-
-							}
-						} else if (getBlock(new BlockPos(x,j,z)) == BlocksList.SAND && isAirBlock(x,j+1,z)) {
-							if (random.nextInt(200) == 1 && j > waterLevel) {
-								setBlock(x, j+1, z, BlocksList.CACTUS);
-								setBlock(x, j+2, z, BlocksList.CACTUS);
-								setBlock(x, j+3, z, BlocksList.CACTUS);
 							}
 						}
 					}
@@ -205,15 +184,79 @@ public final class World implements Disposable {
 				}
 				continue;
 			}
+
+			// Foliage
+			for(int j = mapHeight; j > 0; j--) {
+				if(!isAirBlock(x,j,z)) {
+					if(getBlock(new BlockPos(x,j,z)) == BlocksList.GRASS) {
+
+						boolean open = isAirBlock(x,j + 1,z) && isAirBlock(x,j + 2,z) && isAirBlock(x,j + 3,z);
+
+						if(!open) continue;
+
+						for (int xx = x - 2; xx <= x + 2; xx++) {
+							for (int zz = z - 2; zz <= z + 2; zz++) {
+								if(!isAirBlock(xx, j+4,zz)) {
+									open = false;
+									break;
+								}
+							}
+						}
+
+						if(!open) continue;
+
+						for (int xx = x - 1; xx <= x + 1; xx++) {
+							for (int zz = z - 1; zz <= z + 1; zz++) {
+								if(!isAirBlock(xx, j+5,zz)) {
+									open = false;
+									break;
+								}
+							}
+						}
+
+						if(!open) continue;
+
+						if (random.nextInt(100) == 1 && x > 0 && z > 0 && x <= mapSize && z <= mapSize) {
+							setBlock(x, j+1, z, BlocksList.LOG);
+							setBlock(x, j+2, z, BlocksList.LOG);
+							setBlock(x, j+3, z, BlocksList.LOG);
+
+							for (int xx = x - 2; xx <= x + 2; xx++) {
+								for (int zz = z - 2; zz <= z + 2; zz++) {
+									setBlock(xx, j+4, zz, BlocksList.LEAVES);
+								}
+							}
+
+							for (int xx = x - 1; xx <= x + 1; xx++) {
+								for (int zz = z - 1; zz <= z + 1; zz++) {
+									setBlock(xx, j+5, zz, BlocksList.LEAVES);
+								}
+							}
+
+							setBlock(x, j+4, z, BlocksList.LOG);
+							setBlock(x, j+6, z, BlocksList.LEAVES);
+
+						}
+					} else if (getBlock(new BlockPos(x,j,z)) == BlocksList.SAND && isAirBlock(x,j+1,z)) {
+						if (random.nextInt(200) == 1 && j > waterLevel) {
+							setBlock(x, j+1, z, BlocksList.CACTUS);
+							setBlock(x, j+2, z, BlocksList.CACTUS);
+							setBlock(x, j+3, z, BlocksList.CACTUS);
+						}
+					}
+				}
+			}
 				
 		}
 		
 		LightHandle.fillSunlight(false);
+
+
 	}
 	
 	public short getShadow(int x, int z) {
 		if (x < 0 || z < 0 || x >= mapSize || z >= mapSize)
-			return 0;
+			return mapHeight;
 		
 		return shadowMap[x][z];
 	}

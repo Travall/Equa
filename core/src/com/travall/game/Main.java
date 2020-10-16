@@ -185,7 +185,7 @@ public class Main extends ApplicationAdapter {
 		}
 
 		if (Gdx.input.isKeyPressed(Keys.Q))
-			blockType = BlocksList.STONE;
+			blockType = BlocksList.TALLGRASS;
 		if (Gdx.input.isKeyPressed(Keys.E))
 			blockType = BlocksList.GOLD;
 

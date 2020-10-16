@@ -34,8 +34,8 @@ public final class Picker {
 		shape.setProjectionMatrix(pickCam.combined);
 		shape.begin(ShapeType.Line);
 		final BoundingBox box = rayInfo.boxHit;
-		final float x = rayInfo.in.x, y = rayInfo.in.y, z = rayInfo.in.z+1;
-		shape.box(box.min.x+x, box.min.y+y, box.min.z+z, box.max.x, box.max.y, box.max.z);
+		final float x = rayInfo.in.x, y = rayInfo.in.y, z = rayInfo.in.z+box.getDepth();
+		shape.box(box.min.x+x, box.min.y+y, box.min.z+z, box.getWidth(), box.getHeight(), box.getDepth());
 		shape.end();
 		gl.glDisable(GL20.GL_BLEND);
 	}

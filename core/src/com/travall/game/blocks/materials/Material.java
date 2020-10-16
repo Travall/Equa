@@ -9,6 +9,7 @@ public class Material {
 	public static final Material WATER = new WaterMaterial();
 	public static final Material SLAB = new SlabMaterial();
 	public static final Material CACTUS = new CactusMaterial();
+	public static final Material DIAGONAL = new DiagonalMaterial();
 
 	/* Variables */
 	private boolean isSolid = isFullCube();
