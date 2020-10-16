@@ -28,8 +28,16 @@ public class FirstPersonCameraController extends InputAdapter {
 
     float mouseSensitivity = 0.5f;
 
+    float increase;
+
     public FirstPersonCameraController (Camera camera) {
         this.camera = camera;
+    }
+
+    public void update(boolean walking) {
+        if(walking) increase += 0.15f;
+        else increase = 0;
+        camera.rotate(camera.direction, 1);
     }
 
     @Override
@@ -64,13 +72,11 @@ public class FirstPersonCameraController extends InputAdapter {
         //reset quat and camera angles, rotate and apply to camera.
         quat.idt();
 
-        quat.setEulerAngles(camRotateAngle, camTiltAngle, 0);
+        quat.setEulerAngles(camRotateAngle, camTiltAngle, 1);
 
         camera.direction.set(0, 0, 1);
         camera.up.set(0,1,0);
         camera.rotate(quat);
-
-
 
 
         return true;
