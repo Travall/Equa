@@ -1,6 +1,6 @@
 package com.travall.game.blocks.materials;
 
-public class DiagonalMaterial extends Material {
+public class TorchMaterial extends Material {
 	@Override
 	public boolean isFullCube() {
 		return false;

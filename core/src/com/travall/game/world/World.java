@@ -25,7 +25,7 @@ public final class World implements Disposable {
 	/** Easy world access. */
 	public static World world;
 
-	public static final int mapSize = 512;
+	public static final int mapSize = 256;
 	public static final int mapHeight = 256;
 
 	public static final int chunkShift = 4; // 1 << 4 = 16. I set it back from 32 to 16 due to vertices limitations.
@@ -312,18 +312,25 @@ public final class World implements Disposable {
 		Block block = BlocksList.get(data[x][y][z]);
 		setBlock(x, y, z, BlocksList.AIR);
 
+		tmpBlockPos.set(pos).add(0,1,0);
+
+		if(!isAirBlock(x,y+1,z) && !getBlock(tmpBlockPos).getMaterial().canStandAlone()) this.breakBlock(tmpBlockPos);
+
 		if (block.isSrclight()) { // if break srclight block.
 			LightHandle.delSrclightAt(x, y, z);
 		} else { // if break non-srclight block.
 			LightHandle.newSrclightShellAt(x, y, z);
 		}
-		
+
 		LightHandle.newRaySunlightAt(x, y, z);
 		LightHandle.newSunlightShellAt(x, y, z);
 		setMeshDirtyShellAt(x, y, z);
+
 	}
 
 	public void placeBlock(BlockPos pos, Block block) {
+		if(!block.getMaterial().canStandAlone() && (isAirBlock(pos.x,pos.y-1,pos.z) || !getBlock(tmpBlockPos.set(pos).sub(0,1,0)).getMaterial().canStandAlone())) return;
+
 		if (block.isAir()) {
 			breakBlock(pos);
 			return;

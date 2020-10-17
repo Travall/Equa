@@ -185,7 +185,7 @@ public class Main extends ApplicationAdapter {
 		}
 
 		if (Gdx.input.isKeyPressed(Keys.Q))
-			blockType = BlocksList.TALLGRASS;
+			blockType = BlocksList.TORCH;
 		if (Gdx.input.isKeyPressed(Keys.E))
 			blockType = BlocksList.GOLD;
 
@@ -235,8 +235,9 @@ public class Main extends ApplicationAdapter {
 		Picker.hasHit = true;
 		Picker.rayInfo = info;
 		if (Gdx.input.justTouched()) {
-			final int button = 
-			Gdx.input.isButtonPressed(Buttons.LEFT) ? Buttons.LEFT : 
+			final int button =
+			Gdx.input.isButtonPressed(Buttons.LEFT) ? Buttons.LEFT :
+			Gdx.input.isButtonPressed(Buttons.MIDDLE) ? Buttons.MIDDLE :
 			Gdx.input.isButtonPressed(Buttons.RIGHT) ? Buttons.RIGHT : -1;
 			
 			if (button != -1) {
@@ -247,7 +248,9 @@ public class Main extends ApplicationAdapter {
 							blockType.onPlace(player, info);
 						}
 					} else if (button == Buttons.LEFT){
-						world.breakBlock(info.in);
+						blockType.onDestroy(player,info.in);
+					} else if(button == Buttons.MIDDLE) {
+						blockType = world.getBlock(info.in);
 					}
 				}
 			}

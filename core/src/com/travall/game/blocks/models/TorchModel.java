@@ -8,14 +8,14 @@ import com.travall.game.renderer.quad.QuadNode;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.Facing;
 
-public class CactusModel implements IBlockModel {
+public class TorchModel implements IBlockModel {
 
 	private final TextureRegion texture;
 	private final Block block;
 
 	private final QuadNode quad1, quad2, quad3, quad4, quad5, quad6;
 
-	public CactusModel(Block block, BlockTextures textures) {
+	public TorchModel(Block block, BlockTextures textures) {
 		this.texture = textures.north;
 		this.block = block;
 
@@ -69,12 +69,14 @@ public class CactusModel implements IBlockModel {
 
 
 
-		quad3.mul(1,1,14/16f);
-		quad4.mul(14/16f,1,1);
-		quad5.add(0,0,2/16f);
-		quad6.add(2/16f,0,0);
+
+		quad1.mul(1,10/16f,1);
+		quad3.mul(1,1,9/16f);
+		quad4.mul(9/16f,1,1);
+		quad5.add(0,0,7/16f);
+		quad6.add(7/16f,0,0);
 	}
-	
+
 	private final BlockPos second = new BlockPos();
 
 	@Override

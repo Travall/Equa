@@ -97,4 +97,18 @@ public class QuadNode extends QuadInfo {
 		
 		builder.rect(this);
 	}
+
+	public void mul(float x, float y, float z) {
+		this.v1.mul(x,y,z);
+		this.v2.mul(x,y,z);
+		this.v3.mul(x,y,z);
+		this.v4.mul(x,y,z);
+	}
+
+	public void add(float x, float y, float z) {
+		this.v1.add(x,y,z);
+		this.v2.add(x,y,z);
+		this.v3.add(x,y,z);
+		this.v4.add(x,y,z);
+	}
 }

@@ -118,6 +118,13 @@ public class Block {
 		world.placeBlock(rayInfo.out, this);
 		return true;
 	}
+
+	/** Destroy the block.
+	 *  @return true if player has successfully destroy the block. */
+	public boolean onDestroy(Player player, BlockPos pos) {
+		world.breakBlock(pos);
+		return true;
+	}
 	
 	public AmbiantType getAmbiantType() {
 		if (isSrclight()) return AmbiantType.FULLBRIGHT;

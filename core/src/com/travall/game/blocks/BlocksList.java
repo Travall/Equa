@@ -20,7 +20,9 @@ public final class BlocksList {
 	CACTUS = new Cactus(ID++),
 	SLAB = new Slab(ID++),
 	TALLGRASS = new TallGrass(ID++),
-	SHRUB = new Shrub(ID++);
+	SHRUB = new Shrub(ID++),
+	TORCH = new Torch(ID++);
+
 
 	public static final int SIZE = ID;
 	private static final Block[] blocks = new Block[SIZE];
@@ -42,6 +44,7 @@ public final class BlocksList {
 		addBlock(SLAB);
 		addBlock(TALLGRASS);
 		addBlock(SHRUB);
+		addBlock(TORCH);
 
 		hasInts = true;
 	}

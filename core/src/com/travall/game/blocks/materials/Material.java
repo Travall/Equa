@@ -10,6 +10,7 @@ public class Material {
 	public static final Material SLAB = new SlabMaterial();
 	public static final Material CACTUS = new CactusMaterial();
 	public static final Material DIAGONAL = new DiagonalMaterial();
+	public static final Material TORCH = new TorchMaterial();
 
 	/* Getters */
 
@@ -44,6 +45,11 @@ public class Material {
 		return isSolid();
 	}
 
+	/** Does it need a block beneath. */
+	public boolean canStandAlone() {
+		return true;
+	}
+
 	/* Utilities */
 
 	private static final StringBuilder build = new StringBuilder();
@@ -56,6 +62,7 @@ public class Material {
 		build.append("hasCollision: ").append(hasCollision()).append('\n');
 		build.append("canBlockSunRay: ").append(canBlockSunRay()).append('\n');
 		build.append("canBlockLights: ").append(canBlockLights()).append('\n');
+		build.append("canStandAlones: ").append(canStandAlone()).append('\n');
 		return build.toString();
 	}
 }
