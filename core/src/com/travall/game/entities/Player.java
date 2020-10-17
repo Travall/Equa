@@ -101,18 +101,18 @@ public class Player {
 
 		if (Gdx.input.isKeyPressed(Input.Keys.W))
 			add.add(temp
-					.scl(speed * (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? (this.isFlying ? 2f : 1.5f) : 1)));
+					.scl(speed * (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? (this.isFlying ? 2f : 1.5f) : (this.isFlying ? 0.75f : 1f))));
 		if (Gdx.input.isKeyPressed(Input.Keys.S))
-			add.add(temp.scl(-speed));
+			add.add(temp.scl(-speed  * (this.isFlying ? 0.75f : 1f)));
 
 		temp.set(direction.rotate(Vector3.Y, -90));
 
 		if (Gdx.input.isKeyPressed(Input.Keys.A))
 			add.add(temp
-					.scl(-speed * (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? (this.isFlying ? 1.5f : 1f) : 1)));
+					.scl(-speed * (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? (this.isFlying ? 0.5f : 1f) : (this.isFlying ? 0.75f : 1f))));
 		if (Gdx.input.isKeyPressed(Input.Keys.D))
 			add.add(temp
-					.scl(speed * (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? (this.isFlying ? 1.5f : 1f) : 1)));
+					.scl(speed * (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? (this.isFlying ? 0.5f : 1f) :(this.isFlying ? 0.75f : 1f))));
 
 		if (!add.equals(Vector3.Zero) && Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)
 				&& Gdx.input.isKeyPressed(Input.Keys.W))
