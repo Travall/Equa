@@ -1,10 +1,9 @@
 package com.travall.game.renderer.vertices;
 
-import static com.travall.game.world.World.world;
+import static com.travall.game.utils.AmbiantType.*;
 
 import com.travall.game.blocks.Block;
-import com.travall.game.utils.AmbiantType;
-import com.travall.game.utils.BlockPos;
+import com.travall.game.blocks.BlocksList;
 import com.travall.game.utils.BlockUtils;
 
 public class VertInfo {
@@ -22,19 +21,22 @@ public class VertInfo {
 
 	private static final float[] AMB = {0.5f, 0.65f, 0.75f, 1f};;
 
-	private void vertAO(AmbiantType side1, AmbiantType side2, AmbiantType corner) {
-		final boolean bool = side1 == AmbiantType.FULLBRIGHT || side2 == AmbiantType.FULLBRIGHT;
-		if (side1 == AmbiantType.DARKEN && side2 == AmbiantType.DARKEN) {
+	private void vertAO(Block center, Block side1, Block side2, Block corner) {
+		final boolean bool = side1.getAmbiantType() == FULLBRIGHT || side2.getAmbiantType() == FULLBRIGHT || center.getAmbiantType() == FULLBRIGHT;
+		if (side1.getAmbiantType() == DARKEN && side2.getAmbiantType() == DARKEN) {
 			twoSides = true;
 			if (bool) return;
 			ambLit *= AMB[0];
 			return;
 		}
-		if (bool || corner == AmbiantType.FULLBRIGHT) return;
-		ambLit *= AMB[side1.value + side2.value + corner.value];
+		if (bool || corner.getAmbiantType() == FULLBRIGHT) return;
+		ambLit *= AMB[side1.getAmbiantType().value + side2.getAmbiantType().value + corner.getAmbiantType().value];
 	}
 
-	private void smoothLight(int center, int side1, int side2, int corner) {
+	public void calcLight(Block block, int center, int side1, int side2, int corner) {
+		twoSides = false;
+		if (!block.isSrclight()) vertAO(BlocksList.get(center), BlocksList.get(side1), BlocksList.get(side2), BlocksList.get(corner));
+		
 		int light;
 		int lightTotal, lightCount = 1;
 
@@ -84,14 +86,6 @@ public class VertInfo {
 		}
 
 		sunLit = lightCount == 1 ? lightTotal / BlockUtils.lightScl : (lightTotal / lightCount) / BlockUtils.lightScl;
-	}
-
-	public void calcLight(Block block, BlockPos center, BlockPos side1, BlockPos side2, BlockPos corner) {
-		twoSides = false;
-		if (!block.isSrclight())
-			vertAO(world.getBlock(side1).getAmbiantType(), world.getBlock(side2).getAmbiantType(), world.getBlock(corner).getAmbiantType());
-		
-		smoothLight(world.getData(center), world.getData(side1), world.getData(side2), world.getData(corner));
 	}
 
 	public void setPos(float x, float y, float z) {

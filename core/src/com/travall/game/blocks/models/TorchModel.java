@@ -11,13 +11,11 @@ import com.travall.game.utils.Facing;
 public class TorchModel implements IBlockModel {
 
 	private final TextureRegion texture;
-	private final Block block;
 
 	private final QuadNode quad1, quad2, quad3, quad4, quad5, quad6;
 
 	public TorchModel(Block block, BlockTextures textures) {
 		this.texture = textures.north;
-		this.block = block;
 
 		quad1 = new QuadNode();
 		quad1.v1.setPos(1, 1, 0);
@@ -25,6 +23,7 @@ public class TorchModel implements IBlockModel {
 		quad1.v3.setPos(0, 1, 1);
 		quad1.v4.setPos(1, 1, 1);
 		quad1.face = Facing.UP;
+		quad1.simpleLight = true;
 		quad1.region.setRegion(textures.top);
 
 		quad2 = new QuadNode();
@@ -33,6 +32,7 @@ public class TorchModel implements IBlockModel {
 		quad2.v3.setPos(1, 0, 1);
 		quad2.v4.setPos(0, 0, 1);
 		quad2.face = Facing.DOWN;
+		quad2.simpleLight = true;
 		quad2.region.setRegion(textures.bottom);
 
 		quad3 = new QuadNode();
@@ -41,6 +41,7 @@ public class TorchModel implements IBlockModel {
 		quad3.v3.setPos(0, 1, 1);
 		quad3.v4.setPos(0, 0, 1);
 		quad3.face = Facing.NORTH;
+		quad3.simpleLight = true;
 		quad3.region.setRegion(textures.south);
 
 		quad4 = new QuadNode();
@@ -49,6 +50,7 @@ public class TorchModel implements IBlockModel {
 		quad4.v3.setPos(1, 1, 1);
 		quad4.v4.setPos(1, 0, 1);
 		quad4.face = Facing.EAST;
+		quad4.simpleLight = true;
 		quad4.region.setRegion(textures.south);
 
 		quad5 = new QuadNode();
@@ -57,6 +59,7 @@ public class TorchModel implements IBlockModel {
 		quad5.v3.setPos(1, 1, 0);
 		quad5.v4.setPos(1, 0, 0);
 		quad5.face = Facing.SOUTH;
+		quad5.simpleLight = true;
 		quad5.region.setRegion(textures.south);
 
 		quad6 = new QuadNode();
@@ -65,10 +68,9 @@ public class TorchModel implements IBlockModel {
 		quad6.v3.setPos(0, 1, 0);
 		quad6.v4.setPos(0, 0, 0);
 		quad6.face = Facing.WEST;
+		quad6.simpleLight = true;
 		quad6.region.setRegion(textures.west);
-
-
-
+		
 
 		quad1.mul(1,10/16f,1);
 		quad3.mul(1,1,9/16f);
@@ -77,18 +79,14 @@ public class TorchModel implements IBlockModel {
 		quad6.add(7/16f,0,0);
 	}
 
-	private final BlockPos second = new BlockPos();
-
 	@Override
 	public void build(QuadBuilder builder, BlockPos position) {
-		int x = position.x, y = position.y, z = position.z;
-		final Block block = this.block;
-		if (block.canAddFace(position, second.set(x, y+1, z), Facing.UP))    quad1.rect(builder, position);
-		if (block.canAddFace(position, second.set(x, y-1, z), Facing.DOWN))  quad2.rect(builder, position);
-		if (block.canAddFace(position, second.set(x, y, z+1), Facing.NORTH)) quad3.rect(builder, position);
-		if (block.canAddFace(position, second.set(x+1, y, z), Facing.EAST))  quad4.rect(builder, position);
-		if (block.canAddFace(position, second.set(x, y, z-1), Facing.SOUTH)) quad5.rect(builder, position);
-		if (block.canAddFace(position, second.set(x-1, y, z), Facing.WEST))  quad6.rect(builder, position);
+		quad1.rect(builder, position);
+		quad2.rect(builder, position);
+		quad3.rect(builder, position);
+		quad4.rect(builder, position);
+		quad5.rect(builder, position);
+		quad6.rect(builder, position);
 	}
 
 	@Override

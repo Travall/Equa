@@ -5,19 +5,21 @@ import static com.travall.game.utils.Utils.gamma;
 
 import com.travall.game.blocks.Block;
 import com.travall.game.utils.BlockPos;
+import com.travall.game.utils.BlockUtils;
 import com.travall.game.utils.Facing;
 
 public class QuadNode extends QuadInfo {
 	
 	public static final float 
-	lightHigh = 1.0f, // old: 1.0f  new: 1.0f
-	lightMed = gamma(0.95), // old: 0.82f new: 0.86f
-	lightLow = gamma(0.9), // old: 0.68f new: 0.75f
-	lightDim = gamma(0.85); // old: 0.6f  new: 0.65f
+	lightHigh = 1.0f,
+	lightMed = gamma(0.95),
+	lightLow = gamma(0.9),
+	lightDim = gamma(0.85);
 	
 	public Facing face;
 	
 	public boolean isInside;
+	public boolean simpleLight;
 	
 	private final BlockPos
 	center = new BlockPos(),
@@ -29,7 +31,7 @@ public class QuadNode extends QuadInfo {
 		final int x = pos.x, y = pos.y, z = pos.z;
 		final Block block = world.getBlock(pos);
 		
-		int x1, y1, z1;
+		int x1, y1, z1, data;
 		
 		final float xf = x, yf = y, zf = z; 
 		builder.p1.set(v1.x+xf, v1.y+yf, v1.z+zf);
@@ -38,77 +40,68 @@ public class QuadNode extends QuadInfo {
 		builder.p4.set(v4.x+xf, v4.y+yf, v4.z+zf);
 		
 		setAmb(lightHigh);
+		if (simpleLight) {
+			data = world.getData(pos);
+			setSrc(BlockUtils.toSrcLight(data));
+			setSun(BlockUtils.toSunLight(data));
+		} else
 		switch (face) {
 		case UP:
 			if (!block.isSrclight()) setAmb(lightHigh);
 			y1 = isInside ? y : y+1;
-			center.set(x, y1, z);
-			v1.calcLight(block, center, side1.set(x+1, y1, z), side2.set(x, y1, z-1), corner.set(x+1, y1, z-1));
-			v2.calcLight(block, center, side1.set(x-1, y1, z), side2.set(x, y1, z-1), corner.set(x-1, y1, z-1));
-			v3.calcLight(block, center, side1.set(x-1, y1, z), side2.set(x, y1, z+1), corner.set(x-1, y1, z+1));
-			v4.calcLight(block, center, side1.set(x+1, y1, z), side2.set(x, y1, z+1), corner.set(x+1, y1, z+1));
+			data = world.getData(center.set(x, y1, z));
+			v1.calcLight(block, data, world.getData(side1.set(x+1, y1, z)), world.getData(side2.set(x, y1, z-1)), world.getData(corner.set(x+1, y1, z-1)));
+			v2.calcLight(block, data, world.getData(side1.set(x-1, y1, z)), world.getData(side2.set(x, y1, z-1)), world.getData(corner.set(x-1, y1, z-1)));
+			v3.calcLight(block, data, world.getData(side1.set(x-1, y1, z)), world.getData(side2.set(x, y1, z+1)), world.getData(corner.set(x-1, y1, z+1)));
+			v4.calcLight(block, data, world.getData(side1.set(x+1, y1, z)), world.getData(side2.set(x, y1, z+1)), world.getData(corner.set(x+1, y1, z+1)));
 			break;
 		case DOWN:
 			if (!block.isSrclight()) setAmb(lightDim);
 			y1 = isInside ? y : y-1;
-			center.set(x, y1, z);
-			v1.calcLight(block, center, side1.set(x-1, y1, z), side2.set(x, y1, z-1), corner.set(x-1, y1, z-1));
-			v2.calcLight(block, center, side1.set(x+1, y1, z), side2.set(x, y1, z-1), corner.set(x+1, y1, z-1));
-			v3.calcLight(block, center, side1.set(x+1, y1, z), side2.set(x, y1, z+1), corner.set(x+1, y1, z+1));
-			v4.calcLight(block, center, side1.set(x-1, y1, z), side2.set(x, y1, z+1), corner.set(x-1, y1, z+1));
+			data = world.getData(center.set(x, y1, z));
+			v1.calcLight(block, data, world.getData(side1.set(x-1, y1, z)), world.getData(side2.set(x, y1, z-1)), world.getData(corner.set(x-1, y1, z-1)));
+			v2.calcLight(block, data, world.getData(side1.set(x+1, y1, z)), world.getData(side2.set(x, y1, z-1)), world.getData(corner.set(x+1, y1, z-1)));
+			v3.calcLight(block, data, world.getData(side1.set(x+1, y1, z)), world.getData(side2.set(x, y1, z+1)), world.getData(corner.set(x+1, y1, z+1)));
+			v4.calcLight(block, data, world.getData(side1.set(x-1, y1, z)), world.getData(side2.set(x, y1, z+1)), world.getData(corner.set(x-1, y1, z+1)));
 			break;
 		case SOUTH:
 			if (!block.isSrclight()) setAmb(lightMed);
 			z1 = isInside ? z : z-1;
-			center.set(x, y, z1);
-			v1.calcLight(block, center, side1.set(x, y-1, z1), side2.set(x-1, y, z1), corner.set(x-1, y-1, z1));
-			v2.calcLight(block, center, side1.set(x, y+1, z1), side2.set(x-1, y, z1), corner.set(x-1, y+1, z1));
-			v3.calcLight(block, center, side1.set(x, y+1, z1), side2.set(x+1, y, z1), corner.set(x+1, y+1, z1));
-			v4.calcLight(block, center, side1.set(x, y-1, z1), side2.set(x+1, y, z1), corner.set(x+1, y-1, z1));
+			data = world.getData(center.set(x, y, z1));
+			v1.calcLight(block, data, world.getData(side1.set(x, y-1, z1)), world.getData(side2.set(x-1, y, z1)), world.getData(corner.set(x-1, y-1, z1)));
+			v2.calcLight(block, data, world.getData(side1.set(x, y+1, z1)), world.getData(side2.set(x-1, y, z1)), world.getData(corner.set(x-1, y+1, z1)));
+			v3.calcLight(block, data, world.getData(side1.set(x, y+1, z1)), world.getData(side2.set(x+1, y, z1)), world.getData(corner.set(x+1, y+1, z1)));
+			v4.calcLight(block, data, world.getData(side1.set(x, y-1, z1)), world.getData(side2.set(x+1, y, z1)), world.getData(corner.set(x+1, y-1, z1)));
 			break;
 		case WEST:
 			if (!block.isSrclight()) setAmb(lightLow);
 			x1 = isInside ? x : x-1;
-			center.set(x1, y, z);
-			v1.calcLight(block, center, side1.set(x1, y-1, z), side2.set(x1, y, z+1), corner.set(x1, y-1, z+1));
-			v2.calcLight(block, center, side1.set(x1, y+1, z), side2.set(x1, y, z+1), corner.set(x1, y+1, z+1));
-			v3.calcLight(block, center, side1.set(x1, y+1, z), side2.set(x1, y, z-1), corner.set(x1, y+1, z-1));
-			v4.calcLight(block, center, side1.set(x1, y-1, z), side2.set(x1, y, z-1), corner.set(x1, y-1, z-1));
+			data = world.getData(center.set(x1, y, z));
+			v1.calcLight(block, data, world.getData(side1.set(x1, y-1, z)), world.getData(side2.set(x1, y, z+1)), world.getData(corner.set(x1, y-1, z+1)));
+			v2.calcLight(block, data, world.getData(side1.set(x1, y+1, z)), world.getData(side2.set(x1, y, z+1)), world.getData(corner.set(x1, y+1, z+1)));
+			v3.calcLight(block, data, world.getData(side1.set(x1, y+1, z)), world.getData(side2.set(x1, y, z-1)), world.getData(corner.set(x1, y+1, z-1)));
+			v4.calcLight(block, data, world.getData(side1.set(x1, y-1, z)), world.getData(side2.set(x1, y, z-1)), world.getData(corner.set(x1, y-1, z-1)));
 			break;
 		case NORTH:
 			if (!block.isSrclight()) setAmb(lightMed);
 			z1 = isInside ? z : z+1;
-			center.set(x, y, z1);
-			v1.calcLight(block, center, side1.set(x, y-1, z1), side2.set(x+1, y, z1), corner.set(x+1, y-1, z1));
-			v2.calcLight(block, center, side1.set(x, y+1, z1), side2.set(x+1, y, z1), corner.set(x+1, y+1, z1));
-			v3.calcLight(block, center, side1.set(x, y+1, z1), side2.set(x-1, y, z1), corner.set(x-1, y+1, z1));
-			v4.calcLight(block, center, side1.set(x, y-1, z1), side2.set(x-1, y, z1), corner.set(x-1, y-1, z1));
+			data = world.getData(center.set(x, y, z1));
+			v1.calcLight(block, data, world.getData(side1.set(x, y-1, z1)), world.getData(side2.set(x+1, y, z1)), world.getData(corner.set(x+1, y-1, z1)));
+			v2.calcLight(block, data, world.getData(side1.set(x, y+1, z1)), world.getData(side2.set(x+1, y, z1)), world.getData(corner.set(x+1, y+1, z1)));
+			v3.calcLight(block, data, world.getData(side1.set(x, y+1, z1)), world.getData(side2.set(x-1, y, z1)), world.getData(corner.set(x-1, y+1, z1)));
+			v4.calcLight(block, data, world.getData(side1.set(x, y-1, z1)), world.getData(side2.set(x-1, y, z1)), world.getData(corner.set(x-1, y-1, z1)));
 			break;
 		case EAST:
 			if (!block.isSrclight()) setAmb(lightLow);
 			x1 = isInside ? x : x+1;
-			center.set(x1, y, z);
-			v1.calcLight(block, center, side1.set(x1, y-1, z), side2.set(x1, y, z-1), corner.set(x1, y-1, z-1));
-			v2.calcLight(block, center, side1.set(x1, y+1, z), side2.set(x1, y, z-1), corner.set(x1, y+1, z-1));
-			v3.calcLight(block, center, side1.set(x1, y+1, z), side2.set(x1, y, z+1), corner.set(x1, y+1, z+1));
-			v4.calcLight(block, center, side1.set(x1, y-1, z), side2.set(x1, y, z+1), corner.set(x1, y-1, z+1));
+			data = world.getData(center.set(x1, y, z));
+			v1.calcLight(block, data, world.getData(side1.set(x1, y-1, z)), world.getData(side2.set(x1, y, z-1)), world.getData(corner.set(x1, y-1, z-1)));
+			v2.calcLight(block, data, world.getData(side1.set(x1, y+1, z)), world.getData(side2.set(x1, y, z-1)), world.getData(corner.set(x1, y+1, z-1)));
+			v3.calcLight(block, data, world.getData(side1.set(x1, y+1, z)), world.getData(side2.set(x1, y, z+1)), world.getData(corner.set(x1, y+1, z+1)));
+			v4.calcLight(block, data, world.getData(side1.set(x1, y-1, z)), world.getData(side2.set(x1, y, z+1)), world.getData(corner.set(x1, y-1, z+1)));
 			break;
 		}
 		
 		builder.rect(this);
-	}
-
-	public void mul(float x, float y, float z) {
-		this.v1.mul(x,y,z);
-		this.v2.mul(x,y,z);
-		this.v3.mul(x,y,z);
-		this.v4.mul(x,y,z);
-	}
-
-	public void add(float x, float y, float z) {
-		this.v1.add(x,y,z);
-		this.v2.add(x,y,z);
-		this.v3.add(x,y,z);
-		this.v4.add(x,y,z);
 	}
 }

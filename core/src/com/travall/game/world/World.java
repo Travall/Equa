@@ -402,7 +402,7 @@ public final class World implements Disposable {
 	public void setBlock(int x, int y, int z, Block block) {
 		if (isOutBound(x, y, z)) return;
 				
-		data[x][y][z] = (data[x][y][z] & ID_INV) | block.getID();
+		data[x][y][z] = (data[x][y][z] & NODATA) | block.getID();
 	}
 
 	public Block getBlock(BlockPos pos) {

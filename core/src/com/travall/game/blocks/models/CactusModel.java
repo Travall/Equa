@@ -83,10 +83,10 @@ public class CactusModel implements IBlockModel {
 		final Block block = this.block;
 		if (block.canAddFace(position, second.set(x, y+1, z), Facing.UP))    quad1.rect(builder, position);
 		if (block.canAddFace(position, second.set(x, y-1, z), Facing.DOWN))  quad2.rect(builder, position);
-		if (block.canAddFace(position, second.set(x, y, z+1), Facing.NORTH)) quad3.rect(builder, position);
-		if (block.canAddFace(position, second.set(x+1, y, z), Facing.EAST))  quad4.rect(builder, position);
-		if (block.canAddFace(position, second.set(x, y, z-1), Facing.SOUTH)) quad5.rect(builder, position);
-		if (block.canAddFace(position, second.set(x-1, y, z), Facing.WEST))  quad6.rect(builder, position);
+		quad3.rect(builder, position);
+		quad4.rect(builder, position);
+		quad5.rect(builder, position);
+		quad6.rect(builder, position);
 	}
 
 	@Override
