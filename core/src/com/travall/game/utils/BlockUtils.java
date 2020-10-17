@@ -15,7 +15,8 @@ public final class BlockUtils {
 	SUN_INV = ~(SRC_AND<<SUN_SHIFT),
 	SRC_INV = ~(SRC_AND<<SRC_SHIFT),
 	DATA_INV = ~(DATA_AND<<DATA_SHIFT),
-	ID_INV = ~ID_AND;
+	ID_INV = ~ID_AND,
+	NODATA = (SRC_AND<<SUN_SHIFT)|(SRC_AND<<SRC_SHIFT);
 	
 	public static int toSunLight(int data) {
 	    return data >>> SUN_SHIFT;

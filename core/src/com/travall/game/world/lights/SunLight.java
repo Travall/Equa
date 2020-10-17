@@ -19,7 +19,7 @@ final class SunLight {
 		sunlightDelQue.addLast(LightDelNode.POOL.obtain().set(x, y, z, (byte)toSunLight(world.data[x][y][z])));
 	}
 	
-	public static void fillSunlight(final boolean updateMesh) {
+	public static void fillSunlight() {
 		final int[][][] data = world.data;
 		final int height = World.mapHeight;
 		final int size = World.mapSize;
@@ -34,7 +34,7 @@ final class SunLight {
 			final int z = node.z;
 			
 			// Set the chunk dirty.
-			if (updateMesh) world.setMeshDirtyShellAt(x, y, z);
+			world.setMeshDirtyShellAt(x, y, z);
 			
 			// Get the light value from lightMap at current position
 			final int lightLevel = toSunLight(data[x][y][z]);

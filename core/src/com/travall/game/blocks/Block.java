@@ -30,7 +30,7 @@ public class Block {
 	protected Material material;
 	/** Bounding boxes of this block. (might create one if this block is not a full-block).
 	 * It can have bounding boxes here or at model, but here will override the model's bounding boxes. */
-	protected Array<BoundingBox> boundingBoxes = new Array<BoundingBox>(4);
+	protected final Array<BoundingBox> boundingBoxes = new Array<BoundingBox>(4);
 	/** Model of this block. (required) */
 	protected IBlockModel model;
 

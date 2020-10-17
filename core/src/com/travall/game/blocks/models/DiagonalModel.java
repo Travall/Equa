@@ -22,6 +22,8 @@ public class DiagonalModel implements IBlockModel {
 		quad1.v3.setPos(1, 1, 1);
 		quad1.v4.setPos(1, 0, 1);
 		quad1.face = Facing.UP;
+		quad1.isInside = true;
+		quad1.simpleLight = true;
 		quad1.region.setRegion(texture);
 		
 		quad2 = new QuadNode();
@@ -30,6 +32,8 @@ public class DiagonalModel implements IBlockModel {
 		quad2.v3.setPos(0, 1, 1);
 		quad2.v4.setPos(0, 0, 1);
 		quad2.face = Facing.UP;
+		quad2.isInside = true;
+		quad2.simpleLight = true;
 		quad2.region.setRegion(texture);
 
 		quad3 = new QuadNode();
@@ -38,6 +42,8 @@ public class DiagonalModel implements IBlockModel {
 		quad3.v3.setPos(1, 1, 0);
 		quad3.v4.setPos(1, 0, 0);
 		quad3.face = Facing.UP;
+		quad3.isInside = true;
+		quad3.simpleLight = true;
 		quad3.region.setRegion(texture);
 
 		quad4 = new QuadNode();
@@ -46,6 +52,8 @@ public class DiagonalModel implements IBlockModel {
 		quad4.v3.setPos(0, 1, 0);
 		quad4.v4.setPos(0, 0, 0);
 		quad4.face = Facing.UP;
+		quad4.isInside = true;
+		quad4.simpleLight = true;
 		quad4.region.setRegion(texture);
 	}
 	

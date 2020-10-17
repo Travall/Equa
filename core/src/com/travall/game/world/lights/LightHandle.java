@@ -125,6 +125,6 @@ public final class LightHandle {
 		SrcLight.defillSrclight();
 		SrcLight.fillSrclight();
 		SunLight.defillSunlight();
-		SunLight.fillSunlight(true);
+		SunLight.fillSunlight();
 	}
 }
