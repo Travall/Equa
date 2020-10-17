@@ -20,13 +20,14 @@ allprojects {
 
     version = '1.0'
     ext {
-        appName = "Isometric3D"
+        appName = "Equa"
         gdxVersion = '1.9.11'
         roboVMVersion = '2.3.8'
         box2DLightsVersion = '1.4'
         ashleyVersion = '1.7.3'
         visuiVersion = '1.4.6'
         aiVersion = '1.8.0'
+
     }
 
     repositories {
@@ -48,6 +49,7 @@ project(":desktop") {
         api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
         //api "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-desktop"
+        compile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
         
     }
 }
@@ -59,6 +61,7 @@ project(":core") {
     dependencies {
         compile "com.kotcrab.vis:vis-ui:$visuiVersion"
         api "com.badlogicgames.gdx:gdx:$gdxVersion"
+        compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
         //api "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
         
     }

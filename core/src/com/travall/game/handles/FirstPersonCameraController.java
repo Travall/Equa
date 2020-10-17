@@ -34,8 +34,8 @@ public class FirstPersonCameraController extends InputAdapter {
         this.camera = camera;
     }
 
-    public void update(boolean walking) {
-        if(walking) increase += 0.25f;
+    public void update(boolean walking, boolean flying) {
+        if(walking && !flying) increase += 0.25f;
         else increase = 0;
         camera.rotate(camera.direction, (float) Math.sin(increase) / 32);
     }

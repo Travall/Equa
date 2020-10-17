@@ -14,6 +14,7 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
@@ -64,6 +65,9 @@ public class Main extends ApplicationAdapter {
 	float increase = 0;
 
 	BitmapFont font;
+	boolean debug = false;
+
+	String VERSION = "2.0.0";
 
 	@Override
 	public void create() {
@@ -96,14 +100,6 @@ public class Main extends ApplicationAdapter {
 
 		shadowBatch = new ModelBatch(new DepthShaderProvider());
 
-//        assetManager.load("Models/steve.g3dj",Model.class);
-//        assetManager.finishLoading();
-//
-//        Model stevey = assetManager.get("Models/steve.g3dj", Model.class);
-//        steve = new ModelInstance(stevey);
-//        steve.transform.scale(0.3f,0.3f,0.3f);
-//        steve.transform.setTranslation(starting.x,starting.y + 2,starting.z);
-
 		world = new World();
 		Vector3 starting = new Vector3(World.mapSize / 2, World.mapHeight, World.mapSize / 2);
 		player = new Player(starting);
@@ -112,8 +108,13 @@ public class Main extends ApplicationAdapter {
 		ssao.setEnable(false); // Enable or disable the SSAO.
 
 		spriteBatch = new SpriteBatch();
-		font = new BitmapFont();
-		font.setColor(Color.WHITE);
+
+
+		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("Fonts/main.ttf"));
+		FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+		parameter.size = 16;
+		font = generator.generateFont(parameter); // font size 12 pixels
+		generator.dispose(); // don't forget to dispose to avoid memory leaks!
 
 		Gdx.input.setCursorCatched(true);
 
@@ -122,13 +123,13 @@ public class Main extends ApplicationAdapter {
 		Picker.ints();
 	}
 
-	StringBuilder build = new StringBuilder();
+	StringBuilder info = new StringBuilder();
 
 	@Override
 	public void render() {
 		update();
 		camera.update(); // Update the camera projection
-		cameraController.update(player.isWalking);
+		cameraController.update(player.isWalking,player.isFlying);
 
 		ssao.begin();
 		Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
@@ -142,17 +143,31 @@ public class Main extends ApplicationAdapter {
 		world.render(camera);
 		Picker.render(camera);
 		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
-		
-		
+
+
 		ssao.end();
 		Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
-		
+
 		ssao.render();
 
 //        spriteBatch.setShader(ssaoShaderProgram);
 		spriteBatch.begin();
 		spriteBatch.draw(crosshair, (Gdx.graphics.getWidth() / 2) - 8, (Gdx.graphics.getHeight() / 2) - 8);
-		font.draw(spriteBatch, "Velocity x: " + player.getVelocity().x, 20, Gdx.graphics.getHeight() - 20);
+
+		info.setLength(0);
+		info.append("Equa ").append(VERSION).append('\n');
+
+		if (debug) {
+			info.append('\n');
+			info.append("X: ").append(player.getPosition().x).append('\n');
+			info.append("Y: ").append(player.getPosition().y).append('\n');
+			info.append("Z: ").append(player.getPosition().z).append('\n');
+			info.append('\n');
+			info.append("Vel X: ").append(player.getVelocity().x).append('\n');
+			info.append("Vel Y: ").append(player.getVelocity().y).append('\n');
+			info.append("Vel Z: ").append(player.getVelocity().z).append('\n');
+		}
+		font.draw(spriteBatch,info,5,Gdx.graphics.getHeight() - 5);
 		spriteBatch.end();
 		spriteBatch.setShader(null);
 
@@ -179,6 +194,8 @@ public class Main extends ApplicationAdapter {
 				Gdx.graphics.setFullscreenMode(currentMode);
 			}
 		}
+
+		if(Gdx.input.isKeyJustPressed(Keys.F12)) debug = !debug;
 
 		if (Gdx.input.isKeyJustPressed(Keys.F)) {
 			player.isFlying = !player.isFlying;

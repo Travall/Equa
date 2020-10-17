@@ -61,9 +61,9 @@ public class Player {
 
 
 
-		velocity.x = MathUtils.lerp(this.velocity.x, 0, 0.2f);
+		velocity.x = isFlying ? MathUtils.lerp(this.velocity.x, 0, 0.05f) : MathUtils.lerp(this.velocity.x, 0, 0.2f);
 		velocity.y = isFlying ? MathUtils.lerp(this.velocity.y, 0, 0.1f) : MathUtils.lerp(this.velocity.y, 0, 0.01f);
-		velocity.z = MathUtils.lerp(this.velocity.z, 0, 0.2f);
+		velocity.z = isFlying ? MathUtils.lerp(this.velocity.z, 0, 0.05f) : MathUtils.lerp(this.velocity.z, 0, 0.2f);
 
 		if(velocity.dst(Vector3.Zero) < 0.001) velocity.set(Vector3.Zero);
 
@@ -101,7 +101,7 @@ public class Player {
 
 		if (Gdx.input.isKeyPressed(Input.Keys.W))
 			add.add(temp
-					.scl(speed * (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? (this.isFlying ? 3f : 1.5f) : 1)));
+					.scl(speed * (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? (this.isFlying ? 2f : 1.5f) : 1)));
 		if (Gdx.input.isKeyPressed(Input.Keys.S))
 			add.add(temp.scl(-speed));
 
