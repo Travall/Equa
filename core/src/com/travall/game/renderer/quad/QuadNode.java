@@ -42,8 +42,8 @@ public class QuadNode extends QuadInfo {
 		setAmb(lightHigh);
 		if (simpleLight) {
 			data = world.getData(pos);
-			setSrc(BlockUtils.toSrcLight(data));
-			setSun(BlockUtils.toSunLight(data));
+			setSrc(BlockUtils.toSrcLight(data) / BlockUtils.lightScl);
+			setSun(BlockUtils.toSunLight(data) / BlockUtils.lightScl);
 		} else
 		switch (face) {
 		case UP:

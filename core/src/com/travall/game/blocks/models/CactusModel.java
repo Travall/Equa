@@ -19,6 +19,10 @@ public class CactusModel implements IBlockModel {
 		this.texture = textures.north;
 		this.block = block;
 
+		float width = 12/16f;
+		float height = 1f;
+		float length = 12/16f;
+
 		quad1 = new QuadNode();
 		quad1.v1.setPos(1, 1, 0);
 		quad1.v2.setPos(0, 1, 0);
@@ -69,10 +73,16 @@ public class CactusModel implements IBlockModel {
 
 
 
-		quad3.mul(1,1,14/16f);
-		quad4.mul(14/16f,1,1);
-		quad5.add(0,0,2/16f);
-		quad6.add(2/16f,0,0);
+//		quad3.mul(1,1,14/16f);
+//		quad4.mul(14/16f,1,1);
+//		quad5.add(0,0,2/16f);
+//		quad6.add(2/16f,0,0);
+
+		quad1.mul(1,height,1);
+		quad3.mul(1,1,8/16f + (width / 2));
+		quad4.mul(8/16f + (width / 2),1,1);
+		quad5.add(0,0,8/16f - (length / 2));
+		quad6.add(8/16f - (length / 2),0,0);
 	}
 	
 	private final BlockPos second = new BlockPos();

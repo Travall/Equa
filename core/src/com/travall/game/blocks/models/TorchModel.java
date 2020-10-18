@@ -17,6 +17,10 @@ public class TorchModel implements IBlockModel {
 	public TorchModel(Block block, BlockTextures textures) {
 		this.texture = textures.north;
 
+		float width = 2/16f;
+		float height = 10/16f;
+		float length = 2/16f;
+
 		quad1 = new QuadNode();
 		quad1.v1.setPos(1, 1, 0);
 		quad1.v2.setPos(0, 1, 0);
@@ -72,11 +76,11 @@ public class TorchModel implements IBlockModel {
 		quad6.region.setRegion(textures.west);
 		
 
-		quad1.mul(1,10/16f,1);
-		quad3.mul(1,1,9/16f);
-		quad4.mul(9/16f,1,1);
-		quad5.add(0,0,7/16f);
-		quad6.add(7/16f,0,0);
+		quad1.mul(1,height,1);
+		quad3.mul(1,1,8/16f + (width / 2));
+		quad4.mul(8/16f + (width / 2),1,1);
+		quad5.add(0,0,8/16f - (length / 2));
+		quad6.add(8/16f - (length / 2),0,0);
 	}
 
 	@Override
