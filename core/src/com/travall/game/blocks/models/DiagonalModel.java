@@ -17,42 +17,38 @@ public class DiagonalModel implements IBlockModel {
 		this.texture = texture;
 		
 		quad1 = new QuadNode();
-		quad1.v1.setPos(0, 0, 0);
-		quad1.v2.setPos(0, 1, 0);
-		quad1.v3.setPos(1, 1, 1);
-		quad1.v4.setPos(1, 0, 1);
+		quad1.p1.set(0, 0, 0);
+		quad1.p2.set(0, 1, 0);
+		quad1.p3.set(1, 1, 1);
+		quad1.p4.set(1, 0, 1);
 		quad1.face = Facing.UP;
-		quad1.isInside = true;
 		quad1.simpleLight = true;
 		quad1.region.setRegion(texture);
 		
 		quad2 = new QuadNode();
-		quad2.v1.setPos(1, 0, 0);
-		quad2.v2.setPos(1, 1, 0);
-		quad2.v3.setPos(0, 1, 1);
-		quad2.v4.setPos(0, 0, 1);
+		quad2.p1.set(1, 0, 0);
+		quad2.p2.set(1, 1, 0);
+		quad2.p3.set(0, 1, 1);
+		quad2.p4.set(0, 0, 1);
 		quad2.face = Facing.UP;
-		quad2.isInside = true;
 		quad2.simpleLight = true;
 		quad2.region.setRegion(texture);
 
 		quad3 = new QuadNode();
-		quad3.v1.setPos(0, 0, 1);
-		quad3.v2.setPos(0, 1, 1);
-		quad3.v3.setPos(1, 1, 0);
-		quad3.v4.setPos(1, 0, 0);
+		quad3.p1.set(0, 0, 1);
+		quad3.p2.set(0, 1, 1);
+		quad3.p3.set(1, 1, 0);
+		quad3.p4.set(1, 0, 0);
 		quad3.face = Facing.UP;
-		quad3.isInside = true;
 		quad3.simpleLight = true;
 		quad3.region.setRegion(texture);
 
 		quad4 = new QuadNode();
-		quad4.v1.setPos(1, 0, 1);
-		quad4.v2.setPos(1, 1, 1);
-		quad4.v3.setPos(0, 1, 0);
-		quad4.v4.setPos(0, 0, 0);
+		quad4.p1.set(1, 0, 1);
+		quad4.p2.set(1, 1, 1);
+		quad4.p3.set(0, 1, 0);
+		quad4.p4.set(0, 0, 0);
 		quad4.face = Facing.UP;
-		quad4.isInside = true;
 		quad4.simpleLight = true;
 		quad4.region.setRegion(texture);
 	}
