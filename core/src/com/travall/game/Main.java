@@ -8,7 +8,6 @@ import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -34,8 +33,6 @@ import com.travall.game.renderer.block.UltimateTexture;
 import com.travall.game.renderer.vertices.VoxelTerrain;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.world.World;
-
-import java.awt.*;
 
 public class Main extends ApplicationAdapter {
 	
@@ -260,8 +257,7 @@ public class Main extends ApplicationAdapter {
 			if (button != -1) {
 				if (!blockType.onClick(player, info, button)) {
 					if (button == Buttons.RIGHT) {
-						if (!world.isOutBound(info.out.x, info.out.y, info.out.z) 
-						&& world.isAirBlock(info.out.x, info.out.y, info.out.z)) {
+						if (!world.isOutBound(info.out.x, info.out.y, info.out.z)) {
 							blockType.onPlace(player, info);
 						}
 					} else if (button == Buttons.LEFT){

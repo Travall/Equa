@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
+import com.travall.game.blocks.data.DataManager;
 import com.travall.game.blocks.materials.Material;
 import com.travall.game.blocks.models.IBlockModel;
 import com.travall.game.entities.Player;
@@ -33,6 +34,9 @@ public class Block {
 	protected final Array<BoundingBox> boundingBoxes = new Array<BoundingBox>(4);
 	/** Model of this block. (required) */
 	protected IBlockModel model;
+	
+	/** Block data manager. (optional) */
+	protected final DataManager manager = new DataManager();
 
 	/** Cashes the class's name. */
 	private final String name = getClass().getSimpleName();
@@ -114,9 +118,12 @@ public class Block {
 	
 	/** Place the block. 
 	 *  @return true if player has successfully place the block. */
-	public boolean onPlace(Player player, RayInfo rayInfo) {		
-		world.placeBlock(rayInfo.out, this);
-		return true;
+	public boolean onPlace(Player player, RayInfo rayInfo) {	
+		if (world.isAirBlock(rayInfo.out.x, rayInfo.out.y, rayInfo.out.z)) {
+			world.placeBlock(rayInfo.out, this);
+			return true;
+		}
+		return false;
 	}
 
 	/** Destroy the block.
@@ -124,6 +131,16 @@ public class Block {
 	public boolean onDestroy(Player player, BlockPos pos) {
 		world.breakBlock(pos);
 		return true;
+	}
+	
+	/** Is this block contains data. */
+	public boolean hasData() {
+		return !manager.isEmpty();
+	}
+	
+	/** Get block's data component manager. */
+	public DataManager getData() {
+		return manager;
 	}
 	
 	public AmbiantType getAmbiantType() {

@@ -20,50 +20,50 @@ public class CubeModel implements IBlockModel {
 		this.block = block;
 		
 		quad1 = new QuadNode();
-		quad1.v1.setPos(1, 1, 0);
-		quad1.v2.setPos(0, 1, 0);
-		quad1.v3.setPos(0, 1, 1);
-		quad1.v4.setPos(1, 1, 1);
+		quad1.p1.set(1, 1, 0);
+		quad1.p2.set(0, 1, 0);
+		quad1.p3.set(0, 1, 1);
+		quad1.p4.set(1, 1, 1);
 		quad1.face = Facing.UP;
 		quad1.region.setRegion(textures.top);
 		
 		quad2 = new QuadNode();
-		quad2.v1.setPos(0, 0, 0);
-		quad2.v2.setPos(1, 0, 0);
-		quad2.v3.setPos(1, 0, 1);
-		quad2.v4.setPos(0, 0, 1);
+		quad2.p1.set(0, 0, 0);
+		quad2.p2.set(1, 0, 0);
+		quad2.p3.set(1, 0, 1);
+		quad2.p4.set(0, 0, 1);
 		quad2.face = Facing.DOWN;
 		quad2.region.setRegion(textures.bottom);
 		
 		quad3 = new QuadNode();
-		quad3.v1.setPos(1, 0, 1);
-		quad3.v2.setPos(1, 1, 1);
-		quad3.v3.setPos(0, 1, 1);
-		quad3.v4.setPos(0, 0, 1);
+		quad3.p1.set(1, 0, 1);
+		quad3.p2.set(1, 1, 1);
+		quad3.p3.set(0, 1, 1);
+		quad3.p4.set(0, 0, 1);
 		quad3.face = Facing.NORTH;
 		quad3.region.setRegion(textures.south);
 		
 		quad4 = new QuadNode();
-		quad4.v1.setPos(1, 0, 0);
-		quad4.v2.setPos(1, 1, 0);
-		quad4.v3.setPos(1, 1, 1);
-		quad4.v4.setPos(1, 0, 1);
+		quad4.p1.set(1, 0, 0);
+		quad4.p2.set(1, 1, 0);
+		quad4.p3.set(1, 1, 1);
+		quad4.p4.set(1, 0, 1);
 		quad4.face = Facing.EAST;
 		quad4.region.setRegion(textures.south);
 		
 		quad5 = new QuadNode();
-		quad5.v1.setPos(0, 0, 0);
-		quad5.v2.setPos(0, 1, 0);
-		quad5.v3.setPos(1, 1, 0);
-		quad5.v4.setPos(1, 0, 0);
+		quad5.p1.set(0, 0, 0);
+		quad5.p2.set(0, 1, 0);
+		quad5.p3.set(1, 1, 0);
+		quad5.p4.set(1, 0, 0);
 		quad5.face = Facing.SOUTH;
 		quad5.region.setRegion(textures.south);
 		
 		quad6 = new QuadNode();
-		quad6.v1.setPos(0, 0, 1);
-		quad6.v2.setPos(0, 1, 1);
-		quad6.v3.setPos(0, 1, 0);
-		quad6.v4.setPos(0, 0, 0);
+		quad6.p1.set(0, 0, 1);
+		quad6.p2.set(0, 1, 1);
+		quad6.p3.set(0, 1, 0);
+		quad6.p4.set(0, 0, 0);
 		quad6.face = Facing.WEST;
 		quad6.region.setRegion(textures.west);
 	}

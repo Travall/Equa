@@ -23,4 +23,8 @@ public class Utils {
     public static float gamma(double num) {
     	return (float)Math.pow(num, 2.2);
     }
+    
+    public static int createANDbits(final int bitSize) {
+    	return -1 >>> 32 - bitSize;
+    }
 }
