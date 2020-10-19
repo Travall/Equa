@@ -1,5 +1,6 @@
 package com.travall.game.world;
 
+import static com.badlogic.gdx.math.Interpolation.smooth;
 import static com.badlogic.gdx.math.MathUtils.floor;
 import static com.travall.game.utils.BlockUtils.*;
 
@@ -35,7 +36,7 @@ public final class World implements Disposable {
 	public static final int xChunks = mapSize / chunkSize;
 	public static final int yChunks = mapHeight / chunkSize;
 	public static final int zChunks = mapSize / chunkSize;
-	public static final int downscale = 4;
+	public static final int downscale = 8; // 8 is a good value.
 
 	public static final int waterLevel = Math.round(mapHeight/4.5f); // 4.5f
 
@@ -89,12 +90,16 @@ public final class World implements Disposable {
 			biomes[i].decisionMap = new OpenSimplexOctaves(biomes[i].decisionOctaves, biomes[i].decisionPersistence, random.nextLong());
 		}
 
-		float heights[][] = new float[mapSize/downscale][mapSize/downscale];
+		int max = mapSize/downscale;
+		final float mask = downscale;
+		final float heights[][] = new float[max][max];
+		max--;
+		
 
 		for (int x = 0; x < mapSize; x+=downscale) {
 			for (int z = 0; z < mapSize; z+=downscale) {
 				Biome prevalent = getPrevalent(x,z);
-				heights[x/4][z/4] = (float) (Utils.normalize(prevalent.heightMap.getNoise(x, z), maxTerrainHeight)  * prevalent.heightModifier);
+				heights[x/downscale][z/downscale] = (float) (Utils.normalize(prevalent.heightMap.getNoise(x, z), maxTerrainHeight)  * prevalent.heightModifier);
 			}
 		}
 
@@ -103,12 +108,8 @@ public final class World implements Disposable {
 
 				Biome primary = getPrevalent(x,z);
 
-				int heightX = (Math.round(x / downscale) * downscale) / downscale;
-				int heightZ = (Math.round(z / downscale) * downscale) / downscale;
-
-				float height = heights[heightX][heightZ];
-
-				int yValue = (Math.round(height / 1) * 1);
+				float height = bilinear(heights, x/mask, z/mask, max);
+				int yValue = (int)height;
 
 //				boolean sandDone = false;
 
@@ -277,6 +278,19 @@ public final class World implements Disposable {
 		}
 	}
 	
+	/** Bilinear interpolation. */
+    private static float bilinear(float[][] map, float x, float z, int max) {
+        final int xInt = floor(x), zInt = floor(z);
+        
+        final float 
+        num00 = map[xInt][zInt],
+        num10 = map[Math.min(xInt+1, max)][zInt],
+        num01 = map[xInt][Math.min(zInt+1, max)],
+        num11 = map[Math.min(xInt+1, max)][Math.min(zInt+1, max)];
+        
+        return MathUtils.lerp(MathUtils.lerp(num00, num10, x-xInt), MathUtils.lerp(num01, num11, x-xInt), z-zInt);
+    }
+	
 	public short getShadow(int x, int z) {
 		if (x < 0 || z < 0 || x >= mapSize || z >= mapSize)
 			return mapHeight;
@@ -330,52 +344,6 @@ public final class World implements Disposable {
         Gdx.gl.glEnable(GL20.GL_CULL_FACE);
         
         VoxelTerrain.end();
-	}
-
-	public void breakBlock(BlockPos pos) {
-		final int x = pos.x, y = pos.y, z = pos.z;
-		Block block = BlocksList.get(data[x][y][z]);
-		setBlock(x, y, z, BlocksList.AIR);
-
-		tmpBlockPos.set(pos).add(0,1,0);
-
-		if(!isAirBlock(x,y+1,z) && !getBlock(tmpBlockPos).getMaterial().canStandAlone()) this.breakBlock(tmpBlockPos);
-
-		if (block.isSrclight()) { // if break srclight block.
-			LightHandle.delSrclightAt(x, y, z);
-		} else { // if break non-srclight block.
-			LightHandle.newSrclightShellAt(x, y, z);
-		}
-
-		LightHandle.newRaySunlightAt(x, y, z);
-		LightHandle.newSunlightShellAt(x, y, z);
-		setMeshDirtyShellAt(x, y, z);
-
-	}
-
-	public void placeBlock(BlockPos pos, Block block) {
-		if(!block.getMaterial().canStandAlone() && (isAirBlock(pos.x,pos.y-1,pos.z) || !getBlock(tmpBlockPos.set(pos).sub(0,1,0)).getMaterial().canStandAlone())) return;
-
-		if (block.isAir()) {
-			breakBlock(pos);
-			return;
-		}
-		final int x = pos.x, y = pos.y, z = pos.z;
-		setBlock(x, y, z, block);
-
-		if (block.isSrclight()) { // if place srclight block.
-			LightHandle.newSrclightAt(x, y, z, block.getLightLevel());
-		} else { // if place non-srclight block.
-			LightHandle.delSrclightAt(x, y, z);
-		}
-		
-		
-		if (block.getMaterial().canBlockLights() || block.getMaterial().canBlockSunRay()) {
-			LightHandle.newRaySunlightAt(x, y, z);
-			LightHandle.delSunlightAt(x, y, z);
-		}
-		
-		setMeshDirtyShellAt(x, y, z);
 	}
 
 	public void setMeshDirtyShellAt(int x, int y, int z) {

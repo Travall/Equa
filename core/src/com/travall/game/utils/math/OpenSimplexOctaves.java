@@ -29,7 +29,7 @@ public class OpenSimplexOctaves {
         }
     }
 
-    public double getNoise(int x, int y) {
+    public double getNoise(double x, double y) {
         double result = 0;
 
         for(int i = 0; i < octaves.length; i++)  {
@@ -39,7 +39,7 @@ public class OpenSimplexOctaves {
         return result;
     }
 
-    public double getNoise(int x, int y, int z) {
+    public double getNoise(double x, double y, double z) {
         double result = 0;
 
         for(int i = 0; i < octaves.length; i++)  {
