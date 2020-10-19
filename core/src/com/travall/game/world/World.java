@@ -346,48 +346,6 @@ public final class World implements Disposable {
         VoxelTerrain.end();
 	}
 
-	public void breakBlock(BlockPos pos) {
-		final int x = pos.x, y = pos.y, z = pos.z;
-		Block block = BlocksList.get(data[x][y][z]);
-		setBlock(x, y, z, BlocksList.AIR);
-
-		if (block.isSrclight()) { // if break srclight block.
-			LightHandle.delSrclightAt(x, y, z);
-		} else { // if break non-srclight block.
-			LightHandle.newSrclightShellAt(x, y, z);
-		}
-
-		if (block.getMaterial().canBlockLights() || block.getMaterial().canBlockSunRay()) {
-			LightHandle.newRaySunlightAt(x, y, z);
-			LightHandle.newSunlightShellAt(x, y, z);
-		}
-		
-		setMeshDirtyShellAt(x, y, z);
-	}
-
-	public void placeBlock(BlockPos pos, Block block) {
-		if (block.isAir()) {
-			breakBlock(pos);
-			return;
-		}
-		
-		final int x = pos.x, y = pos.y, z = pos.z;
-		setBlock(x, y, z, block);
-
-		if (block.isSrclight()) { // if place srclight block.
-			LightHandle.newSrclightAt(x, y, z, block.getLightLevel());
-		} else { // if place non-srclight block.
-			LightHandle.delSrclightAt(x, y, z);
-		}
-		
-		if (block.getMaterial().canBlockLights() || block.getMaterial().canBlockSunRay()) {
-			LightHandle.newRaySunlightAt(x, y, z);
-			LightHandle.delSunlightAt(x, y, z);
-		}
-		
-		setMeshDirtyShellAt(x, y, z);
-	}
-
 	public void setMeshDirtyShellAt(int x, int y, int z) {
 		final int indexX = x >> chunkShift;
 		final int indexY = y >> chunkShift;
