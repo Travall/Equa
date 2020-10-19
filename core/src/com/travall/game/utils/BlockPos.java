@@ -17,7 +17,9 @@ public final class BlockPos {
 	/** Create a unsafe BlockPos. */
 	public static BlockPos newBlockPos() {
 		if (position >= MAX_BUFFER_SIZE) return new BlockPos();
-		final BlockPos blockPos = TABLE[position++];
+		BlockPos blockPos = TABLE[position];
+		blockPos = blockPos == null ? TABLE[position] = new BlockPos().setUnsafe() : blockPos;
+		++position;
 		return blockPos == null ? TABLE[position] = new BlockPos().setUnsafe() : blockPos;
 	}
 	
