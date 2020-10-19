@@ -27,4 +27,5 @@ public class Utils {
     public static int createANDbits(final int bitSize) {
     	return -1 >>> 32 - bitSize;
     }
+
 }

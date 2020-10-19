@@ -37,7 +37,7 @@ public class FirstPersonCameraController extends InputAdapter {
     public void update(boolean walking, boolean flying) {
         if(walking && !flying) increase += 0.25f;
         else increase = 0;
-        camera.rotate(camera.direction, (float) Math.sin(increase) / 32);
+        camera.rotate(camera.direction, (float) Math.sin(increase) / 48);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class FirstPersonCameraController extends InputAdapter {
         //reset quat and camera angles, rotate and apply to camera.
         quat.idt();
 
-        quat.setEulerAngles(camRotateAngle, camTiltAngle, (float) Math.sin(increase) / 32);
+        quat.setEulerAngles(camRotateAngle, camTiltAngle, (float) Math.sin(increase) / 48);
 
         camera.direction.set(0, 0, 1);
         camera.up.set(0,1,0);

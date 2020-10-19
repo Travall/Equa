@@ -16,6 +16,7 @@ import com.travall.game.renderer.vertices.VoxelTerrain;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.Utils;
 import com.travall.game.utils.math.OpenSimplexOctaves;
+import com.travall.game.world.biomes.*;
 import com.travall.game.world.chunk.ChunkBuilder;
 import com.travall.game.world.chunk.ChunkMesh;
 import com.travall.game.world.chunk.CombinedChunk;
@@ -34,6 +35,7 @@ public final class World implements Disposable {
 	public static final int xChunks = mapSize / chunkSize;
 	public static final int yChunks = mapHeight / chunkSize;
 	public static final int zChunks = mapSize / chunkSize;
+	public static final int downscale = 4;
 
 	public static final int waterLevel = Math.round(mapHeight/4.5f); // 4.5f
 
@@ -45,6 +47,7 @@ public final class World implements Disposable {
 
 	final ChunkMesh[][][] opaqueChunkMeshes;
 	final ChunkMesh[][][] transparentChunkMeshes;
+	Biome[] biomes = {new Ground(), new Mountain(), new Snow()};
 
 	public World() {
 		World.world = this;
@@ -65,64 +68,86 @@ public final class World implements Disposable {
 		}
 	}
 
+	private Biome getPrevalent(int x, int z) {
+		Biome prevalent = biomes[0];
+		for(int i = 0; i < biomes.length; i++) {
+			if(Utils.normalize(biomes[i].decisionMap.getNoise(x, z), 1) > Utils.normalize(prevalent.decisionMap.getNoise(x, z), 1)) {
+				prevalent = biomes[i];
+			}
+		}
+		return prevalent;
+	}
+
 	private void generate(long seed) {
 		final RandomXS128 random = new RandomXS128(seed);
-		OpenSimplexOctaves BaseNoise = new OpenSimplexOctaves(8, 0.4, random.nextLong());
 		OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5, 0.25, random.nextLong());
 		OpenSimplexOctaves FloatingIslandNoise = new OpenSimplexOctaves(7, 0.35, random.nextLong());
-		OpenSimplexOctaves DecisionNoise = new OpenSimplexOctaves(8, 0.4, random.nextLong());
-		OpenSimplexOctaves Decision2Noise = new OpenSimplexOctaves(8, 0.4, random.nextLong());
+		int maxTerrainHeight = Math.round(mapHeight / 2);
 
-		int maxTerrainHeight = Math.round(mapHeight / 1.8f);
+		for(int i = 0; i < biomes.length; i++) {
+			biomes[i].heightMap = new OpenSimplexOctaves(biomes[i].heightOctaves, biomes[i].heightPersistence, random.nextLong());
+			biomes[i].decisionMap = new OpenSimplexOctaves(biomes[i].decisionOctaves, biomes[i].decisionPersistence, random.nextLong());
+		}
+
+		float heights[][] = new float[mapSize/downscale][mapSize/downscale];
+
+		for (int x = 0; x < mapSize; x+=downscale) {
+			for (int z = 0; z < mapSize; z+=downscale) {
+				Biome prevalent = getPrevalent(x,z);
+				heights[x/4][z/4] = (float) (Utils.normalize(prevalent.heightMap.getNoise(x, z), maxTerrainHeight)  * prevalent.heightModifier);
+			}
+		}
 
 		for (int x = 0; x < mapSize; x++) {
 			for (int z = 0; z < mapSize; z++) {
-				double base = Utils.normalize(BaseNoise.getNoise(x, z), maxTerrainHeight);
-				double mountain = Utils.normalize(BaseNoise.getNoise(x, z), maxTerrainHeight) * 2;
-				double decision = Utils.normalize(DecisionNoise.getNoise(x, z), 1);
-				double decision2 = Utils.normalize(Decision2Noise.getNoise(x, z), 1);
 
-				float steep = Interpolation.exp5.apply(Interpolation.exp5.apply((Interpolation.exp5.apply((float) decision))));
-				float steep2 = Interpolation.exp5.apply(Interpolation.exp5.apply((Interpolation.exp10.apply((float) decision2))));
+				Biome primary = getPrevalent(x,z);
 
-				float height = MathUtils.lerp((float) base, (float) mountain, steep);
+				int heightX = (Math.round(x / downscale) * downscale) / downscale;
+				int heightZ = (Math.round(z / downscale) * downscale) / downscale;
+
+				float height = heights[heightX][heightZ];
 
 				int yValue = (Math.round(height / 1) * 1);
 
-				boolean sandDone = false;
+//				boolean sandDone = false;
 
 				for (int i = yValue; i >= 0; i--) {
 					double caves = Utils.normalize(CaveNoise.getNoise(x, (i), z), maxTerrainHeight);
 					boolean caveTerritory = (caves >= maxTerrainHeight - (height - i) && caves > maxTerrainHeight / 2
 							&& i > 0);
 
- 					if((getBlock(tmpBlockPos.set(x,i+1,z)) == BlocksList.SAND && getBlock(tmpBlockPos.set(x,i+2,z)) == BlocksList.SAND && getBlock(tmpBlockPos.set(x,i+3,z)) == BlocksList.SAND && getBlock(tmpBlockPos.set(x,i+4,z)) == BlocksList.SAND)) sandDone = true;
+// 					if((getBlock(tmpBlockPos.set(x,i+1,z)) == BlocksList.SAND && getBlock(tmpBlockPos.set(x,i+2,z)) == BlocksList.SAND && getBlock(tmpBlockPos.set(x,i+3,z)) == BlocksList.SAND && getBlock(tmpBlockPos.set(x,i+4,z)) == BlocksList.SAND)) sandDone = true;
 
 					if (i == 0) {
 						setBlock(x, i, z, BlocksList.BEDROCK);
 					} else {
-						if (i == yValue && i >= waterLevel) {
-							if (steep < 0.3 && steep2 < 0.5) {
-								setBlock(x, i, z, BlocksList.SAND);
-								if(random.nextInt(100) == 1) {
-									setBlock(x,i+1,z,BlocksList.SHRUB);
-								}
-							} else {
-								setBlock(x, i, z, BlocksList.GRASS);
-								if(random.nextInt(10) == 1) {
-									setBlock(x,i+1,z,BlocksList.TALLGRASS);
-								}
-							}
-						} else if (!caveTerritory) {
-							if (steep < 0.3 && steep2 < 0.5 && !sandDone) {
-								setBlock(x, i, z, BlocksList.SAND);
-							} else if (caves >= maxTerrainHeight - (height - i) * 14) {
-								setBlock(x, i, z, BlocksList.STONE);
-							} else {
-								setBlock(x, i, z, BlocksList.DIRT);
-							}
-
-						}
+						setBlock(x, i, z, primary.top);
+//						if(i == yValue) {
+//							setBlock(x, i + 1, z, sideline.top);
+//						}
+//						if (i == yValue && i >= waterLevel) {
+//							if (steep < 0.3 && steep2 < 0.5) {
+//								setBlock(x, i, z, BlocksList.SAND);
+//								if(random.nextInt(100) == 1) {
+//									setBlock(x,i+1,z,BlocksList.SHRUB);
+//								}
+//							} else {
+//								setBlock(x, i, z, BlocksList.GRASS);
+//								if(random.nextInt(10) == 1) {
+//									setBlock(x,i+1,z,BlocksList.TALLGRASS);
+//								}
+//							}
+//						} else if (!caveTerritory) {
+//							if (steep < 0.3 && steep2 < 0.5 && !sandDone) {
+//								setBlock(x, i, z, BlocksList.SAND);
+//							} else if (caves >= maxTerrainHeight - (height - i) * 14) {
+//								setBlock(x, i, z, BlocksList.STONE);
+//							} else {
+//								setBlock(x, i, z, BlocksList.DIRT);
+//							}
+//
+//						}
 					}
 				}
 
