@@ -45,11 +45,6 @@ public class Material {
 		return isSolid();
 	}
 
-	/** Does it need a block beneath. */
-	public boolean canStandAlone() {
-		return true;
-	}
-
 	/* Utilities */
 
 	private static final StringBuilder build = new StringBuilder();
@@ -62,7 +57,6 @@ public class Material {
 		build.append("hasCollision: ").append(hasCollision()).append('\n');
 		build.append("canBlockSunRay: ").append(canBlockSunRay()).append('\n');
 		build.append("canBlockLights: ").append(canBlockLights()).append('\n');
-		build.append("canStandAlones: ").append(canStandAlone()).append('\n');
 		return build.toString();
 	}
 }

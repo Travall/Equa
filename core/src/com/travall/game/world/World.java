@@ -337,29 +337,26 @@ public final class World implements Disposable {
 		Block block = BlocksList.get(data[x][y][z]);
 		setBlock(x, y, z, BlocksList.AIR);
 
-		tmpBlockPos.set(pos).add(0,1,0);
-
-		if(!isAirBlock(x,y+1,z) && !getBlock(tmpBlockPos).getMaterial().canStandAlone()) this.breakBlock(tmpBlockPos);
-
 		if (block.isSrclight()) { // if break srclight block.
 			LightHandle.delSrclightAt(x, y, z);
 		} else { // if break non-srclight block.
 			LightHandle.newSrclightShellAt(x, y, z);
 		}
 
-		LightHandle.newRaySunlightAt(x, y, z);
-		LightHandle.newSunlightShellAt(x, y, z);
+		if (block.getMaterial().canBlockLights() || block.getMaterial().canBlockSunRay()) {
+			LightHandle.newRaySunlightAt(x, y, z);
+			LightHandle.newSunlightShellAt(x, y, z);
+		}
+		
 		setMeshDirtyShellAt(x, y, z);
-
 	}
 
 	public void placeBlock(BlockPos pos, Block block) {
-		if(!block.getMaterial().canStandAlone() && (isAirBlock(pos.x,pos.y-1,pos.z) || !getBlock(tmpBlockPos.set(pos).sub(0,1,0)).getMaterial().canStandAlone())) return;
-
 		if (block.isAir()) {
 			breakBlock(pos);
 			return;
 		}
+		
 		final int x = pos.x, y = pos.y, z = pos.z;
 		setBlock(x, y, z, block);
 
@@ -368,7 +365,6 @@ public final class World implements Disposable {
 		} else { // if place non-srclight block.
 			LightHandle.delSrclightAt(x, y, z);
 		}
-		
 		
 		if (block.getMaterial().canBlockLights() || block.getMaterial().canBlockSunRay()) {
 			LightHandle.newRaySunlightAt(x, y, z);

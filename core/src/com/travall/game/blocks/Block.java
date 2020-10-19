@@ -14,7 +14,9 @@ import com.travall.game.handles.Raycast.RayInfo;
 import com.travall.game.utils.AmbiantType;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.Facing;
+import com.travall.game.utils.UpdateState;
 import com.travall.game.utils.math.CollisionBox;
+import com.travall.game.world.lights.LightHandle;
 
 public class Block {
 	protected static final Vector3 MIN = new Vector3(), MAX = new Vector3();
@@ -120,18 +122,97 @@ public class Block {
 	 *  @return true if player has successfully place the block. */
 	public boolean onPlace(Player player, RayInfo rayInfo) {	
 		if (world.isAirBlock(rayInfo.out.x, rayInfo.out.y, rayInfo.out.z)) {
-			world.placeBlock(rayInfo.out, this);
-			return true;
+			return onPlace(rayInfo.out);
 		}
 		return false;
 	}
 
 	/** Destroy the block.
 	 *  @return true if player has successfully destroy the block. */
-	public boolean onDestroy(Player player, BlockPos pos) {
-		world.breakBlock(pos);
+	public boolean onDestroy(Player player, RayInfo pos) {
+		return onDestroy(pos.in);
+	}
+	
+	/** Place the block. 
+	 *  @return true if has successfully place the block. */
+	public boolean onPlace(BlockPos pos) {
+		world.setBlock(pos.x, pos.y, pos.z, this);
+		
+		updateNearByBlocks(pos, UpdateState.ON_PLACE);
+		handleLights(pos, UpdateState.ON_PLACE);
+		
+		world.setMeshDirtyShellAt(pos.x, pos.y, pos.z);
 		return true;
 	}
+
+	/** Destroy the block.
+	 *  @return true if has successfully destroy the block. */
+	public boolean onDestroy(BlockPos pos) {
+		handleLights(pos, UpdateState.ON_BREAK);
+		
+		world.setBlock(pos.x, pos.y, pos.z, BlocksList.AIR);
+		updateNearByBlocks(pos, UpdateState.ON_BREAK);
+		
+		world.setMeshDirtyShellAt(pos.x, pos.y, pos.z);
+		return true;
+	}
+	
+	/** Handle the lights.*/
+	public void handleLights(BlockPos pos, UpdateState state) {
+		if (state == UpdateState.ON_PLACE) {
+			if (isSrclight()) { // if place srclight block.
+				LightHandle.newSrclightAt(pos.x, pos.y, pos.z, getLightLevel());
+			} else { // if place non-srclight block.
+				LightHandle.delSrclightAt(pos.x, pos.y, pos.z);
+			}
+			
+			if (material.canBlockLights() || material.canBlockSunRay()) {
+				LightHandle.newRaySunlightAt(pos.x, pos.y, pos.z);
+				LightHandle.delSunlightAt(pos.x, pos.y, pos.z);
+			}
+		} else
+		if (state == UpdateState.ON_BREAK) {
+			final Block block = world.getBlock(pos);
+			if (block.isSrclight()) { // if break srclight block.
+				LightHandle.delSrclightAt(pos.x, pos.y, pos.z);
+			} else { // if break non-srclight block.
+				LightHandle.newSrclightShellAt(pos.x, pos.y, pos.z);
+			}
+
+			if (block.material.canBlockLights() || block.material.canBlockSunRay()) {
+				LightHandle.newRaySunlightAt(pos.x, pos.y, pos.z);
+				LightHandle.newSunlightShellAt(pos.x, pos.y, pos.z);
+			}
+		}
+	}
+	
+	/** Add doc plz. */
+	public void updateNearByBlocks(BlockPos pos, UpdateState state) {
+		BlockPos offset;
+		
+		offset = pos.offset(Facing.UP);
+		world.getBlock(offset).onNeighbourUpdate(offset, pos, Facing.UP, state);
+		
+		offset = pos.offset(Facing.DOWN);
+		world.getBlock(offset).onNeighbourUpdate(offset, pos, Facing.DOWN, state);
+		
+		offset = pos.offset(Facing.NORTH);
+		world.getBlock(offset).onNeighbourUpdate(offset, pos, Facing.NORTH, state);
+		
+		offset = pos.offset(Facing.EAST);
+		world.getBlock(offset).onNeighbourUpdate(offset, pos, Facing.EAST, state);
+		
+		offset = pos.offset(Facing.SOUTH);
+		world.getBlock(offset).onNeighbourUpdate(offset, pos, Facing.SOUTH, state);
+		
+		offset = pos.offset(Facing.WEST);
+		world.getBlock(offset).onNeighbourUpdate(offset, pos, Facing.WEST, state);
+	}
+	
+	/** Add doc plz. */
+	public void onNeighbourUpdate(BlockPos primaray, BlockPos secondary, Facing face, UpdateState state) {
+		
+	}	
 	
 	/** Is this block contains data. */
 	public boolean hasData() {

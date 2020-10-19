@@ -20,7 +20,7 @@ public final class BlockPos {
 		BlockPos blockPos = TABLE[position];
 		blockPos = blockPos == null ? TABLE[position] = new BlockPos().setUnsafe() : blockPos;
 		++position;
-		return blockPos == null ? TABLE[position] = new BlockPos().setUnsafe() : blockPos;
+		return blockPos;
 	}
 	
 	public static void reset() {

@@ -30,9 +30,4 @@ public class DiagonalMaterial extends Material {
 	public boolean canBlockLights() {
 		return false;
 	}
-
-	@Override
-	public boolean canStandAlone() {
-		return false;
-	}
 }
