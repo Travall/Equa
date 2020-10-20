@@ -1,6 +1,5 @@
 package com.travall.game.world;
 
-import static com.badlogic.gdx.math.Interpolation.smooth;
 import static com.badlogic.gdx.math.MathUtils.floor;
 import static com.travall.game.utils.BlockUtils.*;
 
@@ -27,7 +26,7 @@ public final class World implements Disposable {
 	/** Easy world access. */
 	public static World world;
 
-	public static final int mapSize = 256;
+	public static final int mapSize = 1024;
 	public static final int mapHeight = 256;
 
 	public static final int chunkShift = 4; // 1 << 4 = 16. I set it back from 32 to 16 due to vertices limitations.
@@ -48,7 +47,7 @@ public final class World implements Disposable {
 
 	final ChunkMesh[][][] opaqueChunkMeshes;
 	final ChunkMesh[][][] transparentChunkMeshes;
-	Biome[] biomes = {new Ground(), new Mountain(), new Snow()};
+	Biome[] biomes = {new Desert(), new Ground(), new Snow()};
 
 	public World() {
 		World.world = this;
@@ -111,51 +110,43 @@ public final class World implements Disposable {
 				float height = bilinear(heights, x/mask, z/mask, max);
 				int yValue = (int)height;
 
-//				boolean sandDone = false;
+				boolean middleDone = false;
 
 				for (int i = yValue; i >= 0; i--) {
 					double caves = Utils.normalize(CaveNoise.getNoise(x, (i), z), maxTerrainHeight);
-					boolean caveTerritory = (caves >= maxTerrainHeight - (height - i) && caves > maxTerrainHeight / 2
+					boolean caveTerritory = (caves >= maxTerrainHeight - (height - i / 1.5f) && caves > maxTerrainHeight / 2
 							&& i > 0);
 
-// 					if((getBlock(tmpBlockPos.set(x,i+1,z)) == BlocksList.SAND && getBlock(tmpBlockPos.set(x,i+2,z)) == BlocksList.SAND && getBlock(tmpBlockPos.set(x,i+3,z)) == BlocksList.SAND && getBlock(tmpBlockPos.set(x,i+4,z)) == BlocksList.SAND)) sandDone = true;
+// 					if((getBlock(tmpBlockPos.set(x,i+1,z)) == primary.middle && getBlock(tmpBlockPos.set(x,i+2,z)) == primary.middle && getBlock(tmpBlockPos.set(x,i+3,z)) == primary.middle && getBlock(tmpBlockPos.set(x,i+4,z)) == primary.middle)) middleDone = true;
+
+ 					if(i == yValue - (Math.abs(i - maxTerrainHeight) / 7)) middleDone = true;
 
 					if (i == 0) {
 						setBlock(x, i, z, BlocksList.BEDROCK);
-					} else {
-						setBlock(x, i, z, primary.top);
-//						if(i == yValue) {
-//							setBlock(x, i + 1, z, sideline.top);
-//						}
-//						if (i == yValue && i >= waterLevel) {
-//							if (steep < 0.3 && steep2 < 0.5) {
-//								setBlock(x, i, z, BlocksList.SAND);
-//								if(random.nextInt(100) == 1) {
-//									setBlock(x,i+1,z,BlocksList.SHRUB);
-//								}
-//							} else {
-//								setBlock(x, i, z, BlocksList.GRASS);
-//								if(random.nextInt(10) == 1) {
-//									setBlock(x,i+1,z,BlocksList.TALLGRASS);
-//								}
-//							}
-//						} else if (!caveTerritory) {
-//							if (steep < 0.3 && steep2 < 0.5 && !sandDone) {
-//								setBlock(x, i, z, BlocksList.SAND);
-//							} else if (caves >= maxTerrainHeight - (height - i) * 14) {
-//								setBlock(x, i, z, BlocksList.STONE);
-//							} else {
-//								setBlock(x, i, z, BlocksList.DIRT);
-//							}
-//
-//						}
+					} else if(!caveTerritory) {
+						if(i == yValue) {
+							if(i < waterLevel) {
+								setBlock(x, i, z, primary.underwater);
+							} else {
+								setBlock(x, i, z, primary.top);
+							}
+						} else if(!middleDone) {
+							if(i < waterLevel) {
+								setBlock(x, i, z, primary.underwater);
+							} else {
+								setBlock(x, i, z, primary.middle);
+							}
+						} else {
+							setBlock(x, i, z, BlocksList.STONE);
+						}
 					}
 				}
 
 				// Water
 				for (int j = waterLevel; j > 0; j--) {
 					double caves = Utils.normalize(CaveNoise.getNoise(x, (int) (j), z), maxTerrainHeight);
-					boolean caveTerritory = (caves >= maxTerrainHeight - (height - j) && caves > maxTerrainHeight / 2 && j > 0);
+					boolean caveTerritory = (caves >= maxTerrainHeight - (height - j / 1.5f) && caves > maxTerrainHeight / 2
+							&& j > 0);
 					if (isAirBlock(x, j, z) && !caveTerritory) {
 						setBlock(x, j, z, BlocksList.WATER);
 					} else {
@@ -189,6 +180,10 @@ public final class World implements Disposable {
 			for(int j = mapHeight; j > 0; j--) {
 				if(!isAirBlock(x,j,z)) {
 					if(getBlock(new BlockPos(x,j,z)) == BlocksList.GRASS) {
+
+						if(random.nextInt(10) == 1) {
+							setBlock(x,j+1,z,BlocksList.TALLGRASS);
+						}
 
 						boolean open = isAirBlock(x,j + 1,z) && isAirBlock(x,j + 2,z) && isAirBlock(x,j + 3,z);
 
@@ -238,6 +233,9 @@ public final class World implements Disposable {
 
 						}
 					} else if (getBlock(new BlockPos(x,j,z)) == BlocksList.SAND && isAirBlock(x,j+1,z)) {
+						if(random.nextInt(100) == 1) {
+							setBlock(x,j+1,z,BlocksList.SHRUB);
+						}
 						if (random.nextInt(200) == 1 && j > waterLevel) {
 							setBlock(x, j+1, z, BlocksList.CACTUS);
 							setBlock(x, j+2, z, BlocksList.CACTUS);

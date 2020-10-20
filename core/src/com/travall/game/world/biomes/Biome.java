@@ -7,11 +7,12 @@ import com.travall.game.utils.math.OpenSimplexOctaves;
 public class Biome {
 	public int heightOctaves;
 	public float heightPersistence;
-	public int decisionOctaves = 8;
+	public int decisionOctaves = 9;
 	public float decisionPersistence = 0.4f;
 	public float heightModifier;
 	public Block top;
 	public Block middle;
+	public Block underwater;
 	public OpenSimplexOctaves heightMap;
 	public OpenSimplexOctaves decisionMap;
 }
