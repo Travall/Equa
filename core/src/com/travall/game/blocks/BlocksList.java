@@ -22,7 +22,9 @@ public final class BlocksList {
 	TALLGRASS = new TallGrass(ID++),
 	SHRUB = new Shrub(ID++),
 	TORCH = new Torch(ID++),
-	SNOW = new Snow(ID++);
+	SNOW = new Snow(ID++),
+	DARKLOG = new DarkLog(ID++),
+	DARKLEAVES = new DarkLeaves(ID++);
 
 
 	public static final int SIZE = ID;
@@ -47,6 +49,8 @@ public final class BlocksList {
 		addBlock(SHRUB);
 		addBlock(TORCH);
 		addBlock(SNOW);
+		addBlock(DARKLOG);
+		addBlock(DARKLEAVES);
 
 		hasInts = true;
 	}

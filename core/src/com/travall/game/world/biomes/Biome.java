@@ -5,6 +5,7 @@ import com.travall.game.blocks.BlocksList;
 import com.travall.game.utils.math.OpenSimplexOctaves;
 
 public class Biome {
+	public String name;
 	public int heightOctaves;
 	public float heightPersistence;
 	public int decisionOctaves = 9;

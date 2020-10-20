@@ -28,4 +28,6 @@ public class Utils {
     	return -1 >>> 32 - bitSize;
     }
 
+	public static boolean inBounds(int index, int length) {return (index >= 0) && (index < length);}
+
 }

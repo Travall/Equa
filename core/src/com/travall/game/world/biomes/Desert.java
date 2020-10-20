@@ -6,6 +6,7 @@ import com.travall.game.utils.math.OpenSimplexOctaves;
 
 public class Desert extends Biome {
 	public Desert() {
+		this.name = "Desert";
 		this.heightOctaves = 8;
 		this.heightPersistence = 0.2f;
 		this.heightModifier = 1;

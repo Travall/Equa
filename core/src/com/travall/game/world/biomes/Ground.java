@@ -4,6 +4,7 @@ import com.travall.game.blocks.BlocksList;
 
 public class Ground extends Biome {
 	public Ground() {
+		this.name = "Ground";
 		this.heightOctaves = 8;
 		this.heightPersistence = 0.4f;
 		this.heightModifier = 1f;

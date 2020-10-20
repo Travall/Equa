@@ -10,6 +10,8 @@ import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.Disposable;
 import com.travall.game.blocks.Block;
 import com.travall.game.blocks.BlocksList;
+import com.travall.game.blocks.data.KeyHolder;
+import com.travall.game.blocks.data.LogTypeComponent;
 import com.travall.game.blocks.materials.Material;
 import com.travall.game.renderer.block.UltimateTexture;
 import com.travall.game.renderer.vertices.VoxelTerrain;
@@ -26,7 +28,7 @@ public final class World implements Disposable {
 	/** Easy world access. */
 	public static World world;
 
-	public static final int mapSize = 1024;
+	public static final int mapSize = 512;
 	public static final int mapHeight = 256;
 
 	public static final int chunkShift = 4; // 1 << 4 = 16. I set it back from 32 to 16 due to vertices limitations.
@@ -60,12 +62,12 @@ public final class World implements Disposable {
 		opaqueChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
 		transparentChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
 		for (int x = 0; x < xChunks; x++)
-		for (int y = 0; y < yChunks; y++)
-		for (int z = 0; z < zChunks; z++) {
-			CombinedChunk combinedChunk = (blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, null,null));
-			opaqueChunkMeshes[x][y][z] = combinedChunk.opaque;
-			transparentChunkMeshes[x][y][z] = combinedChunk.transparent;
-		}
+			for (int y = 0; y < yChunks; y++)
+				for (int z = 0; z < zChunks; z++) {
+					CombinedChunk combinedChunk = (blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, null,null));
+					opaqueChunkMeshes[x][y][z] = combinedChunk.opaque;
+					transparentChunkMeshes[x][y][z] = combinedChunk.transparent;
+				}
 	}
 
 	private Biome getPrevalent(int x, int z) {
@@ -89,25 +91,23 @@ public final class World implements Disposable {
 			biomes[i].decisionMap = new OpenSimplexOctaves(biomes[i].decisionOctaves, biomes[i].decisionPersistence, random.nextLong());
 		}
 
-		int max = mapSize/downscale;
-		final float mask = downscale;
-		final float heights[][] = new float[max][max];
-		max--;
-		
+		final float heights[][] = new float[mapSize][mapSize];
+		final Biome prevalentBiomes[][] = new Biome[mapSize][mapSize];
 
-		for (int x = 0; x < mapSize; x+=downscale) {
-			for (int z = 0; z < mapSize; z+=downscale) {
+		for (int x = 0; x < mapSize; x++) {
+			for (int z = 0; z < mapSize; z++) {
 				Biome prevalent = getPrevalent(x,z);
-				heights[x/downscale][z/downscale] = (float) (Utils.normalize(prevalent.heightMap.getNoise(x, z), maxTerrainHeight)  * prevalent.heightModifier);
+				prevalentBiomes[x][z] = prevalent;
+				heights[x][z] = (float) (Utils.normalize(prevalent.heightMap.getNoise(x, z), maxTerrainHeight)  * prevalent.heightModifier);
 			}
 		}
 
 		for (int x = 0; x < mapSize; x++) {
 			for (int z = 0; z < mapSize; z++) {
 
-				Biome primary = getPrevalent(x,z);
+				Biome primary = prevalentBiomes[x][z];
 
-				float height = bilinear(heights, x/mask, z/mask, max);
+				float height = bilinear(heights, x, z);
 				int yValue = (int)height;
 
 				boolean middleDone = false;
@@ -119,7 +119,8 @@ public final class World implements Disposable {
 
 // 					if((getBlock(tmpBlockPos.set(x,i+1,z)) == primary.middle && getBlock(tmpBlockPos.set(x,i+2,z)) == primary.middle && getBlock(tmpBlockPos.set(x,i+3,z)) == primary.middle && getBlock(tmpBlockPos.set(x,i+4,z)) == primary.middle)) middleDone = true;
 
- 					if(i == yValue - (Math.abs(i - maxTerrainHeight) / 7)) middleDone = true;
+					if(i == yValue - (Math.abs(i - maxTerrainHeight) / 4)) middleDone = true;
+//					if((Math.abs(yValue - i) == 4)) middleDone = true;
 
 					if (i == 0) {
 						setBlock(x, i, z, BlocksList.BEDROCK);
@@ -173,175 +174,187 @@ public final class World implements Disposable {
 				}
 			}
 		}
-		
+
 		for (int x = 0; x < mapSize; x++)
-		for (int z = 0; z < mapSize; z++) {
-			// Foliage
-			for(int j = mapHeight; j > 0; j--) {
-				if(!isAirBlock(x,j,z)) {
-					if(getBlock(new BlockPos(x,j,z)) == BlocksList.GRASS) {
+			for (int z = 0; z < mapSize; z++) {
+				Biome primary = prevalentBiomes[x][z];
+				// Foliage
+				for(int j = mapHeight; j > 0; j--) {
+					if(!isAirBlock(x,j,z)) {
+						if(getBlock(new BlockPos(x,j,z)) == BlocksList.GRASS || getBlock(new BlockPos(x,j,z)) == BlocksList.SNOW) {
 
-						if(random.nextInt(10) == 1) {
-							setBlock(x,j+1,z,BlocksList.TALLGRASS);
-						}
-
-						boolean open = isAirBlock(x,j + 1,z) && isAirBlock(x,j + 2,z) && isAirBlock(x,j + 3,z);
-
-						if(!open) continue;
-
-						for (int xx = x - 2; xx <= x + 2; xx++) {
-							for (int zz = z - 2; zz <= z + 2; zz++) {
-								if(!isAirBlock(xx, j+4,zz)) {
-									open = false;
-									break;
-								}
+							if(random.nextInt(10) == 1 && getBlock(new BlockPos(x,j,z)) != BlocksList.SNOW) {
+								setBlock(x,j+1,z,BlocksList.TALLGRASS);
 							}
-						}
 
-						if(!open) continue;
+							boolean open = isAirBlock(x,j + 1,z) && isAirBlock(x,j + 2,z) && isAirBlock(x,j + 3,z);
 
-						for (int xx = x - 1; xx <= x + 1; xx++) {
-							for (int zz = z - 1; zz <= z + 1; zz++) {
-								if(!isAirBlock(xx, j+5,zz)) {
-									open = false;
-									break;
-								}
-							}
-						}
-
-						if(!open) continue;
-
-						if (random.nextInt(100) == 1 && x > 0 && z > 0 && x <= mapSize && z <= mapSize) {
-							setBlock(x, j+1, z, BlocksList.LOG);
-							setBlock(x, j+2, z, BlocksList.LOG);
-							setBlock(x, j+3, z, BlocksList.LOG);
+							if(!open) continue;
 
 							for (int xx = x - 2; xx <= x + 2; xx++) {
 								for (int zz = z - 2; zz <= z + 2; zz++) {
-									setBlock(xx, j+4, zz, BlocksList.LEAVES);
+									if(!isAirBlock(xx, j+4,zz)) {
+										open = false;
+										break;
+									}
 								}
 							}
+
+							if(!open) continue;
 
 							for (int xx = x - 1; xx <= x + 1; xx++) {
 								for (int zz = z - 1; zz <= z + 1; zz++) {
-									setBlock(xx, j+5, zz, BlocksList.LEAVES);
+									if(!isAirBlock(xx, j+5,zz)) {
+										open = false;
+										break;
+									}
 								}
 							}
 
-							setBlock(x, j+4, z, BlocksList.LOG);
-							setBlock(x, j+6, z, BlocksList.LEAVES);
+							if(!open) continue;
 
-						}
-					} else if (getBlock(new BlockPos(x,j,z)) == BlocksList.SAND && isAirBlock(x,j+1,z)) {
-						if(random.nextInt(100) == 1) {
-							setBlock(x,j+1,z,BlocksList.SHRUB);
-						}
-						if (random.nextInt(200) == 1 && j > waterLevel) {
-							setBlock(x, j+1, z, BlocksList.CACTUS);
-							setBlock(x, j+2, z, BlocksList.CACTUS);
-							setBlock(x, j+3, z, BlocksList.CACTUS);
+							Block log = BlocksList.LOG;
+
+							Block logType = primary.name == "Ground" ? BlocksList.LOG : BlocksList.DARKLOG;
+							Block leavesType = primary.name == "Ground" ? BlocksList.LEAVES : BlocksList.DARKLEAVES;
+
+							if (random.nextInt(100) == 1 && x > 0 && z > 0 && x <= mapSize && z <= mapSize) {
+								setBlock(x, j+1, z, logType);
+								setBlock(x, j+2, z, logType);
+								setBlock(x, j+3, z, logType);
+
+								for (int xx = x - 2; xx <= x + 2; xx++) {
+									for (int zz = z - 2; zz <= z + 2; zz++) {
+										setBlock(xx, j+4, zz, leavesType);
+									}
+								}
+
+								for (int xx = x - 1; xx <= x + 1; xx++) {
+									for (int zz = z - 1; zz <= z + 1; zz++) {
+										setBlock(xx, j+5, zz, leavesType);
+									}
+								}
+
+								setBlock(x, j+4, z, logType);
+								setBlock(x, j+6, z, leavesType);
+
+							}
+						} else if (getBlock(new BlockPos(x,j,z)) == BlocksList.SAND && isAirBlock(x,j+1,z)) {
+							if(random.nextInt(100) == 1) {
+								setBlock(x,j+1,z,BlocksList.SHRUB);
+							}
+							if (random.nextInt(200) == 1 && j > waterLevel) {
+								setBlock(x, j+1, z, BlocksList.CACTUS);
+								setBlock(x, j+2, z, BlocksList.CACTUS);
+								setBlock(x, j+3, z, BlocksList.CACTUS);
+							}
 						}
 					}
 				}
 			}
-		}
-		
+
 		// creating shadow map.
 		for (int x = 0; x < mapSize; x++)
-		for (int z = 0; z < mapSize; z++) {
-			for (int y = mapHeight-1; y >= 0; y--) {
-				if (BlocksList.get(data[x][y][z]).getMaterial().canBlockSunRay()) {
-					shadowMap[x][z] = (short)y;
-					break;
+			for (int z = 0; z < mapSize; z++) {
+				for (int y = mapHeight-1; y >= 0; y--) {
+					if (BlocksList.get(data[x][y][z]).getMaterial().canBlockSunRay()) {
+						shadowMap[x][z] = (short)y;
+						break;
+					}
+					setSunLight(x, y, z, 15);
 				}
-				setSunLight(x, y, z, 15);
 			}
-		}
-		
+
 		// adding filling nodes.
 		for (int x = 0; x < mapSize; x++)
-		for (int z = 0; z < mapSize; z++) {
-			for (int y = shadowMap[x][z]; y >= 0; y--) {
-				final Material material = BlocksList.get(data[x][y][z]).getMaterial();
-				if (material.canBlockSunRay() && material.canBlockLights()) {
+			for (int z = 0; z < mapSize; z++) {
+				for (int y = shadowMap[x][z]; y >= 0; y--) {
+					final Material material = BlocksList.get(data[x][y][z]).getMaterial();
+					if (material.canBlockSunRay() && material.canBlockLights()) {
+						continue;
+					}
+					if (getShadow(x+1, z) < y || getShadow(x, z+1) < y ||
+							getShadow(x-1, z) < y || getShadow(x, z-1) < y || getShadow(x, z) < y+1) {
+
+						LightHandle.newSunlightAt(x, y, z, 14);
+					}
 					continue;
 				}
-				if (getShadow(x+1, z) < y || getShadow(x, z+1) < y ||
-					getShadow(x-1, z) < y || getShadow(x, z-1) < y || getShadow(x, z) < y+1) {
-					
-					LightHandle.newSunlightAt(x, y, z, 14);
+			}
+	}
+
+	/** Bilinear interpolation. */
+	private static float bilinear(float[][] map, int x, int z) {
+		float height = 0;
+		float total = 0;
+
+		for(int i = x - 4; i < x + 4; i++) {
+			for(int j = z - 4; j < z + 4; j++) {
+				if(Utils.inBounds(i,map.length)) {
+					if(Utils.inBounds(j,map[0].length)) {
+						height += map[i][j];
+						total++;
+					}
 				}
-				continue;
 			}
 		}
+
+		return height / total;
 	}
-	
-	/** Bilinear interpolation. */
-    private static float bilinear(float[][] map, float x, float z, int max) {
-        final int xInt = floor(x), zInt = floor(z);
-        
-        final float 
-        num00 = map[xInt][zInt],
-        num10 = map[Math.min(xInt+1, max)][zInt],
-        num01 = map[xInt][Math.min(zInt+1, max)],
-        num11 = map[Math.min(xInt+1, max)][Math.min(zInt+1, max)];
-        
-        return MathUtils.lerp(MathUtils.lerp(num00, num10, x-xInt), MathUtils.lerp(num01, num11, x-xInt), z-zInt);
-    }
-	
+
 	public short getShadow(int x, int z) {
 		if (x < 0 || z < 0 || x >= mapSize || z >= mapSize)
 			return mapHeight;
-		
+
 		return shadowMap[x][z];
 	}
 
 	private final BlockPos blockPos = new BlockPos();
 	public void render(Camera camera) {
 		LightHandle.calculateLights(); // Calculate lights.
-		
+
 		UltimateTexture.texture.bind();
-        VoxelTerrain.begin(camera);
-        Gdx.gl.glCullFace(GL20.GL_BACK);
-        Gdx.gl.glEnable(GL20.GL_CULL_FACE);
+		VoxelTerrain.begin(camera);
+		Gdx.gl.glCullFace(GL20.GL_BACK);
+		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
 		Gdx.gl.glDisable(GL20.GL_BLEND);
-        for(int x = 0; x < xChunks; x++)
-        for(int y = 0; y < yChunks; y++)
-        for(int z = 0; z < zChunks; z++) {
-			ChunkMesh mesh = opaqueChunkMeshes[x][y][z];
-            if (mesh == null) continue;
-            if (mesh.isDirty) {
-            	blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, opaqueChunkMeshes[x][y][z],transparentChunkMeshes[x][y][z]);
-            }
+		for(int x = 0; x < xChunks; x++)
+			for(int y = 0; y < yChunks; y++)
+				for(int z = 0; z < zChunks; z++) {
+					ChunkMesh mesh = opaqueChunkMeshes[x][y][z];
+					if (mesh == null) continue;
+					if (mesh.isDirty) {
+						blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, opaqueChunkMeshes[x][y][z],transparentChunkMeshes[x][y][z]);
+					}
 
-            if(camera.frustum.boundsInFrustum(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize,chunkSize,chunkSize)) {
-            	mesh.render();
-            }
-        }
-        Gdx.gl30.glBindVertexArray(0);
-        Gdx.gl.glEnable(GL20.GL_BLEND);
-        
-        if (getBlock(blockPos.set(floor(camera.position.x), floor(camera.position.y), floor(camera.position.z))).getMaterial().isTransparent()) 
-        	Gdx.gl.glDisable(GL20.GL_CULL_FACE);
-        
-        for(int x = 0; x < xChunks; x++)
-        for(int y = 0; y < yChunks; y++)
-        for(int z = 0; z < zChunks; z++) {
-			ChunkMesh mesh = transparentChunkMeshes[x][y][z];
-            if (mesh == null) continue;
-            if (mesh.isDirty) {
-            	blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, opaqueChunkMeshes[x][y][z],transparentChunkMeshes[x][y][z]);
-            }
+					if(camera.frustum.boundsInFrustum(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize,chunkSize,chunkSize)) {
+						mesh.render();
+					}
+				}
+		Gdx.gl30.glBindVertexArray(0);
+		Gdx.gl.glEnable(GL20.GL_BLEND);
 
-            if(camera.frustum.boundsInFrustum(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize,chunkSize,chunkSize)) {
-            	mesh.render();
-            }
-        }
-        Gdx.gl30.glBindVertexArray(0);
-        Gdx.gl.glDisable(GL20.GL_BLEND);
-        Gdx.gl.glEnable(GL20.GL_CULL_FACE);
-        
-        VoxelTerrain.end();
+		if (getBlock(blockPos.set(floor(camera.position.x), floor(camera.position.y), floor(camera.position.z))).getMaterial().isTransparent())
+			Gdx.gl.glDisable(GL20.GL_CULL_FACE);
+
+		for(int x = 0; x < xChunks; x++)
+			for(int y = 0; y < yChunks; y++)
+				for(int z = 0; z < zChunks; z++) {
+					ChunkMesh mesh = transparentChunkMeshes[x][y][z];
+					if (mesh == null) continue;
+					if (mesh.isDirty) {
+						blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, opaqueChunkMeshes[x][y][z],transparentChunkMeshes[x][y][z]);
+					}
+
+					if(camera.frustum.boundsInFrustum(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize,chunkSize,chunkSize)) {
+						mesh.render();
+					}
+				}
+		Gdx.gl30.glBindVertexArray(0);
+		Gdx.gl.glDisable(GL20.GL_BLEND);
+		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
+
+		VoxelTerrain.end();
 	}
 
 	public void setMeshDirtyShellAt(int x, int y, int z) {
@@ -389,10 +402,10 @@ public final class World implements Disposable {
 	public boolean isAirBlock(int x, int y, int z) {
 		return isOutBound(x, y, z) || toBlockID(data[x][y][z]) == 0;
 	}
-	
+
 	public void setBlock(int x, int y, int z, Block block) {
 		if (isOutBound(x, y, z)) return;
-				
+
 		data[x][y][z] = (data[x][y][z] & NODATA) | block.getID();
 	}
 
@@ -407,7 +420,7 @@ public final class World implements Disposable {
 	public int getData(BlockPos pos) {
 		return getData(pos.x, pos.y, pos.z);
 	}
-	
+
 	public int getData(int x, int y, int z) {
 		return isOutBound(x, y, z) ? 0xF0000000 : data[x][y][z];
 	}
@@ -423,14 +436,14 @@ public final class World implements Disposable {
 	}
 
 	@Override
-	public void dispose() {		
+	public void dispose() {
 		for (int x = 0; x < xChunks; x++)
-		for (int y = 0; y < yChunks; y++)
-		for (int z = 0; z < zChunks; z++) {
-			opaqueChunkMeshes[x][y][z].dispose();
-			transparentChunkMeshes[x][y][z].dispose();
-		}
-		
+			for (int y = 0; y < yChunks; y++)
+				for (int z = 0; z < zChunks; z++) {
+					opaqueChunkMeshes[x][y][z].dispose();
+					transparentChunkMeshes[x][y][z].dispose();
+				}
+
 		World.world = null;
 	}
 }
