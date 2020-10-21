@@ -85,7 +85,6 @@ public class Main extends ApplicationAdapter {
 		modelBatch = new ModelBatch(new DefaultShaderProvider(defaultConfig));
 
 		skybox = new Skybox();
-		;
 
 		camera = new PerspectiveCamera(90, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		camera.near = 0.1f;

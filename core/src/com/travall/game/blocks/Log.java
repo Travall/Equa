@@ -1,6 +1,5 @@
 package com.travall.game.blocks;
 
-import com.travall.game.blocks.data.KeyHolder;
 import com.travall.game.blocks.data.LogTypeComponent;
 import com.travall.game.blocks.materials.Material;
 import com.travall.game.blocks.models.CubeModel;
@@ -16,6 +15,6 @@ public class Log extends Block {
 		this.model = new CubeModel(this, new BlockTextures(UltimateTexture.createRegion(12, 2), UltimateTexture.createRegion(12, 1)));
 		this.material = Material.BLOCK;
 
-		this.manager.addCompoment(KeyHolder.LOGTYPE, type);
+		this.manager.addCompoment(type);
 	}
 }

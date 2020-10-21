@@ -4,9 +4,11 @@ import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.LogTypes;
 
 public class LogTypeComponent extends DataComponent {
+	
+	public static final String LOGTYPE = "logtype";
 
 	public LogTypeComponent() {
-		super(1);
+		super(1, false);
 	}
 	
 	public LogTypes getType(BlockPos pos) {
@@ -22,5 +24,10 @@ public class LogTypeComponent extends DataComponent {
 		case OAK: setData(pos, 0); return;
 		case DARKOAK: setData(pos, 1); return;
 		}
+	}
+
+	@Override
+	public String getDefaultKey() {
+		return LOGTYPE;
 	}
 }

@@ -1,13 +1,11 @@
 package com.travall.game.renderer.quad;
 
+import static com.travall.game.utils.Utils.gamma;
 import static com.travall.game.world.World.world;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-
-import static com.travall.game.utils.Utils.gamma;
-
 import com.travall.game.blocks.Block;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.BlockUtils;
@@ -19,7 +17,7 @@ public class QuadNode {
 	lightHigh = 1.0f,
 	lightMed = gamma(0.95),
 	lightLow = gamma(0.9),
-	lightDim = gamma(0.85);
+	lightDim = gamma(0.87);
 	
 	public Facing face;
 	
