@@ -264,6 +264,8 @@ public class Main extends ApplicationAdapter {
 					} else if(button == Buttons.MIDDLE) {
 						blockType = world.getBlock(info.in);
 					}
+				} else if (button == Buttons.LEFT) {
+					blockType.onDestroy(player,info);
 				}
 			}
 		}
