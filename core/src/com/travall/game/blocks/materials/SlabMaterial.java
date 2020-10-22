@@ -7,6 +7,11 @@ public class SlabMaterial extends Material {
 	}
 	
 	@Override
+	public boolean isTransparent() {
+		return false;
+	}
+	
+	@Override
 	public boolean isSolid() {
 		return false;
 	}

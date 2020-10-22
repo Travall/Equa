@@ -7,12 +7,12 @@ public class TorchMaterial extends Material {
 	}
 	
 	@Override
-	public boolean isSolid() {
+	public boolean isTransparent() {
 		return false;
 	}
-
+	
 	@Override
-	public boolean isTransparent() {
+	public boolean isSolid() {
 		return false;
 	}
 	

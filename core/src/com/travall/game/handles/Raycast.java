@@ -113,13 +113,13 @@ public class Raycast {
 					face = Facing.WEST;
 				}
 				
-				if (box.max.z - intersect.z < closest) {
-					closest = box.max.z - intersect.z;
+				if (-(box.min.z - intersect.z) < closest) {
+					closest = -(box.min.z - intersect.z);
 					face = Facing.NORTH;
 				}
 				
-				if (-(box.min.z - intersect.z) < closest) {
-					closest = -(box.min.z - intersect.z);
+				if (box.max.z - intersect.z < closest) {
+					closest = box.max.z - intersect.z;
 					face = Facing.SOUTH;
 				}
 

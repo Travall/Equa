@@ -5,7 +5,7 @@ import com.travall.game.utils.Facing;
 
 public class FaceComponent extends DataComponent {
 	
-	public static final String FACE = "face";
+	public static final String KEY = "face";
 
 	public FaceComponent() {
 		super(3, false);
@@ -35,7 +35,7 @@ public class FaceComponent extends DataComponent {
 	}
 
 	@Override
-	public String getDefaultKey() {
-		return FACE;
+	public String getKey() {
+		return KEY;
 	}
 }

@@ -46,5 +46,11 @@ public abstract class DataComponent {
 		world.data[pos.x][pos.y][pos.z] = (world.data[pos.x][pos.y][pos.z] & dataInv) | (data << offset);
 	}
 	
-	public abstract String getDefaultKey();
+	/** @param bits to select not to override. */
+	protected final void setData(BlockPos pos, int data, int bits) {
+		world.data[pos.x][pos.y][pos.z] = (world.data[pos.x][pos.y][pos.z] & (dataInv | (bits << offset))) | (data << offset);
+	}
+	
+	/** Get default key. */
+	public abstract String getKey();
 }

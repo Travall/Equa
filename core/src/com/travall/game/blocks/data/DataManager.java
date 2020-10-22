@@ -9,7 +9,7 @@ public final class DataManager {
 	private int bitSize;
 	
 	public void addCompoment(DataComponent component) {
-		addCompoment(component.getDefaultKey(), component);
+		addCompoment(component.getKey(), component);
 	}
 	
 	public void addCompoment(String key, DataComponent component) {

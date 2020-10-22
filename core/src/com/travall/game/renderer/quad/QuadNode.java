@@ -76,7 +76,7 @@ public class QuadNode {
 			builder.v3.calcLight(block, data, world.getData(side1.set(x+1, y1, z)), world.getData(side2.set(x, y1, z+1)), world.getData(corner.set(x+1, y1, z+1)));
 			builder.v4.calcLight(block, data, world.getData(side1.set(x-1, y1, z)), world.getData(side2.set(x, y1, z+1)), world.getData(corner.set(x-1, y1, z+1)));
 			break;
-		case SOUTH:
+		case NORTH:
 			if (!block.isSrclight()) builder.setAmb(lightMed);
 			z1 = isInside ? z : z-1;
 			data = world.getData(center.set(x, y, z1));
@@ -94,7 +94,7 @@ public class QuadNode {
 			builder.v3.calcLight(block, data, world.getData(side1.set(x1, y+1, z)), world.getData(side2.set(x1, y, z-1)), world.getData(corner.set(x1, y+1, z-1)));
 			builder.v4.calcLight(block, data, world.getData(side1.set(x1, y-1, z)), world.getData(side2.set(x1, y, z-1)), world.getData(corner.set(x1, y-1, z-1)));
 			break;
-		case NORTH:
+		case SOUTH:
 			if (!block.isSrclight()) builder.setAmb(lightMed);
 			z1 = isInside ? z : z+1;
 			data = world.getData(center.set(x, y, z1));

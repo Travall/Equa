@@ -148,7 +148,7 @@ public class Block {
 	/** Destroy the block.
 	 *  @return true if has successfully destroy the block. */
 	public boolean onDestroy(BlockPos pos) {
-		handleLights(pos, UpdateState.ON_BREAK);
+		world.getBlock(pos).handleLights(pos, UpdateState.ON_BREAK);
 		
 		world.setBlock(pos.x, pos.y, pos.z, BlocksList.AIR);
 		updateNearByBlocks(pos, UpdateState.ON_BREAK);
@@ -158,7 +158,7 @@ public class Block {
 	}
 	
 	/** Handle the lights.*/
-	public void handleLights(BlockPos pos, UpdateState state) {
+	protected final void handleLights(BlockPos pos, UpdateState state) {
 		if (state == UpdateState.ON_PLACE) {
 			if (isSrclight()) { // if place srclight block.
 				LightHandle.newSrclightAt(pos.x, pos.y, pos.z, getLightLevel());

@@ -5,12 +5,12 @@ public enum Facing {
 	UP  (-1, Axis.Y, new BlockPos(0, 1, 0)),
 	/** Facing Y- */
 	DOWN(-1, Axis.Y,  new BlockPos(0, -1, 0)),
-	/** Facing Z+ */
-	NORTH(0, Axis.Z, new BlockPos(0, 0, 1)), 
+	/** Facing Z- */
+	NORTH(2, Axis.Z, new BlockPos(0, 0, -1)),
 	/** Facing X+ */
 	EAST (1, Axis.X,  new BlockPos(1, 0, 0)),
-	/** Facing Z- */
-	SOUTH(2, Axis.Z, new BlockPos(0, 0, -1)),
+	/** Facing Z+ */
+	SOUTH(0, Axis.Z, new BlockPos(0, 0, 1)), 
 	/** Facing X- */
 	WEST (3, Axis.X,  new BlockPos(-1, 0, 0));
 	

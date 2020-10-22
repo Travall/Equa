@@ -7,9 +7,15 @@ class AirMaterial extends Material {
 	}
 	
 	@Override
+	public boolean isTransparent() {
+		return false;
+	}
+	
+	@Override
 	public boolean isSolid() {
 		return false;
 	}
+	
 	@Override
 	public boolean hasCollision() {
 		return false;
