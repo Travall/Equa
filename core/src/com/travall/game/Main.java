@@ -85,7 +85,6 @@ public class Main extends ApplicationAdapter {
 		modelBatch = new ModelBatch(new DefaultShaderProvider(defaultConfig));
 
 		skybox = new Skybox();
-		;
 
 		camera = new PerspectiveCamera(90, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		camera.near = 0.1f;
@@ -265,6 +264,8 @@ public class Main extends ApplicationAdapter {
 					} else if(button == Buttons.MIDDLE) {
 						blockType = world.getBlock(info.in);
 					}
+				} else if (button == Buttons.LEFT) {
+					blockType.onDestroy(player,info);
 				}
 			}
 		}

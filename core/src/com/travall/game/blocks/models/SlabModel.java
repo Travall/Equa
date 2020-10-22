@@ -39,10 +39,10 @@ public class SlabModel implements IBlockModel {
 		TextureRegion haftTexture = new TextureRegion(texture, 0, 0, 16, 8);
 		
 		quad3 = new QuadNode();
-		quad3.p1.set(1, 0, 1);
-		quad3.p2.set(1, 0.5f, 1);
-		quad3.p3.set(0, 0.5f, 1);
-		quad3.p4.set(0, 0, 1);
+		quad3.p1.set(0, 0, 0);
+		quad3.p2.set(0, 0.5f, 0);
+		quad3.p3.set(1, 0.5f, 0);
+		quad3.p4.set(1, 0, 0);
 		quad3.face = Facing.NORTH;
 		quad3.region.setRegion(haftTexture);
 		
@@ -55,10 +55,10 @@ public class SlabModel implements IBlockModel {
 		quad4.region.setRegion(haftTexture);
 		
 		quad5 = new QuadNode();
-		quad5.p1.set(0, 0, 0);
-		quad5.p2.set(0, 0.5f, 0);
-		quad5.p3.set(1, 0.5f, 0);
-		quad5.p4.set(1, 0, 0);
+		quad5.p1.set(1, 0, 1);
+		quad5.p2.set(1, 0.5f, 1);
+		quad5.p3.set(0, 0.5f, 1);
+		quad5.p4.set(0, 0, 1);
 		quad5.face = Facing.SOUTH;
 		quad5.region.setRegion(haftTexture);
 		
@@ -79,9 +79,9 @@ public class SlabModel implements IBlockModel {
 		final Block block = this.block;
 		if (block.canAddFace(position, second.set(x, y+1, z), Facing.UP))    quad1.rect(builder, position);
 		if (block.canAddFace(position, second.set(x, y-1, z), Facing.DOWN))  quad2.rect(builder, position);
-		if (block.canAddFace(position, second.set(x, y, z+1), Facing.NORTH)) quad3.rect(builder, position);
+		if (block.canAddFace(position, second.set(x, y, z-1), Facing.NORTH)) quad3.rect(builder, position);
 		if (block.canAddFace(position, second.set(x+1, y, z), Facing.EAST))  quad4.rect(builder, position);
-		if (block.canAddFace(position, second.set(x, y, z-1), Facing.SOUTH)) quad5.rect(builder, position);
+		if (block.canAddFace(position, second.set(x, y, z+1), Facing.SOUTH)) quad5.rect(builder, position);
 		if (block.canAddFace(position, second.set(x-1, y, z), Facing.WEST))  quad6.rect(builder, position);
 	}
 

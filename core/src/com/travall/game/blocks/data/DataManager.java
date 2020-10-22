@@ -8,6 +8,10 @@ public final class DataManager {
 	
 	private int bitSize;
 	
+	public void addCompoment(DataComponent component) {
+		addCompoment(component.getKey(), component);
+	}
+	
 	public void addCompoment(String key, DataComponent component) {
 		if (bitSize+component.size >= 16) throw new IllegalStateException("Block data has reached the bit limit!");
 		if (components.containsKey(key)) throw new IllegalStateException("Duplicated key - use the different key.");

@@ -128,9 +128,9 @@ public class TorchModel implements IBlockModel {
 	}
 	
 	private static final Matrix4 NONE = new Matrix4();
-	private static final Matrix4 MUL_SOUTH = new Matrix4().setFromEulerAngles(0, -20f, 0).trn(0f, 0.2f, 0.3f);
+	private static final Matrix4 MUL_SOUTH = new Matrix4().setFromEulerAngles(180f, -20f, 0).trn(0f, 0.2f, -0.32f);
 	private static final Matrix4 MUL_WEST  = new Matrix4().setFromEulerAngles(90f, -20f, 0).trn(0.32f, 0.2f, 0f);
-	private static final Matrix4 MUL_NORTH = new Matrix4().setFromEulerAngles(180f, -20f, 0).trn(0f, 0.2f, -0.32f);
+	private static final Matrix4 MUL_NORTH = new Matrix4().setFromEulerAngles(0, -20f, 0).trn(0f, 0.2f, 0.3f);
 	private static final Matrix4 MUL_EAST  = new Matrix4().setFromEulerAngles(270f, -20f, 0).trn(-0.32f, 0.2f, 0f);
 	
 	private static final Array<BoundingBox> UP    = new Array<>(1);

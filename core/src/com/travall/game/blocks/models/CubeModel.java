@@ -36,10 +36,10 @@ public class CubeModel implements IBlockModel {
 		quad2.region.setRegion(textures.bottom);
 		
 		quad3 = new QuadNode();
-		quad3.p1.set(1, 0, 1);
-		quad3.p2.set(1, 1, 1);
-		quad3.p3.set(0, 1, 1);
-		quad3.p4.set(0, 0, 1);
+		quad3.p1.set(0, 0, 0);
+		quad3.p2.set(0, 1, 0);
+		quad3.p3.set(1, 1, 0);
+		quad3.p4.set(1, 0, 0);
 		quad3.face = Facing.NORTH;
 		quad3.region.setRegion(textures.south);
 		
@@ -52,10 +52,10 @@ public class CubeModel implements IBlockModel {
 		quad4.region.setRegion(textures.south);
 		
 		quad5 = new QuadNode();
-		quad5.p1.set(0, 0, 0);
-		quad5.p2.set(0, 1, 0);
-		quad5.p3.set(1, 1, 0);
-		quad5.p4.set(1, 0, 0);
+		quad5.p1.set(1, 0, 1);
+		quad5.p2.set(1, 1, 1);
+		quad5.p3.set(0, 1, 1);
+		quad5.p4.set(0, 0, 1);
 		quad5.face = Facing.SOUTH;
 		quad5.region.setRegion(textures.south);
 		
@@ -76,9 +76,9 @@ public class CubeModel implements IBlockModel {
 		final Block block = this.block;
 		if (block.canAddFace(position, second.set(x, y+1, z), Facing.UP))    quad1.rect(builder, position);
 		if (block.canAddFace(position, second.set(x, y-1, z), Facing.DOWN))  quad2.rect(builder, position);
-		if (block.canAddFace(position, second.set(x, y, z+1), Facing.NORTH)) quad3.rect(builder, position);
+		if (block.canAddFace(position, second.set(x, y, z-1), Facing.NORTH)) quad3.rect(builder, position);
 		if (block.canAddFace(position, second.set(x+1, y, z), Facing.EAST))  quad4.rect(builder, position);
-		if (block.canAddFace(position, second.set(x, y, z-1), Facing.SOUTH)) quad5.rect(builder, position);
+		if (block.canAddFace(position, second.set(x, y, z+1), Facing.SOUTH)) quad5.rect(builder, position);
 		if (block.canAddFace(position, second.set(x-1, y, z), Facing.WEST))  quad6.rect(builder, position);
 	}
 

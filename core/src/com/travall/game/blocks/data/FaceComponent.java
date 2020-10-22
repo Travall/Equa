@@ -4,9 +4,11 @@ import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.Facing;
 
 public class FaceComponent extends DataComponent {
+	
+	public static final String KEY = "face";
 
 	public FaceComponent() {
-		super(3); // 3 is the required bits to allocate.
+		super(3, false);
 	}
 	
 	public Facing getFace(BlockPos pos) {
@@ -30,5 +32,10 @@ public class FaceComponent extends DataComponent {
 		case SOUTH: setData(pos, 4); return;
 		case WEST: setData(pos, 5); return;
 		}
+	}
+
+	@Override
+	public String getKey() {
+		return KEY;
 	}
 }

@@ -38,12 +38,12 @@ public class CactusModel implements IBlockModel {
 		quad2.p4.set(0, 0, 1);
 		quad2.face = Facing.DOWN;
 		quad2.region.setRegion(textures.bottom);
-
+		
 		quad3 = new QuadNode();
-		quad3.p1.set(1, 0, 1);
-		quad3.p2.set(1, 1, 1);
-		quad3.p3.set(0, 1, 1);
-		quad3.p4.set(0, 0, 1);
+		quad3.p1.set(0, 0, 0);
+		quad3.p2.set(0, 1, 0);
+		quad3.p3.set(1, 1, 0);
+		quad3.p4.set(1, 0, 0);
 		quad3.face = Facing.NORTH;
 		quad3.region.setRegion(textures.south);
 
@@ -56,10 +56,10 @@ public class CactusModel implements IBlockModel {
 		quad4.region.setRegion(textures.south);
 
 		quad5 = new QuadNode();
-		quad5.p1.set(0, 0, 0);
-		quad5.p2.set(0, 1, 0);
-		quad5.p3.set(1, 1, 0);
-		quad5.p4.set(1, 0, 0);
+		quad5.p1.set(1, 0, 1);
+		quad5.p2.set(1, 1, 1);
+		quad5.p3.set(0, 1, 1);
+		quad5.p4.set(0, 0, 1);
 		quad5.face = Facing.SOUTH;
 		quad5.region.setRegion(textures.south);
 
@@ -77,9 +77,9 @@ public class CactusModel implements IBlockModel {
 //		quad6.add(2/16f,0,0);
 
 		quad1.scl(1,height,1);
-		quad3.scl(1,1,8/16f + (width / 2));
+		quad3.add(0,0,8/16f - (length / 2));
 		quad4.scl(8/16f + (width / 2),1,1);
-		quad5.add(0,0,8/16f - (length / 2));
+		quad5.scl(1,1,8/16f + (width / 2));
 		quad6.add(8/16f - (length / 2),0,0);
 	}
 	

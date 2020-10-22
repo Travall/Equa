@@ -43,12 +43,12 @@ public class WaterModel implements IBlockModel {
 		quad2.region.setRegion(texture);
 		
 		final TextureRegion haftTexture = new TextureRegion(texture, 0, 0, 16, 14);
-
+		
 		quad3 = new QuadNode();
-		quad3.p1.set(1, 0, 1);
-		quad3.p2.set(1, 1, 1);
-		quad3.p3.set(0, 1, 1);
-		quad3.p4.set(0, 0, 1);
+		quad3.p1.set(0, 0, 0);
+		quad3.p2.set(0, 1, 0);
+		quad3.p3.set(1, 1, 0);
+		quad3.p4.set(1, 0, 0);
 		quad3.face = Facing.NORTH;
 		quad3.region.setRegion(haftTexture);
 
@@ -61,10 +61,10 @@ public class WaterModel implements IBlockModel {
 		quad4.region.setRegion(haftTexture);
 
 		quad5 = new QuadNode();
-		quad5.p1.set(0, 0, 0);
-		quad5.p2.set(0, 1, 0);
-		quad5.p3.set(1, 1, 0);
-		quad5.p4.set(1, 0, 0);
+		quad5.p1.set(1, 0, 1);
+		quad5.p2.set(1, 1, 1);
+		quad5.p3.set(0, 1, 1);
+		quad5.p4.set(0, 0, 1);
 		quad5.face = Facing.SOUTH;
 		quad5.region.setRegion(haftTexture);
 
@@ -94,7 +94,7 @@ public class WaterModel implements IBlockModel {
 		if (block.canAddFace(position, second.set(x, y-1, z), Facing.DOWN)) {
 			quad2.rect(builder, position);
 		}
-		if (block.canAddFace(position, second.set(x, y, z+1), Facing.NORTH)) {
+		if (block.canAddFace(position, second.set(x, y, z-1), Facing.NORTH)) {
 			quad3.p2.y = isWaterUp ? 1f : lowWater;
 			quad3.p3.y = isWaterUp ? 1f : lowWater;
 			quad3.region.setRegionHeight(isWaterUp ? 16 : 14);
@@ -106,7 +106,7 @@ public class WaterModel implements IBlockModel {
 			quad4.region.setRegionHeight(isWaterUp ? 16 : 14);
 			quad4.rect(builder, position);
 		}
-		if (block.canAddFace(position, second.set(x, y, z-1), Facing.SOUTH)) {
+		if (block.canAddFace(position, second.set(x, y, z+1), Facing.SOUTH)) {
 			quad5.p2.y = isWaterUp ? 1f : lowWater;
 			quad5.p3.y = isWaterUp ? 1f : lowWater;
 			quad5.region.setRegionHeight(isWaterUp ? 16 : 14);

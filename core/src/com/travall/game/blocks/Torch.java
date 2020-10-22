@@ -3,7 +3,6 @@ package com.travall.game.blocks;
 import static com.travall.game.world.World.world;
 
 import com.travall.game.blocks.data.FaceComponent;
-import com.travall.game.blocks.data.KeyHolder;
 import com.travall.game.blocks.materials.Material;
 import com.travall.game.blocks.models.TorchModel;
 import com.travall.game.entities.Player;
@@ -23,7 +22,7 @@ public class Torch extends Block {
 		this.material = Material.TORCH;
 		this.lightLevel = 15;
 		
-		this.manager.addCompoment(KeyHolder.FACING, face);
+		this.manager.addCompoment(face);
 	}
 	
 	@Override

@@ -2,7 +2,6 @@ package com.travall.game.renderer;
 
 import static com.badlogic.gdx.Gdx.gl;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -28,7 +27,7 @@ public final class Picker {
 	
 	public static void render(PerspectiveCamera camera) {
 		if (!hasHit) return;
-		Gdx.gl.glLineWidth(2);
+		gl.glLineWidth(2);
 		gl.glEnable(GL20.GL_BLEND);
 		intsCam(camera);
 		shape.setProjectionMatrix(pickCam.combined);
