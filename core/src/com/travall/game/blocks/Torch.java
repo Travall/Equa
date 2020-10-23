@@ -28,10 +28,10 @@ public class Torch extends Block {
 	@Override
 	public boolean onPlace(Player player, RayInfo rayInfo) {
 		final BlockPos out = rayInfo.out;
-		if (rayInfo.face != Facing.DOWN && world.getBlock(rayInfo.in).isFaceSolid(rayInfo.in, rayInfo.face)) {
+		if (rayInfo.face1 != Facing.DOWN && world.getBlock(rayInfo.in).isFaceSolid(rayInfo.in, rayInfo.face1)) {
 			
 			if (super.onPlace(player, rayInfo)) {
-				face.setFace(out, rayInfo.face);
+				face.setFace(out, rayInfo.face1);
 			}
 			
 		} else if (super.onPlace(player, rayInfo)) {

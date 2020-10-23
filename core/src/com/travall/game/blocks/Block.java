@@ -129,8 +129,8 @@ public class Block {
 
 	/** Destroy the block.
 	 *  @return true if player has successfully destroy the block. */
-	public boolean onDestroy(Player player, RayInfo pos) {
-		return onDestroy(pos.in);
+	public boolean onDestroy(Player player, RayInfo rayInfo) {
+		return rayInfo.blockHit.onDestroy(rayInfo.in);
 	}
 	
 	/** Place the block. 
