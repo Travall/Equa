@@ -24,7 +24,8 @@ public final class BlocksList {
 	TORCH = new Torch(ID++),
 	SNOW = new Snow(ID++),
 	DARKLOG = new DarkLog(ID++),
-	DARKLEAVES = new DarkLeaves(ID++);
+	DARKLEAVES = new DarkLeaves(ID++),
+	DOOR = new Door(ID++);
 
 
 	public static final int SIZE = ID;
@@ -51,6 +52,7 @@ public final class BlocksList {
 		addBlock(SNOW);
 		addBlock(DARKLOG);
 		addBlock(DARKLEAVES);
+		addBlock(DOOR);
 
 		hasInts = true;
 	}

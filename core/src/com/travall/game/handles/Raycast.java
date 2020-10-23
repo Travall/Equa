@@ -37,24 +37,14 @@ public class Raycast {
 		ray.set(pos, cam.direction);
 
 		int x = 0, y = 0, z = 0; // Current integer position.
-		int lx = 0, ly = 0, lz = 0; // Last integer position.
-		
-		Block block  = world.getBlock(inBlock.set(offset));
-		Facing face = null;
-		if (!block.isAir() && (face = hitBox(block.getBoundingBoxes(inBlock), x, y, z)) != null) {
-			info.face = face;
-			info.in.set(inBlock);
-			info.out.set(inBlock).add(face.offset);
-			info.blockHit = block;
-			return info;
-		}
+		int lx = Integer.MIN_VALUE, ly = Integer.MIN_VALUE, lz = Integer.MIN_VALUE; // Last integer position.
 
 		for (float i = 0; i < LENGHT; i += STEPS) {
 			pos.add(nor);
 			if ((y = floor(pos.y)) == ly && (x = floor(pos.x)) == lx && (z = floor(pos.z)) == lz)
 				continue;
 			
-			block = world.getBlock(inBlock.set(x + offset.x, y + offset.y, z + offset.z));
+			final Block block = world.getBlock(inBlock.set(x + offset.x, y + offset.y, z + offset.z));
 
 			if (block.isAir()) {
 				lx = x;
@@ -63,7 +53,62 @@ public class Raycast {
 				continue;
 			}
 			
-			face = hitBox(block.getBoundingBoxes(inBlock), x, y, z);
+			final Array<BoundingBox> boxes = block.getBoundingBoxes(inBlock);
+			Facing face = null;
+			for (BoundingBox staticBox : boxes) {
+				float closest = 10f;
+				box.set(staticBox);
+				box.max.add(x, y, z);
+				box.min.add(x, y, z);
+				if (Intersector.intersectRayBounds(ray, box, intersect)) {
+					
+					if (box.max.y - intersect.y < closest) {
+						closest = box.max.y - intersect.y;
+						face = Facing.UP;
+					}
+					
+					if (-(box.min.y - intersect.y) < closest) {
+						closest = -(box.min.y - intersect.y);
+						face = Facing.DOWN;
+					}
+					
+					if (box.max.x - intersect.x < closest) {
+						closest = box.max.x - intersect.x;
+						face = Facing.EAST;
+					}
+					
+					if (-(box.min.x - intersect.x) < closest) {
+						closest = -(box.min.x - intersect.x);
+						face = Facing.WEST;
+					}
+					
+					if (-(box.min.z - intersect.z) < closest) {
+						closest = -(box.min.z - intersect.z);
+						face = Facing.NORTH;
+					}
+					
+					if (box.max.z - intersect.z < closest) {
+						closest = box.max.z - intersect.z;
+						face = Facing.SOUTH;
+					}
+
+					if (face != null) {
+						info.boxHit = staticBox;
+						
+						final int
+						xPos = x,
+						zPos = z;
+						
+						if (Math.abs(xPos) > Math.abs(zPos)) {
+							info.face2 = xPos <= 0 ? Facing.EAST : Facing.WEST;
+						} else {
+							info.face2 = zPos <= 0 ? Facing.SOUTH : Facing.NORTH;
+						}
+						
+						break;
+					}
+				}
+			}
 
 			if (face == null) {
 				if (!block.getMaterial().isFullCube()) {
@@ -75,7 +120,7 @@ public class Raycast {
 				return null;
 			}
 			
-			info.face = face;
+			info.face1 = face;
 			info.in.set(inBlock);
 			info.out.set(inBlock).add(face.offset);
 			info.blockHit = block;
@@ -85,60 +130,17 @@ public class Raycast {
 		return null;
 	}
 	
-	private static Facing hitBox(Array<BoundingBox> boundingBoxes, int x, int y, int z) {
-		Facing face = null;
-		for (BoundingBox staticBox : boundingBoxes) {
-			float closest = 10f;
-			box.set(staticBox);
-			box.max.add(x, y, z);
-			box.min.add(x, y, z);
-			if (Intersector.intersectRayBounds(ray, box, intersect)) {
-				if (box.max.y - intersect.y < closest) {
-					closest = box.max.y - intersect.y;
-					face = Facing.UP;
-				}
-				
-				if (-(box.min.y - intersect.y) < closest) {
-					closest = -(box.min.y - intersect.y);
-					face = Facing.DOWN;
-				}
-				
-				if (box.max.x - intersect.x < closest) {
-					closest = box.max.x - intersect.x;
-					face = Facing.EAST;
-				}
-				
-				if (-(box.min.x - intersect.x) < closest) {
-					closest = -(box.min.x - intersect.x);
-					face = Facing.WEST;
-				}
-				
-				if (-(box.min.z - intersect.z) < closest) {
-					closest = -(box.min.z - intersect.z);
-					face = Facing.NORTH;
-				}
-				
-				if (box.max.z - intersect.z < closest) {
-					closest = box.max.z - intersect.z;
-					face = Facing.SOUTH;
-				}
-
-				if (face != null) {
-					info.boxHit = staticBox;
-					break;
-				}
-			}
-		}
-		return face;
-	}
-	
 	public static class RayInfo {
 		/** Outside the block. */
 		public final BlockPos out = new BlockPos();
 		/** Inside the block. */
 		public final BlockPos in  = new BlockPos();
 		
-		public Facing face;
+		/** Facing outward the block */
+		public Facing face1;
+		
+		/** Facing toward the player */
+		public Facing face2;
 		
 		public BoundingBox boxHit;
 		public Block blockHit;

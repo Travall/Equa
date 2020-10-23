@@ -2,17 +2,17 @@ package com.travall.game.utils;
 
 public enum Facing {
 	/** Facing Y+ */
-	UP  (-1, Axis.Y, new BlockPos(0, 1, 0)),
+	UP  (-2, Axis.Y, new BlockPos(0, 1, 0)),
 	/** Facing Y- */
-	DOWN(-1, Axis.Y,  new BlockPos(0, -1, 0)),
+	DOWN(-2, Axis.Y,  new BlockPos(0, -1, 0)),
 	/** Facing Z- */
-	NORTH(2, Axis.Z, new BlockPos(0, 0, -1)),
+	NORTH(0, Axis.Z, new BlockPos(0, 0, -1)),
 	/** Facing X+ */
 	EAST (1, Axis.X,  new BlockPos(1, 0, 0)),
 	/** Facing Z+ */
-	SOUTH(0, Axis.Z, new BlockPos(0, 0, 1)), 
+	SOUTH(2, Axis.Z, new BlockPos(0, 0, 1)), 
 	/** Facing X- */
-	WEST (3, Axis.X,  new BlockPos(-1, 0, 0));
+	WEST (-1, Axis.X,  new BlockPos(-1, 0, 0));
 	
 	private final int num;
 	
@@ -46,14 +46,18 @@ public enum Facing {
 	}
 	
 	public Facing rotate(int rotate) {
-		if (num == -1) return this;
-		switch ((num+rotate)&3) {
+		if (num == -2) return this;
+		switch (((num)+rotate)&3) {
 		case 0:  return NORTH;
 		case 1:  return EAST;
 		case 2:  return SOUTH;
 		case 3:  return WEST;
 		default: return this;
 		}
+	}
+	
+	public int getRotateValue() {
+		return num;
 	}
 	
 	public Facing invert() {
