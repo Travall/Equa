@@ -29,7 +29,7 @@ public final class World implements Disposable {
 	public static World world;
 
 	public static final int mapSize = 512;
-	public static final int mapHeight = 256;
+	public static final int mapHeight = 512;
 
 	public static final int chunkShift = 4; // 1 << 4 = 16. I set it back from 32 to 16 due to vertices limitations.
 	public static final int chunkSize = 1 << chunkShift;
@@ -39,7 +39,7 @@ public final class World implements Disposable {
 	public static final int zChunks = mapSize / chunkSize;
 	public static final int downscale = 8; // 8 is a good value.
 
-	public static final int waterLevel = Math.round(mapHeight/4.5f); // 4.5f
+	public static final int waterLevel = Math.round(mapHeight/9f); // 4.5f
 
 	final public int[][][] data;
 	final public short[][] shadowMap;
@@ -50,6 +50,8 @@ public final class World implements Disposable {
 	final ChunkMesh[][][] opaqueChunkMeshes;
 	final ChunkMesh[][][] transparentChunkMeshes;
 	Biome[] biomes = {new Desert(), new Ground(), new Snow()};
+	Vector3 tempVec = Vector3.Zero;
+	Vector2 tempVec2 = Vector2.Zero;
 
 	public World() {
 		World.world = this;
@@ -84,7 +86,7 @@ public final class World implements Disposable {
 		final RandomXS128 random = new RandomXS128(seed);
 		OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5, 0.25, random.nextLong());
 		OpenSimplexOctaves FloatingIslandNoise = new OpenSimplexOctaves(7, 0.35, random.nextLong());
-		int maxTerrainHeight = Math.round(mapHeight / 2);
+		int maxTerrainHeight = Math.round(mapHeight / 4);
 
 		for(int i = 0; i < biomes.length; i++) {
 			biomes[i].heightMap = new OpenSimplexOctaves(biomes[i].heightOctaves, biomes[i].heightPersistence, random.nextLong());
@@ -108,7 +110,7 @@ public final class World implements Disposable {
 				Biome primary = prevalentBiomes[x][z];
 
 				float height = bilinear(heights, x, z);
-				int yValue = (int)height;
+				int yValue = (int) height;
 
 				boolean middleDone = false;
 
@@ -119,20 +121,20 @@ public final class World implements Disposable {
 
 // 					if((getBlock(tmpBlockPos.set(x,i+1,z)) == primary.middle && getBlock(tmpBlockPos.set(x,i+2,z)) == primary.middle && getBlock(tmpBlockPos.set(x,i+3,z)) == primary.middle && getBlock(tmpBlockPos.set(x,i+4,z)) == primary.middle)) middleDone = true;
 
-					if(i == yValue - (Math.abs(i - maxTerrainHeight) / 4)) middleDone = true;
+					if (i == yValue - (Math.abs(i - maxTerrainHeight) / 4)) middleDone = true;
 //					if((Math.abs(yValue - i) == 4)) middleDone = true;
 
 					if (i == 0) {
 						setBlock(x, i, z, BlocksList.BEDROCK);
-					} else if(!caveTerritory) {
-						if(i == yValue) {
-							if(i < waterLevel) {
+					} else if (!caveTerritory) {
+						if (i == yValue) {
+							if (i < waterLevel) {
 								setBlock(x, i, z, primary.underwater);
 							} else {
 								setBlock(x, i, z, primary.top);
 							}
-						} else if(!middleDone) {
-							if(i < waterLevel) {
+						} else if (!middleDone) {
+							if (i < waterLevel) {
 								setBlock(x, i, z, primary.underwater);
 							} else {
 								setBlock(x, i, z, primary.middle);
@@ -155,9 +157,27 @@ public final class World implements Disposable {
 					}
 				}
 
-				// Floating Islands
-				for(int j = mapHeight-7; j > maxTerrainHeight * 1.5f; j--) {
-					if(FloatingIslandNoise.getNoise(x,j,z) > 0.175) {
+				int centerX = mapSize / 4;
+				int centerY = mapHeight - mapHeight / 4;
+				int centerZ = mapSize / 4;
+
+				if(x >= mapSize / 2) {
+					centerX = mapSize - centerX;
+				}
+
+				if(z >= mapSize / 2) {
+					centerZ = mapSize - centerZ;
+				}
+
+				if(Math.abs(tempVec2.set(x,z).dst(mapSize / 2,mapSize / 2)) < mapSize / 6) {
+					centerX = mapSize / 2;
+					centerZ = mapSize / 2;
+				}
+
+				for(int j = mapHeight; j > mapHeight / 2; j--) {
+					float diff = Math.abs(tempVec.set(x,j,z).dst(centerX,centerY,centerZ)) / 50;
+
+					if(FloatingIslandNoise.getNoise(x,j,z) / diff > 0.18) {
 						if(isAirBlock(x,j,z)) {
 							if(isAirBlock(x,j+1,z)) {
 								setBlock(x,j,z,BlocksList.GRASS);
@@ -172,6 +192,13 @@ public final class World implements Disposable {
 						}
 					}
 				}
+
+//				if(x == centerX && z == centerZ) {
+//					setBlock(centerX,centerY,centerZ,BlocksList.GOLD);
+//				} else {
+//					setBlock(x,centerY,z,BlocksList.BEDROCK);
+//				}
+
 			}
 		}
 

@@ -64,7 +64,7 @@ public class Main extends ApplicationAdapter {
 	BitmapFont font;
 	boolean debug = false;
 
-	String VERSION = "2.0.0";
+	String VERSION = "Alpha 2.0.0";
 
 	@Override
 	public void create() {
@@ -89,7 +89,7 @@ public class Main extends ApplicationAdapter {
 
 		camera = new PerspectiveCamera(90, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		camera.near = 0.1f;
-		camera.far = 500f;
+		camera.far = 1500f;
 		camera.update();
 
 		cameraController = new FirstPersonCameraController(camera);
