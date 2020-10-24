@@ -10,8 +10,6 @@ import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.Disposable;
 import com.travall.game.blocks.Block;
 import com.travall.game.blocks.BlocksList;
-import com.travall.game.blocks.data.KeyHolder;
-import com.travall.game.blocks.data.LogTypeComponent;
 import com.travall.game.blocks.materials.Material;
 import com.travall.game.renderer.block.UltimateTexture;
 import com.travall.game.renderer.vertices.VoxelTerrain;

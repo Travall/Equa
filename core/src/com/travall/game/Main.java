@@ -85,7 +85,6 @@ public class Main extends ApplicationAdapter {
 		modelBatch = new ModelBatch(new DefaultShaderProvider(defaultConfig));
 
 		skybox = new Skybox();
-		;
 
 		camera = new PerspectiveCamera(90, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		camera.near = 0.1f;
@@ -201,7 +200,7 @@ public class Main extends ApplicationAdapter {
 		if (Gdx.input.isKeyPressed(Keys.Q))
 			blockType = BlocksList.TORCH;
 		if (Gdx.input.isKeyPressed(Keys.E))
-			blockType = BlocksList.GOLD;
+			blockType = BlocksList.DOOR;
 
 		if (Gdx.input.isKeyJustPressed(Keys.P))
 			VoxelTerrain.toggleAO();
@@ -255,17 +254,19 @@ public class Main extends ApplicationAdapter {
 			Gdx.input.isButtonPressed(Buttons.RIGHT) ? Buttons.RIGHT : -1;
 			
 			if (button != -1) {
-				if (!blockType.onClick(player, info, button)) {
+				
+				if(button == Buttons.MIDDLE) {
+					blockType = world.getBlock(info.in);
+				} else if (!info.blockHit.onClick(player, info, button)) {
 					if (button == Buttons.RIGHT) {
 						if (!world.isOutBound(info.out.x, info.out.y, info.out.z)) {
 							blockType.onPlace(player, info);
 						}
 					} else if (button == Buttons.LEFT){
 						blockType.onDestroy(player,info);
-					} else if(button == Buttons.MIDDLE) {
-						blockType = world.getBlock(info.in);
 					}
 				}
+				
 			}
 		}
 	}

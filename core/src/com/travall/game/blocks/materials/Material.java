@@ -11,6 +11,7 @@ public class Material {
 	public static final Material CACTUS = new CactusMaterial();
 	public static final Material DIAGONAL = new DiagonalMaterial();
 	public static final Material TORCH = new TorchMaterial();
+	public static final Material DOOR = new DoorMaterial();
 
 	/* Getters */
 

@@ -1,6 +1,6 @@
 package com.travall.game.blocks.materials;
 
-public class SlabMaterial extends Material {
+public class DoorMaterial extends Material {
 	@Override
 	public boolean isFullCube() {
 		return false;
@@ -23,7 +23,7 @@ public class SlabMaterial extends Material {
 
 	@Override
 	public boolean canBlockSunRay() {
-		return true;
+		return false;
 	}
 
 	@Override
