@@ -12,14 +12,14 @@ public class BlockBreak extends Particle {
 	private short timer;
 	
 	public BlockBreak ints(Vector3 position, TextureRegion region) {
-		size = 0.08f;
 		final int u = random(3) * 4;
 		final int v = random(3) * 4;
 		this.region.setRegion(region, u, v, 4, 4);
 		this.velocity.setToRandomDirection().scl(0.05f);
 		this.velocity.y += 0.05f;
 		
-		timer = (short)(120 + random(30));
+		this.timer = (short)(120 + random(30));
+		this.size = 0.07f;
 		
 		this.setPosition(position.add(random(-0.4f, 0.4f), random(-0.4f, 0.4f), random(-0.4f, 0.4f)));
 		return this;
