@@ -88,7 +88,7 @@ public class Main extends ApplicationAdapter {
 
 		camera = new PerspectiveCamera(90, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		camera.near = 0.1f;
-		camera.far = 1500f;
+		camera.far = 1000f;
 		camera.update();
 
 		cameraController = new FirstPersonCameraController(camera);
