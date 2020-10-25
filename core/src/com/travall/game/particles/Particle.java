@@ -17,6 +17,7 @@ public abstract class Particle {
 	public final CollisionBox box = new CollisionBox();
 	public final Vector3 velocity = new Vector3();
 	public final TextureRegion region = new TextureRegion();
+	public float size = 0.1f;
 	protected boolean onGround;
 	
 	protected abstract void update(World world);
@@ -95,7 +96,6 @@ public abstract class Particle {
 	}
 	
 	public final void setPosition(Vector3 pos) {
-		final float w = 0.09f;
-		box.set(pos.x - w, pos.y - w, pos.z - w, pos.x + w, pos.y + w, pos.z + w);
+		box.set(pos.x - size, pos.y - size, pos.z - size, pos.x + size, pos.y + size, pos.z + size);
 	}
 }
