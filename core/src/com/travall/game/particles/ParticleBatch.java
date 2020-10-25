@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import com.travall.game.glutils.VBO;
@@ -76,6 +75,10 @@ class ParticleBatch implements Disposable {
 		final int i = idx;
 		final Vector3 pos = particle.getPosition(this.pos);
 		final TextureRegion reg = particle.region;
+		
+		final Vector3 tmp = this.tmp;
+		final Vector3 down = this.down;
+		final Vector3 up = this.up;
 		final float[] verts = this.verts;
 		
 		final int data =
@@ -85,8 +88,8 @@ class ParticleBatch implements Disposable {
 		Float.intBitsToFloat( (((int)(255*(toSunLight(data)/lightScl))<<16) | ((int)(255*(toSrcLight(data)/lightScl))<<8)) | 255);
 		
 		// v1
-		final float size = 1.0f - particle.size;		
-		tmp.set(pos).add(down).lerp(pos, size);
+		final float size = particle.size;		
+		tmp.set(pos).add(down.x*size, down.y*size, down.z*size);
 		verts[i]    = tmp.x;
 		verts[i+1]  = tmp.y;
 		verts[i+2]  = tmp.z;
@@ -95,7 +98,7 @@ class ParticleBatch implements Disposable {
 		verts[i+5]  = reg.getV2();
 
 		// v2
-		tmp.set(pos).add(up).lerp(pos, size);;
+		tmp.set(pos).add(up.x*size, up.y*size, up.z*size);
 		verts[i+6]   = tmp.x;
 		verts[i+7]   = tmp.y;
 		verts[i+8]   = tmp.z;
@@ -104,7 +107,7 @@ class ParticleBatch implements Disposable {
 		verts[i+11]  = reg.getV();
 
 		// v3
-		tmp.set(pos).sub(down).lerp(pos, size);;
+		tmp.set(pos).sub(down.x*size, down.y*size, down.z*size);
 		verts[i+12] = tmp.x;
 		verts[i+13] = tmp.y;
 		verts[i+14] = tmp.z;
@@ -113,7 +116,7 @@ class ParticleBatch implements Disposable {
 		verts[i+17] = reg.getV();
 
 		// v4
-		tmp.set(pos).sub(up).lerp(pos, size);;
+		tmp.set(pos).sub(up.x*size, up.y*size, up.z*size);
 		verts[i+18] = tmp.x;
 		verts[i+19] = tmp.y;
 		verts[i+20] = tmp.z;
