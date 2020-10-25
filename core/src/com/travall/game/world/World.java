@@ -48,8 +48,8 @@ public final class World implements Disposable {
 	final ChunkMesh[][][] opaqueChunkMeshes;
 	final ChunkMesh[][][] transparentChunkMeshes;
 	Biome[] biomes = {new Desert(), new Ground(), new Snow()};
-	Vector3 tempVec = Vector3.Zero;
-	Vector2 tempVec2 = Vector2.Zero;
+	Vector3 tempVec = new Vector3();
+	Vector2 tempVec2 = new Vector2();
 
 	public World() {
 		World.world = this;
@@ -61,13 +61,14 @@ public final class World implements Disposable {
 
 		opaqueChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
 		transparentChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
+		
 		for (int x = 0; x < xChunks; x++)
-			for (int y = 0; y < yChunks; y++)
-				for (int z = 0; z < zChunks; z++) {
-					CombinedChunk combinedChunk = (blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, null,null));
-					opaqueChunkMeshes[x][y][z] = combinedChunk.opaque;
-					transparentChunkMeshes[x][y][z] = combinedChunk.transparent;
-				}
+		for (int y = 0; y < yChunks; y++)
+		for (int z = 0; z < zChunks; z++) {
+			CombinedChunk combinedChunk = (blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, null,null));
+			opaqueChunkMeshes[x][y][z] = combinedChunk.opaque;
+			transparentChunkMeshes[x][y][z] = combinedChunk.transparent;
+		}
 	}
 
 	private Biome getPrevalent(int x, int z) {
@@ -388,27 +389,27 @@ public final class World implements Disposable {
 		final int indexZ = z >> chunkShift;
 		setMeshDirtyAt(indexX, indexY, indexZ);
 
-		if ((x & chunkMask) == 0 && x > 0) {
+		if ((x & chunkMask) == 0) {
 			setMeshDirtyAt(indexX - 1, indexY, indexZ);
 		}
 
-		if (((x + 1) & chunkMask) == 0 && x < mapSize - 1) {
+		if ((x & chunkMask) == 15) {
 			setMeshDirtyAt(indexX + 1, indexY, indexZ);
 		}
 
-		if ((y & chunkMask) == 0 && y > 0) {
+		if ((y & chunkMask) == 0) {
 			setMeshDirtyAt(indexX, indexY - 1, indexZ);
 		}
 
-		if (((y + 1) & chunkMask) == 0 && y < mapHeight - 1) {
+		if ((y & chunkMask) == 15) {
 			setMeshDirtyAt(indexX, indexY + 1, indexZ);
 		}
 
-		if ((z & chunkMask) == 0 && z > 0) {
+		if ((z & chunkMask) == 0) {
 			setMeshDirtyAt(indexX, indexY, indexZ - 1);
 		}
 
-		if (((z + 1) & chunkMask) == 0 && z < mapSize - 1) {
+		if ((z & chunkMask) == 15) {
 			setMeshDirtyAt(indexX, indexY, indexZ + 1);
 		}
 	}

@@ -23,7 +23,7 @@ public class CactusMaterial extends Material {
 
 	@Override
 	public boolean canBlockSunRay() {
-		return true;
+		return false;
 	}
 
 	@Override

@@ -7,6 +7,7 @@ import com.travall.game.blocks.materials.Material;
 import com.travall.game.blocks.models.CactusModel;
 import com.travall.game.renderer.block.BlockTextures;
 import com.travall.game.renderer.block.UltimateTexture;
+import com.travall.game.utils.AmbiantType;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.Facing;
 import com.travall.game.utils.UpdateState;
@@ -29,5 +30,10 @@ public class Cactus extends Block {
 	
 	private boolean accept(Block block) {
 		return block == BlocksList.SAND || block == BlocksList.CACTUS;
+	}
+	
+	@Override
+	public AmbiantType getAmbiantType() {
+		return AmbiantType.DARKEN;
 	}
 }
