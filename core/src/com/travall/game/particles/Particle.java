@@ -95,7 +95,7 @@ public abstract class Particle {
 		return out;
 	}
 	
-	public final void setPosition(Vector3 pos) {
+	public final void setPosition(Vector3 pos, float size) {
 		box.set(pos.x - size, pos.y - size, pos.z - size, pos.x + size, pos.y + size, pos.z + size);
 	}
 }

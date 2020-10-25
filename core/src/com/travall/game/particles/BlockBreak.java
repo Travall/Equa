@@ -21,7 +21,7 @@ public class BlockBreak extends Particle {
 		this.timer = (short)(120 + random(30));
 		this.size = 0.07f;
 		
-		this.setPosition(position.add(random(-0.4f, 0.4f), random(-0.4f, 0.4f), random(-0.4f, 0.4f)));
+		this.setPosition(position.add(random(-0.4f, 0.4f), random(-0.4f, 0.4f), random(-0.4f, 0.4f)), size);
 		return this;
 	}
 
