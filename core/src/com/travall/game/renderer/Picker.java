@@ -21,7 +21,7 @@ public final class Picker {
 		shape = new ShapeRenderer(100);
 		shape.setAutoShapeType(true);
 		shape.setColor(0f, 0f, 0f, 0.6f);
-		pickCam.far = 510;
+		pickCam.far = 1020;
 		pickCam.near = 0.101f;
 	}
 	

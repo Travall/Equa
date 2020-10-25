@@ -88,7 +88,7 @@ public class Main extends ApplicationAdapter {
 
 		camera = new PerspectiveCamera(90, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		camera.near = 0.1f;
-		camera.far = 1500f;
+		camera.far = 1000f;
 		camera.update();
 
 		cameraController = new FirstPersonCameraController(camera);
@@ -266,7 +266,7 @@ public class Main extends ApplicationAdapter {
 						}
 					} else if (button == Buttons.LEFT){
 						if (blockType.onDestroy(player,info)) {
-							for (int i = 0; i < 12; i++)
+							for (int i = 0; i < 35; i++)
 							ParicleSystem.newParticle(BlockBreak.class)
 							.ints(tmpVec3.set(info.in.x+0.5f, info.in.y+0.5f, info.in.z+0.5f), info.blockHit.getBlockModel().getDefaultTexture());
 						}

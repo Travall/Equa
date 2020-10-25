@@ -131,10 +131,10 @@ public class Player {
 		this.applyForce(add);
 
 
-		if(!world.isAirBlock(Math.round(this.position.x),(int) Math.floor(this.position.y)-1,Math.round(this.position.z))) {
-			tempBlockPos.set(Math.round(this.position.x),(int) Math.floor(this.position.y)-1,Math.round(this.position.z));
-		} else if(!world.isAirBlock((int) Math.floor(this.position.x),(int) Math.floor(this.position.y)-1,(int) Math.floor(this.position.z))) {
-			tempBlockPos.set((int) Math.floor(this.position.x),(int) Math.floor(this.position.y)-1,(int) Math.floor(this.position.z));
+		if(!world.isAirBlock(MathUtils.round(position.x),MathUtils.floor(position.y)-1,MathUtils.round(position.z))) {
+			tempBlockPos.set(MathUtils.round(position.x),MathUtils.floor(position.y)-1,MathUtils.round(position.z));
+		} else if(!world.isAirBlock(MathUtils.floor(position.x),MathUtils.floor(position.y)-1,MathUtils.floor(position.z))) {
+			tempBlockPos.set(MathUtils.floor(position.x),MathUtils.floor(position.y)-1,MathUtils.floor(this.position.z));
 		}
 
 		Block current = world.getBlock(tempBlockPos);
