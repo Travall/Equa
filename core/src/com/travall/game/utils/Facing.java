@@ -47,7 +47,7 @@ public enum Facing {
 	
 	public Facing rotate(int rotate) {
 		if (num == -2) return this;
-		switch (((num)+rotate)&3) {
+		switch ((num+rotate)&3) {
 		case 0:  return NORTH;
 		case 1:  return EAST;
 		case 2:  return SOUTH;

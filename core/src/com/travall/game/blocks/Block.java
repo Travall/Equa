@@ -67,25 +67,12 @@ public class Block {
 	
 	/** Can this block add from secondary block. */
 	public boolean canAddFace(BlockPos primaray, BlockPos secondary, Facing face) {
-		final Block block = world.getBlock(secondary);
-		if (block.isAir()) return true;
-		
-		final boolean first  =  this.isFaceSolid(primaray,  face);
-		final boolean second = block.isFaceSolid(secondary, face.invert());
-		
-		if (first && second)
-			return false;
-		if (first && !second)
-			return true; // primary is solid and secondary is trans.
-		if (!first && second)
-			return false;// primary is trans and secondary is solid.
-		
-		return this != block;
+		return model.canAddFace(primaray, secondary, face);
 	}
 	
 	/** Is this block has solid face. */
 	public boolean isFaceSolid(BlockPos pos, Facing face) {
-		return material.isSolid();
+		return material.isSolid() || model.isFaceSolid(pos, face);
 	}
 
 	/** Get bounding boxes of this block. */
@@ -129,7 +116,7 @@ public class Block {
 
 	/** Destroy the block.
 	 *  @return true if player has successfully destroy the block. */
-	public boolean onDestroy(Player player, RayInfo rayInfo) {
+	public final boolean onDestroy(Player player, RayInfo rayInfo) {
 		return rayInfo.blockHit.onDestroy(rayInfo.in);
 	}
 	

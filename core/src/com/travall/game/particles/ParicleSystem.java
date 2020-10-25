@@ -1,0 +1,52 @@
+package com.travall.game.particles;
+
+import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pools;
+import com.travall.game.world.World;
+
+public final class ParicleSystem {
+	
+	private static final Array<Particle> particles = new Array<Particle>(false, 64, Particle.class);
+	private static ParticleBatch batch;
+	
+	public static void ints(Camera cam) {
+		batch = new ParticleBatch(cam);
+	}
+
+	/** Render and update the particles. */
+	public static void render() {
+		if (particles.isEmpty()) return;
+		final World world = World.world;
+		final Particle[] array = particles.items;
+		
+		batch.begin();
+		for (int i = 0; i < particles.size; i++) {
+			final Particle particle = particles.get(i);
+			particle.update(world);
+			if (particle.isDead()) {
+				Pools.free(particles.removeIndex(i--));
+			} else {
+				batch.draw(particle);
+			}
+		}
+		batch.end();
+	}
+	
+	public static <T extends Particle> T newParticle(Class<T> clazz) {
+		final T particle = Pools.obtain(clazz);
+		particles.add(particle);
+		return particle;
+	}
+
+	public static void clear() {
+		Pools.freeAll(particles);
+		particles.size = 0;
+	}
+	
+	public static void dispose() {
+		clear();
+		particles.clear();
+		batch.dispose();
+	}
+}

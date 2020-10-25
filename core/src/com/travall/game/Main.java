@@ -1,7 +1,5 @@
 package com.travall.game;
 
-import static com.travall.game.world.World.world;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
@@ -26,6 +24,8 @@ import com.travall.game.entities.Player;
 import com.travall.game.handles.FirstPersonCameraController;
 import com.travall.game.handles.Raycast;
 import com.travall.game.handles.Raycast.RayInfo;
+import com.travall.game.particles.BlockBreak;
+import com.travall.game.particles.ParicleSystem;
 import com.travall.game.renderer.Picker;
 import com.travall.game.renderer.SSAO;
 import com.travall.game.renderer.Skybox;
@@ -117,6 +117,8 @@ public class Main extends ApplicationAdapter {
 		crosshair = new Texture("crosshair.png");
 
 		Picker.ints();
+		ParicleSystem.ints(camera);
+		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 	}
 
 	StringBuilder info = new StringBuilder();
@@ -124,26 +126,24 @@ public class Main extends ApplicationAdapter {
 	@Override
 	public void render() {
 		update();
-		camera.update(); // Update the camera projection
 		cameraController.update(player.isWalking,player.isFlying);
+		camera.update(); // Update the camera projection
 
 		ssao.begin();
+		
 		Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
 		skybox.render(camera);
-		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
+		
 
 		if (Gdx.input.isKeyJustPressed(Keys.F1)) bool = !bool;
 		UltimateTexture.texture = bool ? texture2 : texture1;
 		world.render(camera);
 		Picker.render(camera);
 		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
-
-
+		ParicleSystem.render();
 		ssao.end();
-		Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
-
 		ssao.render();
 
 //        spriteBatch.setShader(ssaoShaderProgram);
@@ -233,11 +233,13 @@ public class Main extends ApplicationAdapter {
 		VisUI.dispose();
 		VoxelTerrain.dispose();
 		Picker.dispose();
+		ParicleSystem.dispose();
 		texture1.dispose();
 		texture2.dispose();
 		//UltimateTexture.dispose();
 	}
 
+	private final Vector3 tmpVec3 = new Vector3();
 	// Fast, accurate, and simple ray-cast.
 	private void cameraRaycast() {
 		final RayInfo info = Raycast.shot(camera, world);
@@ -263,7 +265,11 @@ public class Main extends ApplicationAdapter {
 							blockType.onPlace(player, info);
 						}
 					} else if (button == Buttons.LEFT){
-						blockType.onDestroy(player,info);
+						if (blockType.onDestroy(player,info)) {
+							for (int i = 0; i < 12; i++)
+							ParicleSystem.newParticle(BlockBreak.class)
+							.ints(tmpVec3.set(info.in.x+0.5f, info.in.y+0.5f, info.in.z+0.5f), info.blockHit.getBlockModel().getDefaultTexture());
+						}
 					}
 				}
 				
