@@ -26,8 +26,8 @@ public final class World implements Disposable {
 	/** Easy world access. */
 	public static World world;
 
-	public static final int mapSize = 512;
-	public static final int mapHeight = 512;
+	public static final int mapSize = 256;
+	public static final int mapHeight = 256;
 
 	public static final int chunkShift = 4; // 1 << 4 = 16. I set it back from 32 to 16 due to vertices limitations.
 	public static final int chunkSize = 1 << chunkShift;
@@ -85,7 +85,7 @@ public final class World implements Disposable {
 		final RandomXS128 random = new RandomXS128(seed);
 		OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5, 0.25, random.nextLong());
 		OpenSimplexOctaves FloatingIslandNoise = new OpenSimplexOctaves(7, 0.35, random.nextLong());
-		int maxTerrainHeight = Math.round(mapHeight / 4);
+		int maxTerrainHeight = Math.round(mapHeight / 2);
 
 		for(int i = 0; i < biomes.length; i++) {
 			biomes[i].heightMap = new OpenSimplexOctaves(biomes[i].heightOctaves, biomes[i].heightPersistence, random.nextLong());

@@ -9,6 +9,8 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 import com.travall.game.blocks.Block;
 import com.travall.game.handles.FirstPersonCameraController;
+import com.travall.game.particles.BlockBreak;
+import com.travall.game.particles.ParicleSystem;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.math.CollisionBox;
 import com.travall.game.world.World;
@@ -24,6 +26,7 @@ public class Player {
 	public boolean onGround;
 	public boolean isFlying = false;
 	public boolean isWalking = false;
+	public boolean isSprinting = false;
 
 	public Player(Vector3 position) {
 		setPosition(position);
@@ -54,7 +57,7 @@ public class Player {
 	}
 
 	public void update(World world, Camera camera, FirstPersonCameraController cameraController) {
-		process(camera, cameraController);
+		process(camera, cameraController, world);
 		velocity.add(acceleration);
 		move(world, this.velocity.x, this.velocity.y, this.velocity.z);
 		acceleration.setZero();
@@ -72,7 +75,9 @@ public class Player {
 
 	final Vector3 add = new Vector3(), direction = new Vector3(), noam = new Vector3(), temp = new Vector3();
 
-	public void process(Camera camera, FirstPersonCameraController cameraController) {
+	BlockPos tempBlockPos = new BlockPos();
+
+	public void process(Camera camera, FirstPersonCameraController cameraController, World world) {
 		float y = this.isFlying ? 0 : -0.01f;
 		float speed = 0.015f;
 
@@ -83,6 +88,8 @@ public class Player {
 				y = 0.02f;
 			}
 		}
+
+		this.isSprinting = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? true : false;
 
 		if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && this.isFlying) {
 			y = -0.02f;
@@ -101,7 +108,7 @@ public class Player {
 
 		if (Gdx.input.isKeyPressed(Input.Keys.W))
 			add.add(temp
-					.scl(speed * (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? (this.isFlying ? 2f : 1.5f) : (this.isFlying ? 0.75f : 1f))));
+					.scl(speed * (this.isSprinting ? (this.isFlying ? 2f : 1.5f) : (this.isFlying ? 0.75f : 1f))));
 		if (Gdx.input.isKeyPressed(Input.Keys.S))
 			add.add(temp.scl(-speed  * (this.isFlying ? 0.75f : 1f)));
 
@@ -109,12 +116,12 @@ public class Player {
 
 		if (Gdx.input.isKeyPressed(Input.Keys.A))
 			add.add(temp
-					.scl(-speed * (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? (this.isFlying ? 0.5f : 1f) : (this.isFlying ? 0.75f : 1f))));
+					.scl(-speed * (this.isSprinting ? (this.isFlying ? 0.5f : 1f) : (this.isFlying ? 0.75f : 1f))));
 		if (Gdx.input.isKeyPressed(Input.Keys.D))
 			add.add(temp
-					.scl(speed * (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? (this.isFlying ? 0.5f : 1f) :(this.isFlying ? 0.75f : 1f))));
+					.scl(speed * (this.isSprinting ? (this.isFlying ? 0.5f : 1f) :(this.isFlying ? 0.75f : 1f))));
 
-		if (!add.equals(Vector3.Zero) && Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)
+		if (!add.equals(Vector3.Zero) && this.isSprinting
 				&& Gdx.input.isKeyPressed(Input.Keys.W))
 			cameraController.targetFOV = 90; // changed from 110 to 90
 		else
@@ -122,6 +129,20 @@ public class Player {
 
 		add.y = y;
 		this.applyForce(add);
+
+
+		if(!world.isAirBlock(Math.round(this.position.x),(int) Math.floor(this.position.y)-1,Math.round(this.position.z))) {
+			tempBlockPos.set(Math.round(this.position.x),(int) Math.floor(this.position.y)-1,Math.round(this.position.z));
+		} else if(!world.isAirBlock((int) Math.floor(this.position.x),(int) Math.floor(this.position.y)-1,(int) Math.floor(this.position.z))) {
+			tempBlockPos.set((int) Math.floor(this.position.x),(int) Math.floor(this.position.y)-1,(int) Math.floor(this.position.z));
+		}
+
+		Block current = world.getBlock(tempBlockPos);
+
+		if(!current.isAir() && this.onGround && this.isWalking && this.isSprinting) {
+				ParicleSystem.newParticle(BlockBreak.class)
+						.ints(temp.set(this.position).sub(0,0.25f,0), current.getBlockModel().getDefaultTexture());
+		}
 	}
 
 	private final CollisionBox bintersector = new CollisionBox();
