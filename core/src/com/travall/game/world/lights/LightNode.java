@@ -9,15 +9,15 @@ final class LightNode {
 		}
 	};
 	
-	public int x, y, z;
+	public short x, y, z;
 	
 	LightNode() {
 	}
 	
 	public LightNode set(int x, int y, int z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
+		this.x = (short)x;
+		this.y = (short)y;
+		this.z = (short)z;
 		return this;
 	}
 	

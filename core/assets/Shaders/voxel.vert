@@ -24,7 +24,7 @@ varying MEDIUMP vec2 v_texCoords;
 // data[sideLight&Ambiant, source-light, skylight, unused]
 void main()
 {
-	v_light = clamp(mix(a_data.y + a_data.z * sunLightIntensity, 1.0, brightness), 0.0, 1.0);
+	v_light = min(mix(a_data.y + a_data.z * sunLightIntensity, 1.0, brightness), 1.0);
 	v_shade = toggleAO == 1 ? a_data.x : 1.0;
 	v_texCoords = a_texCoord;
 	gl_Position = u_projTrans * a_position;

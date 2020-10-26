@@ -18,7 +18,7 @@ public final class BlockPos {
 	public static BlockPos newBlockPos() {
 		if (position >= MAX_BUFFER_SIZE) return new BlockPos();
 		BlockPos blockPos = TABLE[position];
-		blockPos = blockPos == null ? TABLE[position] = new BlockPos().setUnsafe() : blockPos;
+		blockPos = blockPos == null ? TABLE[position] = new BlockPos() : blockPos;
 		++position;
 		return blockPos;
 	}
@@ -29,7 +29,6 @@ public final class BlockPos {
 	}
 	
 	public int x, y, z;
-	private boolean isUnsafe;
 
 	public BlockPos() {
 	}
@@ -119,15 +118,6 @@ public final class BlockPos {
 		y = -y;
 		z = -z;
 		return this;
-	}
-	
-	private BlockPos setUnsafe() {
-		isUnsafe = true;
-		return this;
-	}
-	
-	public boolean isUnsafe() {
-		return isUnsafe;
 	}
 
 	@Override
