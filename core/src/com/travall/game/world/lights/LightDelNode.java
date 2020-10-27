@@ -9,13 +9,13 @@ final class LightDelNode {
 		}
 	};
 	
-	public int x, y, z;
+	public short x, y, z;
 	public byte val;
 	
 	public LightDelNode set(int x, int y, int z, byte val) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
+		this.x = (short)x;
+		this.y = (short)y;
+		this.z = (short)z;
 		this.val = val;
 		return this;
 	}

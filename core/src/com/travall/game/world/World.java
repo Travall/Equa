@@ -7,6 +7,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.travall.game.blocks.Block;
 import com.travall.game.blocks.BlocksList;
@@ -37,13 +38,13 @@ public final class World implements Disposable {
 	public static final int zChunks = mapSize / chunkSize;
 	public static final int downscale = 8; // 8 is a good value.
 
-	public static final int waterLevel = Math.round(mapHeight/9f); // 4.5f
+	public static final int waterLevel = Math.round(mapHeight/5f); // 4.5f
 
 	final public int[][][] data;
 	final public short[][] shadowMap;
 	final ChunkBuilder blockBuilder;
 	final GridPoint3 pos = new GridPoint3();
-	final BlockPos tmpBlockPos = new BlockPos();
+	private final BlockPos blockPos = new BlockPos();
 
 	final ChunkMesh[][][] opaqueChunkMeshes;
 	final ChunkMesh[][][] transparentChunkMeshes;
@@ -62,12 +63,19 @@ public final class World implements Disposable {
 		opaqueChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
 		transparentChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
 		
+		final int haft = chunkSize / 2;
 		for (int x = 0; x < xChunks; x++)
 		for (int y = 0; y < yChunks; y++)
 		for (int z = 0; z < zChunks; z++) {
-			CombinedChunk combinedChunk = (blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, null,null));
-			opaqueChunkMeshes[x][y][z] = combinedChunk.opaque;
-			transparentChunkMeshes[x][y][z] = combinedChunk.transparent;
+			CombinedChunk combinedChunk = blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, null,null);
+			
+			final float
+			xPos = (x << chunkShift) + haft,
+			yPos = (y << chunkShift) + haft,
+			zPos = (z << chunkShift) + haft;
+			
+			opaqueChunkMeshes[x][y][z] = combinedChunk.opaque.setPos(xPos, yPos, zPos);
+			transparentChunkMeshes[x][y][z] = combinedChunk.transparent.setPos(xPos, yPos, zPos);
 		}
 	}
 
@@ -183,7 +191,7 @@ public final class World implements Disposable {
 								if(random.nextInt(10) == 1) {
 									setBlock(x,j+1,z,BlocksList.TALLGRASS);
 								}
-							} else if(getBlock(new BlockPos(x,j+1,z)) == BlocksList.GRASS) {
+							} else if(getBlock(blockPos.set(x,j+1,z)) == BlocksList.GRASS) {
 								setBlock(x,j,z,BlocksList.DIRT);
 							} else {
 								setBlock(x,j,z,BlocksList.STONE);
@@ -207,9 +215,9 @@ public final class World implements Disposable {
 				// Foliage
 				for(int j = mapHeight; j > 0; j--) {
 					if(!isAirBlock(x,j,z)) {
-						if(getBlock(new BlockPos(x,j,z)) == BlocksList.GRASS || getBlock(new BlockPos(x,j,z)) == BlocksList.SNOW) {
+						if(getBlock(blockPos.set(x,j,z)) == BlocksList.GRASS || getBlock(blockPos.set(x,j,z)) == BlocksList.SNOW) {
 
-							if(random.nextInt(10) == 1 && getBlock(new BlockPos(x,j,z)) != BlocksList.SNOW) {
+							if(random.nextInt(10) == 1 && getBlock(blockPos.set(x,j,z)) != BlocksList.SNOW) {
 								setBlock(x,j+1,z,BlocksList.TALLGRASS);
 							}
 
@@ -241,8 +249,8 @@ public final class World implements Disposable {
 
 							Block log = BlocksList.LOG;
 
-							Block logType = primary.name == "Ground" ? BlocksList.LOG : BlocksList.DARKLOG;
-							Block leavesType = primary.name == "Ground" ? BlocksList.LEAVES : BlocksList.DARKLEAVES;
+							Block logType = primary.name.equals("Ground") ? BlocksList.LOG : BlocksList.DARKLOG;
+							Block leavesType = primary.name.equals("Ground") ? BlocksList.LEAVES : BlocksList.DARKLEAVES;
 
 							if (random.nextInt(100) == 1 && x > 0 && z > 0 && x <= mapSize && z <= mapSize) {
 								setBlock(x, j+1, z, logType);
@@ -265,7 +273,7 @@ public final class World implements Disposable {
 								setBlock(x, j+6, z, leavesType);
 
 							}
-						} else if (getBlock(new BlockPos(x,j,z)) == BlocksList.SAND && isAirBlock(x,j+1,z)) {
+						} else if (getBlock(blockPos.set(x,j,z)) == BlocksList.SAND && isAirBlock(x,j+1,z)) {
 							if(random.nextInt(100) == 1) {
 								setBlock(x,j+1,z,BlocksList.SHRUB);
 							}
@@ -335,51 +343,52 @@ public final class World implements Disposable {
 		return shadowMap[x][z];
 	}
 
-	private final BlockPos blockPos = new BlockPos();
+	private final Array<ChunkMesh> transMeshes = new Array<>(32);
+	
 	public void render(Camera camera) {
 		LightHandle.calculateLights(); // Calculate lights.
+		final Plane[] planes = camera.frustum.planes;
 
 		UltimateTexture.texture.bind();
 		VoxelTerrain.begin(camera);
 		Gdx.gl.glCullFace(GL20.GL_BACK);
 		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
 		Gdx.gl.glDisable(GL20.GL_BLEND);
+		
+		transMeshes.size = 0;
 		for(int x = 0; x < xChunks; x++)
-			for(int y = 0; y < yChunks; y++)
-				for(int z = 0; z < zChunks; z++) {
-					ChunkMesh mesh = opaqueChunkMeshes[x][y][z];
-					if (mesh == null) continue;
-					if (mesh.isDirty) {
-						blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, opaqueChunkMeshes[x][y][z],transparentChunkMeshes[x][y][z]);
-					}
+		for(int y = 0; y < yChunks; y++)
+		for(int z = 0; z < zChunks; z++) {
+			ChunkMesh mesh = opaqueChunkMeshes[x][y][z];
+			if (mesh.isDirty) {
+				blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, opaqueChunkMeshes[x][y][z],transparentChunkMeshes[x][y][z]);
+			}
 
-					if(camera.frustum.boundsInFrustum(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize,chunkSize,chunkSize)) {
-						mesh.render();
-					}
-				}
+			int isVisable = -1;
+			if(!mesh.isEmpty && (isVisable = mesh.isVisable(planes)?1:0) == 1) {
+				mesh.render();
+			}
+			
+			mesh = transparentChunkMeshes[x][y][z];
+			if (!mesh.isEmpty && (isVisable == 1 || (isVisable == -1 && mesh.isVisable(planes)))) {
+				transMeshes.add(mesh);
+			}
+		}
 		Gdx.gl30.glBindVertexArray(0);
-		Gdx.gl.glEnable(GL20.GL_BLEND);
+		
+		if (transMeshes.notEmpty()) {
+			if (getBlock(blockPos.set(floor(camera.position.x), floor(camera.position.y), floor(camera.position.z))).getMaterial().isTransparent())
+				Gdx.gl.glDisable(GL20.GL_CULL_FACE);
 
-		if (getBlock(blockPos.set(floor(camera.position.x), floor(camera.position.y), floor(camera.position.z))).getMaterial().isTransparent())
-			Gdx.gl.glDisable(GL20.GL_CULL_FACE);
-
-		for(int x = 0; x < xChunks; x++)
-			for(int y = 0; y < yChunks; y++)
-				for(int z = 0; z < zChunks; z++) {
-					ChunkMesh mesh = transparentChunkMeshes[x][y][z];
-					if (mesh == null) continue;
-					if (mesh.isDirty) {
-						blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, opaqueChunkMeshes[x][y][z],transparentChunkMeshes[x][y][z]);
-					}
-
-					if(camera.frustum.boundsInFrustum(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize,chunkSize,chunkSize)) {
-						mesh.render();
-					}
-				}
-		Gdx.gl30.glBindVertexArray(0);
-		Gdx.gl.glDisable(GL20.GL_BLEND);
+			Gdx.gl.glEnable(GL20.GL_BLEND);
+			for (ChunkMesh mesh : transMeshes) {
+				mesh.render();
+			}
+			Gdx.gl30.glBindVertexArray(0);
+			Gdx.gl.glDisable(GL20.GL_BLEND);
+		}
+		
 		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
-
 		VoxelTerrain.end();
 	}
 
