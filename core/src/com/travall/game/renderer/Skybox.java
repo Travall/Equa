@@ -31,11 +31,11 @@ public class Skybox implements Disposable
 		Gdx.gl.glUseProgram(0);
 		MeshBuilder build = new MeshBuilder();
 		build.begin(Usage.Position, GL20.GL_TRIANGLES);
-		SphereShapeBuilder.build(build, 1f, 1f, 1f, 24, 16);
+		SphereShapeBuilder.build(build, 4f, 4f, 4f, 24, 16);
 		box = build.end();
 		
 		skyCam.near = 0.1f;
-		skyCam.far = 2f;
+		skyCam.far = 5f;
 	}
 	
 	public void render(PerspectiveCamera camera) {
