@@ -59,6 +59,7 @@ public class Main extends ApplicationAdapter {
 		UltimateTexture.texture = new Texture("Tiles/ultimate6.png");
 		texture2 = UltimateTexture.texture;
 		texture1 = new Texture("Tiles/ultimate5.png");
+		
 		BlocksList.ints();
 		blockType = BlocksList.STONE;
 
@@ -97,9 +98,8 @@ public class Main extends ApplicationAdapter {
 		update();
 		cameraController.update(player.isWalking,player.isFlying);
 		camera.update(); // Update the camera projection
-
-		Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+		
+		Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
 
 		skybox.render(camera);
 		
