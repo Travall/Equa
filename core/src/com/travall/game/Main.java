@@ -5,17 +5,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
-import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
-import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.kotcrab.vis.ui.VisUI;
@@ -27,7 +21,6 @@ import com.travall.game.handles.Raycast.RayInfo;
 import com.travall.game.particles.BlockBreak;
 import com.travall.game.particles.ParicleSystem;
 import com.travall.game.renderer.Picker;
-import com.travall.game.renderer.SSAO;
 import com.travall.game.renderer.Skybox;
 import com.travall.game.renderer.block.UltimateTexture;
 import com.travall.game.renderer.vertices.VoxelTerrain;
@@ -38,20 +31,14 @@ public class Main extends ApplicationAdapter {
 	
 	PerspectiveCamera camera;
 	FirstPersonCameraController cameraController;
-	ModelBatch modelBatch;
-	AssetManager assetManager;
 
 	Skybox skybox;
-	ModelBatch shadowBatch;
 	World world;
 
 	Block blockType;
 
 	Player player;
 
-	Vector3 temp = new Vector3();
-
-	SSAO ssao;
 	SpriteBatch spriteBatch;
 	Texture crosshair;
 	
@@ -64,7 +51,7 @@ public class Main extends ApplicationAdapter {
 	BitmapFont font;
 	boolean debug = false;
 
-	String VERSION = "Alpha 2.0.0";
+	final String VERSION = "Alpha 2.0.0";
 
 	@Override
 	public void create() {
@@ -72,21 +59,13 @@ public class Main extends ApplicationAdapter {
 		UltimateTexture.texture = new Texture("Tiles/ultimate6.png");
 		texture2 = UltimateTexture.texture;
 		texture1 = new Texture("Tiles/ultimate5.png");
+		
 		BlocksList.ints();
 		blockType = BlocksList.STONE;
 
-		assetManager = new AssetManager();
-
-		DefaultShader.Config defaultConfig = new DefaultShader.Config();
-		defaultConfig.numDirectionalLights = 2;
-		defaultConfig.fragmentShader = Gdx.files.internal("Shaders/frag.glsl").readString();
-		defaultConfig.vertexShader = Gdx.files.internal("Shaders/vert.glsl").readString();
-
-		modelBatch = new ModelBatch(new DefaultShaderProvider(defaultConfig));
-
 		skybox = new Skybox();
 
-		camera = new PerspectiveCamera(90, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		camera = new PerspectiveCamera(80, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		camera.near = 0.1f;
 		camera.far = 1000f;
 		camera.update();
@@ -94,23 +73,14 @@ public class Main extends ApplicationAdapter {
 		cameraController = new FirstPersonCameraController(camera);
 		Gdx.input.setInputProcessor(cameraController);
 
-		shadowBatch = new ModelBatch(new DepthShaderProvider());
-
 		world = new World();
 		Vector3 starting = new Vector3(World.mapSize / 2, World.mapHeight, World.mapSize / 2);
 		player = new Player(starting);
 
-		ssao = new SSAO(camera);
-		ssao.setEnable(false); // Enable or disable the SSAO.
-
 		spriteBatch = new SpriteBatch();
 
-
-		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("Fonts/main.ttf"));
-		FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-		parameter.size = 16;
-		font = generator.generateFont(parameter); // font size 12 pixels
-		generator.dispose(); // don't forget to dispose to avoid memory leaks!
+		font = new BitmapFont(Gdx.files.internal("Fonts/Mozart.fnt"));
+		font.getData().setScale(2);
 
 		Gdx.input.setCursorCatched(true);
 
@@ -121,18 +91,15 @@ public class Main extends ApplicationAdapter {
 		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 	}
 
-	StringBuilder info = new StringBuilder();
+	final StringBuilder info = new StringBuilder();
 
 	@Override
 	public void render() {
 		update();
 		cameraController.update(player.isWalking,player.isFlying);
 		camera.update(); // Update the camera projection
-
-		ssao.begin();
 		
-		Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+		Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
 
 		skybox.render(camera);
 		
@@ -143,10 +110,7 @@ public class Main extends ApplicationAdapter {
 		Picker.render(camera);
 		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
 		ParicleSystem.render();
-		ssao.end();
-		ssao.render();
-
-//        spriteBatch.setShader(ssaoShaderProgram);
+		
 		spriteBatch.begin();
 		spriteBatch.draw(crosshair, (Gdx.graphics.getWidth() / 2) - 8, (Gdx.graphics.getHeight() / 2) - 8);
 
@@ -214,7 +178,7 @@ public class Main extends ApplicationAdapter {
 	@Override
 	public void resize(int width, int height) {
 		spriteBatch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
-		ssao.resize(width, height);
+		//ssao.resize(width, height);
 		camera.viewportWidth = width;
 		camera.viewportHeight = height;
 		camera.update();
@@ -222,21 +186,17 @@ public class Main extends ApplicationAdapter {
 
 	@Override
 	public void dispose() {
-		ssao.dispose();
 		spriteBatch.dispose();
 		crosshair.dispose();
 		world.dispose();
 		skybox.dispose();
 
-		modelBatch.dispose();
-		assetManager.dispose();
 		VisUI.dispose();
 		VoxelTerrain.dispose();
 		Picker.dispose();
 		ParicleSystem.dispose();
 		texture1.dispose();
 		texture2.dispose();
-		//UltimateTexture.dispose();
 	}
 
 	private final Vector3 tmpVec3 = new Vector3();

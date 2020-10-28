@@ -19,18 +19,34 @@ public class VertInfo {
 		return Float.intBitsToFloat((((int) (255*sunLit)<<16) | ((int) (255*srcLit)<<8) | ((int) (255*ambLit))));
 	}
 
-	private static final float[] AMB = {0.5f, 0.65f, 0.75f, 1f};;
+	private static final float[] AMB = {0.5f, 0.65f, 0.75f, 1f};
 
 	private void vertAO(Block center, Block side1, Block side2, Block corner) {
 		final boolean bool = side1.getAmbiantType() == FULLBRIGHT || side2.getAmbiantType() == FULLBRIGHT || center.getAmbiantType() == FULLBRIGHT;
-		if (side1.getAmbiantType() == DARKEN && side2.getAmbiantType() == DARKEN) {
-			twoSides = true;
-			if (bool) return;
+		twoSides = side1.getAmbiantType() == DARKEN && side2.getAmbiantType() == DARKEN;
+		
+		if (bool) {
+			ambLit *= AMB[3];
+			return;
+		}
+		
+		if (twoSides) {
 			ambLit *= AMB[0];
 			return;
 		}
-		if (bool || corner.getAmbiantType() == FULLBRIGHT) return;
-		ambLit *= AMB[side1.getAmbiantType().value + side2.getAmbiantType().value + corner.getAmbiantType().value];
+		
+		if (bool || corner.getAmbiantType() == FULLBRIGHT) {
+			ambLit *= AMB[3];
+			return;
+		}
+		
+		if (center.getAmbiantType() == DARKEN && corner.getAmbiantType() == DARKEN) {
+			ambLit *= AMB[0];
+			return;
+		}
+		
+		ambLit *= 
+		AMB[side1.getAmbiantType().value + side2.getAmbiantType().value + corner.getAmbiantType().value + center.getAmbiantType().value - 1];
 	}
 
 	public void calcLight(Block block, int center, int side1, int side2, int corner) {
