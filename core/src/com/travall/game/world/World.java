@@ -3,6 +3,8 @@ package com.travall.game.world;
 import static com.badlogic.gdx.math.MathUtils.floor;
 import static com.travall.game.utils.BlockUtils.*;
 
+import java.util.Arrays;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
@@ -27,8 +29,8 @@ public final class World implements Disposable {
 	/** Easy world access. */
 	public static World world;
 
-	public static final int mapSize = 256;
-	public static final int mapHeight = 256;
+	public static final int mapSize = 128;
+	public static final int mapHeight = 128;
 
 	public static final int chunkShift = 4; // 1 << 4 = 16. I set it back from 32 to 16 due to vertices limitations.
 	public static final int chunkSize = 1 << chunkShift;
@@ -39,6 +41,8 @@ public final class World implements Disposable {
 	public static final int downscale = 8; // 8 is a good value.
 
 	public static final int waterLevel = Math.round(mapHeight/5f); // 4.5f
+	
+	private static final int[][][] dataPool = new int[mapSize][mapHeight][mapSize];
 
 	final public int[][][] data;
 	final public short[][] shadowMap;
@@ -54,8 +58,14 @@ public final class World implements Disposable {
 
 	public World() {
 		World.world = this;
-
-		this.data = new int[mapSize][mapHeight][mapSize];
+		
+		for (int x = 0; x < mapSize; x++)
+		for (int y = 0; y < mapHeight; y++)
+		for (int z = 0; z < mapSize; z++) {
+			dataPool[x][y][z] = 0;
+		}
+		
+		this.data = dataPool;
 		this.shadowMap = new short[mapSize][mapSize];
 		this.blockBuilder = new ChunkBuilder(this);
 		generate(MathUtils.random.nextLong());
@@ -161,42 +171,6 @@ public final class World implements Disposable {
 						setBlock(x, j, z, BlocksList.WATER);
 					} else {
 						break;
-					}
-				}
-
-				int centerX = mapSize / 4;
-				int centerY = mapHeight - mapHeight / 4;
-				int centerZ = mapSize / 4;
-
-				if(x >= mapSize / 2) {
-					centerX = mapSize - centerX;
-				}
-
-				if(z >= mapSize / 2) {
-					centerZ = mapSize - centerZ;
-				}
-
-				if(Math.abs(tempVec2.set(x,z).dst(mapSize / 2,mapSize / 2)) < mapSize / 6) {
-					centerX = mapSize / 2;
-					centerZ = mapSize / 2;
-				}
-
-				for(int j = mapHeight; j > mapHeight / 2; j--) {
-					float diff = Math.abs(tempVec.set(x,j,z).dst(centerX,centerY,centerZ)) / 50;
-
-					if(FloatingIslandNoise.getNoise(x,j,z) / diff > 0.18) {
-						if(isAirBlock(x,j,z)) {
-							if(isAirBlock(x,j+1,z)) {
-								setBlock(x,j,z,BlocksList.GRASS);
-								if(random.nextInt(10) == 1) {
-									setBlock(x,j+1,z,BlocksList.TALLGRASS);
-								}
-							} else if(getBlock(blockPos.set(x,j+1,z)) == BlocksList.GRASS) {
-								setBlock(x,j,z,BlocksList.DIRT);
-							} else {
-								setBlock(x,j,z,BlocksList.STONE);
-							}
-						}
 					}
 				}
 
@@ -351,7 +325,6 @@ public final class World implements Disposable {
 
 		UltimateTexture.texture.bind();
 		VoxelTerrain.begin(camera);
-		Gdx.gl.glCullFace(GL20.GL_BACK);
 		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
 		Gdx.gl.glDisable(GL20.GL_BLEND);
 		
@@ -388,7 +361,7 @@ public final class World implements Disposable {
 			Gdx.gl.glDisable(GL20.GL_BLEND);
 		}
 		
-		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
+		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
 		VoxelTerrain.end();
 	}
 

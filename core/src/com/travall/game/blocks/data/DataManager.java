@@ -29,7 +29,7 @@ public final class DataManager {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <T extends DataComponent> T getComponent(Class<T> clazz, String key) {
+	public <T extends DataComponent> T getComponent(String key) {
 		return (T)components.get(key);
 	}
 }

@@ -49,7 +49,7 @@ public class ChunkMesh implements Disposable
 		if (isEmpty) return;
 		vbo.bind();
 		Gdx.gl.glDrawElements(GL30.GL_TRIANGLES, count, GL30.GL_UNSIGNED_SHORT, 0);
-		vbo.unbind();
+		vbo.unbind(false);
 	}
 	
 	public void setVertices(FloatArray verts) {
