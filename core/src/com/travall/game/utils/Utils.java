@@ -9,8 +9,6 @@ public class Utils {
 	
 	/** A cached screen size. */
 	public static final Size screen = new Size();
-	/** A cached world screen size. */
-	public static final Size world  = new Size();
 
 	public static double normalize(double Input, int max) {
 		return ((Input - -1) / (1 - -1) * (max - 0) + 0);

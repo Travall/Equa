@@ -28,6 +28,7 @@ import com.travall.game.particles.BlockBreak;
 import com.travall.game.particles.ParicleSystem;
 import com.travall.game.renderer.Picker;
 import com.travall.game.renderer.Skybox;
+import com.travall.game.renderer.block.UltimateTexture;
 import com.travall.game.renderer.vertices.VoxelTerrain;
 import com.travall.game.ui.utils.PosOffset;
 import com.travall.game.utils.BlockPos;
@@ -67,17 +68,12 @@ public class TheGame extends ScreenAdapter {
 		camera = new PerspectiveCamera(80, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		camera.near = 0.1f;
 		camera.far = 1000f;
-		camera.update();
 
 		cameraController = new FirstPersonCameraController(camera);
 
 		world = new World();
 		Vector3 starting = new Vector3(World.mapSize / 2, World.mapHeight, World.mapSize / 2);
 		player = new Player(starting);
-
-		Gdx.input.setCursorCatched(true);
-
-		
 
 		ParicleSystem.ints(camera);
 		
@@ -95,6 +91,7 @@ public class TheGame extends ScreenAdapter {
 	public void show() {
 		main.stage.addActor(waterMark);
 		main.stage.addActor(crosshair);
+		Gdx.input.setCursorCatched(true);
 	}
 
 	@Override
@@ -102,18 +99,15 @@ public class TheGame extends ScreenAdapter {
 		update();
 		cameraController.update(player.isWalking,player.isFlying);
 		camera.update(); // Update the camera projection
-		
-		Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
 
 		skybox.render(camera);
-		
-
 		//if (Gdx.input.isKeyJustPressed(Keys.F1)) bool = !bool;
 		//UltimateTexture.texture = bool ? texture2 : texture1;
 		
+		if (Inputs.isKeyJustPressed(Keys.F1)) bool = !bool;
+		UltimateTexture.texture = bool ? main.texture2 : main.texture1;
 		world.render(camera);
 		Picker.render(camera);
-		
 		ParicleSystem.render();
 		
 		if (debug) {

@@ -3,8 +3,6 @@ package com.travall.game.world;
 import static com.badlogic.gdx.math.MathUtils.floor;
 import static com.travall.game.utils.BlockUtils.*;
 
-import java.util.Arrays;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
@@ -29,8 +27,8 @@ public final class World implements Disposable {
 	/** Easy world access. */
 	public static World world;
 
-	public static final int mapSize = 128;
-	public static final int mapHeight = 128;
+	public static final int mapSize = 256;
+	public static final int mapHeight = 256;
 
 	public static final int chunkShift = 4; // 1 << 4 = 16. I set it back from 32 to 16 due to vertices limitations.
 	public static final int chunkSize = 1 << chunkShift;
@@ -171,6 +169,42 @@ public final class World implements Disposable {
 						setBlock(x, j, z, BlocksList.WATER);
 					} else {
 						break;
+					}
+				}
+				
+				int centerX = mapSize / 4;
+				int centerY = mapHeight - mapHeight / 4;
+				int centerZ = mapSize / 4;
+
+				if(x >= mapSize / 2) {
+					centerX = mapSize - centerX;
+				}
+
+				if(z >= mapSize / 2) {
+					centerZ = mapSize - centerZ;
+				}
+
+				if(Math.abs(tempVec2.set(x,z).dst(mapSize / 2,mapSize / 2)) < mapSize / 6) {
+					centerX = mapSize / 2;
+					centerZ = mapSize / 2;
+				}
+
+				for(int j = mapHeight; j > mapHeight / 2; j--) {
+					float diff = Math.abs(tempVec.set(x,j,z).dst(centerX,centerY,centerZ)) / 50;
+
+					if(FloatingIslandNoise.getNoise(x,j,z) / diff > 0.18) {
+						if(isAirBlock(x,j,z)) {
+							if(isAirBlock(x,j+1,z)) {
+								setBlock(x,j,z,BlocksList.GRASS);
+								if(random.nextInt(10) == 1) {
+									setBlock(x,j+1,z,BlocksList.TALLGRASS);
+								}
+							} else if(getBlock(blockPos.set(x,j+1,z)) == BlocksList.GRASS) {
+								setBlock(x,j,z,BlocksList.DIRT);
+							} else {
+								setBlock(x,j,z,BlocksList.STONE);
+							}
+						}
 					}
 				}
 

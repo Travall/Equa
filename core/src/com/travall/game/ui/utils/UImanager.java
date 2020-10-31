@@ -43,4 +43,11 @@ public final class UImanager
 	public <T extends UI> T getCurrentUI() {
 		return (T) currentUI;
 	}
+	
+	/** Clears the current UI (set to invisible) */
+	public void resetGui() {
+		if (currentUI == null) return;
+		currentUI.setVisible(false);
+		currentUI = null;
+	}
 }
