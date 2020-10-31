@@ -54,8 +54,9 @@ public final class ParicleSystem {
 	}
 	
 	public static void dispose() {
-		clear();
+		Pools.freeAll(particles);
 		particles.clear();
 		batch.dispose();
+		batch = null;
 	}
 }

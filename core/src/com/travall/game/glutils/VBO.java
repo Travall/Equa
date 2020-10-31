@@ -49,9 +49,8 @@ public final class VBO implements Disposable {
 		isBound = true;
 	}
 
-	public void unbind() {
-		// gl30.glBindVertexArray(0); // Try to uncomment this line if there a graphic
-		// issues, or add the Gdx.gl30.glBindVertexArray(0) at the end of the rendering.
+	public void unbind(boolean unbindVAO) {
+		if (unbindVAO) gl30.glBindVertexArray(0);
 		isBound = false;
 	}
 

@@ -12,6 +12,6 @@ public class DesktopLauncher {
 		config.useOpenGL3(true, 3, 2);
 		config.setWindowedMode(800, 600);
 		config.setTitle("Equa");
-		new Lwjgl3Application(new Main(), config);
+		new Lwjgl3Application(Main.main, config);
 	}
 }

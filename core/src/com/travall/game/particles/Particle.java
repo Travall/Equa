@@ -37,9 +37,9 @@ public abstract class Particle {
 		final int xMin = MathUtils.floor(bintersector.xMin);
 		final int yMin = MathUtils.floor(bintersector.yMin);
 		final int zMin = MathUtils.floor(bintersector.zMin);
-		final int xMax = MathUtils.floor(bintersector.xMax)+1;
-		final int yMax = MathUtils.floor(bintersector.yMax)+1;
-		final int zMax = MathUtils.floor(bintersector.zMax)+1;
+		final int xMax = MathUtils.ceil(bintersector.xMax);
+		final int yMax = MathUtils.ceil(bintersector.yMax);
+		final int zMax = MathUtils.ceil(bintersector.zMax);
 		
 		for (int x = xMin; x < xMax; x++)
 		for (int y = yMin; y < yMax; y++)

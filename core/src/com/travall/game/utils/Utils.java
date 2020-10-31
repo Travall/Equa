@@ -3,8 +3,12 @@ package com.travall.game.utils;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.travall.game.utils.math.Size;
 
 public class Utils {
+	
+	/** A cached screen size. */
+	public static final Size screen = new Size();
 
 	public static double normalize(double Input, int max) {
 		return ((Input - -1) / (1 - -1) * (max - 0) + 0);

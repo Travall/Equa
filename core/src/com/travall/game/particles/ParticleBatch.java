@@ -53,7 +53,7 @@ class ParticleBatch implements Disposable {
 	
 	public void end() {
 		flush();
-		vbo.unbind();
+		vbo.unbind(true);
 		VoxelTerrain.end();
 	}
 	

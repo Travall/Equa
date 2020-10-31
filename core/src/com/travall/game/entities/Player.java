@@ -1,7 +1,6 @@
 package com.travall.game.entities;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
@@ -9,6 +8,7 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 import com.travall.game.blocks.Block;
 import com.travall.game.handles.FirstPersonCameraController;
+import com.travall.game.handles.Inputs;
 import com.travall.game.particles.BlockBreak;
 import com.travall.game.particles.ParicleSystem;
 import com.travall.game.utils.BlockPos;
@@ -81,7 +81,7 @@ public class Player {
 		float y = this.isFlying ? 0 : -0.01f;
 		float speed = 0.015f;
 
-		if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+		if (Inputs.isKeyPressed(Keys.SPACE)) {
 			if (this.onGround) {
 				y = 0.15f;
 			} else if (this.isFlying) {
@@ -89,9 +89,9 @@ public class Player {
 			}
 		}
 
-		this.isSprinting = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) ? true : false;
+		this.isSprinting = Inputs.isKeyPressed(Keys.CONTROL_LEFT) ? true : false;
 
-		if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && this.isFlying) {
+		if (Inputs.isKeyPressed(Keys.SHIFT_LEFT) && this.isFlying) {
 			y = -0.02f;
 		}
 
@@ -106,23 +106,23 @@ public class Player {
 
 		temp.set(direction);
 
-		if (Gdx.input.isKeyPressed(Input.Keys.W))
+		if (Inputs.isKeyPressed(Keys.W))
 			add.add(temp
 					.scl(speed * (this.isSprinting ? (this.isFlying ? 2f : 1.5f) : (this.isFlying ? 0.75f : 1f))));
-		if (Gdx.input.isKeyPressed(Input.Keys.S))
+		if (Inputs.isKeyPressed(Keys.S))
 			add.add(temp.scl(-speed  * (this.isFlying ? 0.75f : 1f)));
 
 		temp.set(direction.rotate(Vector3.Y, -90));
 
-		if (Gdx.input.isKeyPressed(Input.Keys.A))
+		if (Inputs.isKeyPressed(Keys.A))
 			add.add(temp
 					.scl(-speed * (this.isSprinting ? (this.isFlying ? 0.5f : 1f) : (this.isFlying ? 0.75f : 1f))));
-		if (Gdx.input.isKeyPressed(Input.Keys.D))
+		if (Inputs.isKeyPressed(Keys.D))
 			add.add(temp
 					.scl(speed * (this.isSprinting ? (this.isFlying ? 0.5f : 1f) :(this.isFlying ? 0.75f : 1f))));
 
 		if (!add.equals(Vector3.Zero) && this.isSprinting
-				&& Gdx.input.isKeyPressed(Input.Keys.W))
+				&& Inputs.isKeyPressed(Keys.W))
 			cameraController.targetFOV = 90; // changed from 110 to 90
 		else
 			cameraController.targetFOV = 80; // changed from 90 to 80
@@ -156,10 +156,9 @@ public class Player {
 		final int xMin = MathUtils.floor(bintersector.xMin);
 		final int yMin = MathUtils.floor(bintersector.yMin);
 		final int zMin = MathUtils.floor(bintersector.zMin);
-
-		final int xMax = MathUtils.floor(bintersector.xMax)+1;
-		final int yMax = MathUtils.floor(bintersector.yMax)+1;
-		final int zMax = MathUtils.floor(bintersector.zMax)+1;
+		final int xMax = MathUtils.ceil(bintersector.xMax);
+		final int yMax = MathUtils.ceil(bintersector.yMax);
+		final int zMax = MathUtils.ceil(bintersector.zMax);
 		
 		for (int x = xMin; x < xMax; x++)
 		for (int y = yMin; y < yMax; y++)
