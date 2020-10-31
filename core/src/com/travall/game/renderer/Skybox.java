@@ -17,7 +17,7 @@ import com.badlogic.gdx.utils.Disposable;
 public class Skybox implements Disposable
 {
 	public static final Color sky = new Color(77/255f,145/255f,255/255f,1f);
-	public static final Color fog = new Color(220/255f,220/255f,220/255f,1f);
+	public static final Color fog = new Color(220/255f,220/255f,220/255f,1f).lerp(sky, 0.5f);
 		
 	private ShaderProgram shader;
 	private final Mesh box;
@@ -31,11 +31,11 @@ public class Skybox implements Disposable
 		Gdx.gl.glUseProgram(0);
 		MeshBuilder build = new MeshBuilder();
 		build.begin(Usage.Position, GL20.GL_TRIANGLES);
-		SphereShapeBuilder.build(build, 1f, 1f, 1f, 24, 16);
+		SphereShapeBuilder.build(build, 2f, 2f, 2f, 24, 16);
 		box = build.end();
 		
 		skyCam.near = 0.1f;
-		skyCam.far = 2f;
+		skyCam.far = 3f;
 	}
 	
 	public void render(PerspectiveCamera camera) {

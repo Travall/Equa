@@ -39,6 +39,8 @@ public final class World implements Disposable {
 	public static final int downscale = 8; // 8 is a good value.
 
 	public static final int waterLevel = Math.round(mapHeight/5f); // 4.5f
+	
+	private static final int[][][] dataPool = new int[mapSize][mapHeight][mapSize];
 
 	final public int[][][] data;
 	final public short[][] shadowMap;
@@ -54,8 +56,14 @@ public final class World implements Disposable {
 
 	public World() {
 		World.world = this;
-
-		this.data = new int[mapSize][mapHeight][mapSize];
+		
+		for (int x = 0; x < mapSize; x++)
+		for (int y = 0; y < mapHeight; y++)
+		for (int z = 0; z < mapSize; z++) {
+			dataPool[x][y][z] = 0;
+		}
+		
+		this.data = dataPool;
 		this.shadowMap = new short[mapSize][mapSize];
 		this.blockBuilder = new ChunkBuilder(this);
 		generate(MathUtils.random.nextLong());
@@ -163,7 +171,7 @@ public final class World implements Disposable {
 						break;
 					}
 				}
-
+				
 				int centerX = mapSize / 4;
 				int centerY = mapHeight - mapHeight / 4;
 				int centerZ = mapSize / 4;
@@ -352,7 +360,6 @@ public final class World implements Disposable {
 
 		UltimateTexture.texture.bind();
 		VoxelTerrain.begin(camera);
-		Gdx.gl.glCullFace(GL20.GL_BACK);
 		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
 		Gdx.gl.glDisable(GL20.GL_BLEND);
 		
@@ -389,7 +396,7 @@ public final class World implements Disposable {
 			Gdx.gl.glDisable(GL20.GL_BLEND);
 		}
 		
-		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
+		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
 		VoxelTerrain.end();
 	}
 
