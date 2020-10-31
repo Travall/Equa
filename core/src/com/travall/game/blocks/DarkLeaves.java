@@ -12,7 +12,7 @@ public class DarkLeaves extends Block {
 
 	public DarkLeaves(int blockID) {
 		super(blockID);
-		this.model = new CubeModel(this, new BlockTextures(UltimateTexture.createRegion(15, 0)));
+		this.model = new CubeModel(this, new BlockTextures(UltimateTexture.createRegion(14, 0)));
 		this.material = Material.LEAVES;
 	}
 	

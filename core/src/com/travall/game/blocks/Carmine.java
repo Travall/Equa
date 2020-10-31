@@ -5,11 +5,11 @@ import com.travall.game.blocks.models.CubeModel;
 import com.travall.game.renderer.block.BlockTextures;
 import com.travall.game.renderer.block.UltimateTexture;
 
-public class Snow extends Block {
+public class Carmine extends Block {
 
-	public Snow(int blockID) {
+	public Carmine(int blockID) {
 		super(blockID);
-		this.model = new CubeModel(this, new BlockTextures(UltimateTexture.createRegion(6, 0), UltimateTexture.createRegion(5, 0), UltimateTexture.createRegion(2, 0)));
+		this.model = new CubeModel(this, new BlockTextures(UltimateTexture.createRegion(4, 1), UltimateTexture.createRegion(3, 1), UltimateTexture.createRegion(2, 0)));
 		this.material = Material.BLOCK;
 	}
 }

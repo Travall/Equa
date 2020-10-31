@@ -48,7 +48,7 @@ public final class World implements Disposable {
 
 	final ChunkMesh[][][] opaqueChunkMeshes;
 	final ChunkMesh[][][] transparentChunkMeshes;
-	Biome[] biomes = {new Desert(), new Ground(), new Snow()};
+	Biome[] biomes = {new Desert(), new Ground(), new Carmine()};
 	Vector3 tempVec = new Vector3();
 	Vector2 tempVec2 = new Vector2();
 
@@ -215,10 +215,11 @@ public final class World implements Disposable {
 				// Foliage
 				for(int j = mapHeight; j > 0; j--) {
 					if(!isAirBlock(x,j,z)) {
-						if(getBlock(blockPos.set(x,j,z)) == BlocksList.GRASS || getBlock(blockPos.set(x,j,z)) == BlocksList.SNOW) {
+						if(getBlock(blockPos.set(x,j,z)) == BlocksList.GRASS || getBlock(blockPos.set(x,j,z)) == BlocksList.CARMINE) {
 
-							if(random.nextInt(10) == 1 && getBlock(blockPos.set(x,j,z)) != BlocksList.SNOW) {
-								setBlock(x,j+1,z,BlocksList.TALLGRASS);
+							if(random.nextInt(10) == 1) {
+								if(getBlock(blockPos.set(x,j,z)) == BlocksList.GRASS) setBlock(x,j+1,z,BlocksList.TALLGRASS);
+								if(getBlock(blockPos.set(x,j,z)) == BlocksList.CARMINE) setBlock(x,j+1,z,BlocksList.DARKSHRUB);
 							}
 
 							boolean open = isAirBlock(x,j + 1,z) && isAirBlock(x,j + 2,z) && isAirBlock(x,j + 3,z);
