@@ -23,9 +23,7 @@ public final class UImanager
 	}
 	
 	public void bind(Stage stage) {
-		for (UI ui : list) {
-			ui.bind(stage);
-		}
+		for (UI ui : list) ui.bind(stage);
 	}
 	
 	@SuppressWarnings("unchecked")
