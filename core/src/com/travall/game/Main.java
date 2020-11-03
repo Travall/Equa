@@ -16,7 +16,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.kotcrab.vis.ui.VisUI;
 import com.travall.game.blocks.BlocksList;
 import com.travall.game.handles.Assets;
 import com.travall.game.handles.Inputs;
@@ -88,7 +87,6 @@ public class Main extends Base {
 	public void dispose() {
 		VoxelTerrain.dispose();
 		Picker.dispose();
-		VisUI.dispose();
 		asset.dispose();
 		skin.dispose();
 		super.dispose();
