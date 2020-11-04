@@ -40,7 +40,7 @@ public final class World implements Disposable {
 	public static final int zChunks = mapSize / chunkSize;
 	public static final int downscale = 8; // 8 is a good value.
 
-	public static final int waterLevel = Math.round(mapHeight/4.5f); // 4.5f
+	public static final int waterLevel = Math.round(mapHeight/3.5f); // 4.5f
 	
 	private static final int[][][] dataPool = new int[mapSize][mapHeight][mapSize];
 
@@ -108,7 +108,7 @@ public final class World implements Disposable {
 		final RandomXS128 random = new RandomXS128(seed);
 		OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5, 0.25, random.nextLong());
 		OpenSimplexOctaves FloatingIslandNoise = new OpenSimplexOctaves(7, 0.35, random.nextLong());
-		int maxTerrainHeight = Math.round(mapHeight / 1.7f);
+		final int maxTerrainHeight = Math.round(mapHeight / 1.7f);
 
 		for(int i = 0; i < biomes.length; i++) {
 			biomes[i].heightMap = new OpenSimplexOctaves(biomes[i].heightOctaves, biomes[i].heightPersistence, random.nextLong());
@@ -122,7 +122,7 @@ public final class World implements Disposable {
 			for (int z = 0; z < mapSize; z++) {
 				Biome prevalent = getPrevalent(x/1.5,z/1.5);
 				prevalentBiomes[x][z] = prevalent;
-				heights[x][z] = (float) (Utils.normalize(prevalent.heightMap.getNoise(x, z), maxTerrainHeight)  * prevalent.heightModifier);
+				heights[x][z] = 16.0f + (float)(Utils.normalize(prevalent.heightMap.getNoise(x, z), maxTerrainHeight)  * prevalent.heightModifier);
 			}
 		}
 
@@ -334,7 +334,7 @@ public final class World implements Disposable {
 	}
 	
 	// Gaussian matrix.	
-	private static final int GAUSSIAN_SIZE = 17;
+	private static final int GAUSSIAN_SIZE = 15;
 	private static final float[][] GAUSSIAN_MATRIX = new float[GAUSSIAN_SIZE][GAUSSIAN_SIZE];
 	static {
 		final int haft = GAUSSIAN_SIZE / 2;
@@ -344,7 +344,7 @@ public final class World implements Disposable {
 			final int xx = x - haft;
 			final int zz = z - haft;
 			final float sample = 1.0f - (sqrt((xx*xx)+(zz*zz)) / size);
-			GAUSSIAN_MATRIX[x][z] = sample > 0.0f ? smoother.apply(sample) : 0.0f;
+			GAUSSIAN_MATRIX[x][z] = sample > 0.0f ? sample : 0.0f;
 		}
 		
 	}
@@ -358,7 +358,6 @@ public final class World implements Disposable {
 		float height = 0;
 		float total = 0;
 
-		//final int size = 4;
 		x -= GAUSSIAN_SIZE / 2;
 		z -= GAUSSIAN_SIZE / 2;
 		for(int i = x; i < x + GAUSSIAN_SIZE; i++) {
@@ -514,11 +513,11 @@ public final class World implements Disposable {
 	@Override
 	public void dispose() {
 		for (int x = 0; x < xChunks; x++)
-			for (int y = 0; y < yChunks; y++)
-				for (int z = 0; z < zChunks; z++) {
-					opaqueChunkMeshes[x][y][z].dispose();
-					transparentChunkMeshes[x][y][z].dispose();
-				}
+		for (int y = 0; y < yChunks; y++)
+		for (int z = 0; z < zChunks; z++) {
+			opaqueChunkMeshes[x][y][z].dispose();
+			transparentChunkMeshes[x][y][z].dispose();
+		}
 
 		World.world = null;
 	}
