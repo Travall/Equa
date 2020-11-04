@@ -61,10 +61,7 @@ public class ChunkMesh implements Disposable
 	}
 	
 	public boolean isVisable(final ChunkPlane[] planes) {
-		final int size = planes.length;
-		for (int i = 2; i < size; i++) {
-			final ChunkPlane plane = planes[i];
-
+		for (final ChunkPlane plane : planes) {
 			final float dist = plane.normal.dot(xPos, yPos, zPos) + plane.d;
 			final float radius = plane.radius;
 			
