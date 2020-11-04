@@ -1,6 +1,7 @@
 package com.travall.game.world;
 
 import static com.badlogic.gdx.math.MathUtils.floor;
+import static com.badlogic.gdx.math.Interpolation.smoother;
 import static com.travall.game.utils.BlockUtils.*;
 
 import com.badlogic.gdx.Gdx;
@@ -16,6 +17,7 @@ import com.travall.game.renderer.block.UltimateTexture;
 import com.travall.game.renderer.vertices.VoxelTerrain;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.Utils;
+import com.travall.game.utils.math.ChunkPlane;
 import com.travall.game.utils.math.OpenSimplexOctaves;
 import com.travall.game.world.biomes.*;
 import com.travall.game.world.chunk.ChunkBuilder;
@@ -27,7 +29,7 @@ public final class World implements Disposable {
 	/** Easy world access. */
 	public static World world;
 
-	public static final int mapSize = 256;
+	public static final int mapSize = 512;
 	public static final int mapHeight = 256;
 
 	public static final int chunkShift = 4; // 1 << 4 = 16. I set it back from 32 to 16 due to vertices limitations.
@@ -38,21 +40,22 @@ public final class World implements Disposable {
 	public static final int zChunks = mapSize / chunkSize;
 	public static final int downscale = 8; // 8 is a good value.
 
-	public static final int waterLevel = Math.round(mapHeight/5f); // 4.5f
+	public static final int waterLevel = Math.round(mapHeight/4.5f); // 4.5f
 	
 	private static final int[][][] dataPool = new int[mapSize][mapHeight][mapSize];
 
-	final public int[][][] data;
-	final public short[][] shadowMap;
-	final ChunkBuilder blockBuilder;
-	final GridPoint3 pos = new GridPoint3();
+	public final int[][][] data;
+	public final short[][] shadowMap;
+	
+	private final ChunkBuilder blockBuilder;
+	private final GridPoint3 pos = new GridPoint3();
 	private final BlockPos blockPos = new BlockPos();
-
-	final ChunkMesh[][][] opaqueChunkMeshes;
-	final ChunkMesh[][][] transparentChunkMeshes;
-	Biome[] biomes = {new Desert(), new Ground(), new Carmine()};
-	Vector3 tempVec = new Vector3();
-	Vector2 tempVec2 = new Vector2();
+	private Vector3 tempVec = new Vector3();
+	private Vector2 tempVec2 = new Vector2();
+	private Biome[] biomes = {new Desert(), new Ground(), new Carmine()};
+	private final ChunkMesh[][][] opaqueChunkMeshes;
+	private final ChunkMesh[][][] transparentChunkMeshes;
+	private final ChunkPlane[] planes = new ChunkPlane[4];
 
 	public World() {
 		World.world = this;
@@ -61,6 +64,10 @@ public final class World implements Disposable {
 		for (int y = 0; y < mapHeight; y++)
 		for (int z = 0; z < mapSize; z++) {
 			dataPool[x][y][z] = 0;
+		}
+		
+		for (int i = 0; i < planes.length; i++) {
+			planes[i] = new ChunkPlane();
 		}
 		
 		this.data = dataPool;
@@ -87,10 +94,10 @@ public final class World implements Disposable {
 		}
 	}
 
-	private Biome getPrevalent(int x, int z) {
+	private Biome getPrevalent(double x, double z) {
 		Biome prevalent = biomes[0];
 		for(int i = 0; i < biomes.length; i++) {
-			if(Utils.normalize(biomes[i].decisionMap.getNoise(x, z), 1) > Utils.normalize(prevalent.decisionMap.getNoise(x, z), 1)) {
+			if(Utils.normalize(biomes[i].decisionMap.getNoise(x, z)+biomes[i].size, 1) > Utils.normalize(prevalent.decisionMap.getNoise(x, z)+prevalent.size, 1)) {
 				prevalent = biomes[i];
 			}
 		}
@@ -101,7 +108,7 @@ public final class World implements Disposable {
 		final RandomXS128 random = new RandomXS128(seed);
 		OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5, 0.25, random.nextLong());
 		OpenSimplexOctaves FloatingIslandNoise = new OpenSimplexOctaves(7, 0.35, random.nextLong());
-		int maxTerrainHeight = Math.round(mapHeight / 2);
+		int maxTerrainHeight = Math.round(mapHeight / 1.7f);
 
 		for(int i = 0; i < biomes.length; i++) {
 			biomes[i].heightMap = new OpenSimplexOctaves(biomes[i].heightOctaves, biomes[i].heightPersistence, random.nextLong());
@@ -113,7 +120,7 @@ public final class World implements Disposable {
 
 		for (int x = 0; x < mapSize; x++) {
 			for (int z = 0; z < mapSize; z++) {
-				Biome prevalent = getPrevalent(x,z);
+				Biome prevalent = getPrevalent(x/1.5,z/1.5);
 				prevalentBiomes[x][z] = prevalent;
 				heights[x][z] = (float) (Utils.normalize(prevalent.heightMap.getNoise(x, z), maxTerrainHeight)  * prevalent.heightModifier);
 			}
@@ -131,8 +138,7 @@ public final class World implements Disposable {
 
 				for (int i = yValue; i >= 0; i--) {
 					double caves = Utils.normalize(CaveNoise.getNoise(x, (i), z), maxTerrainHeight);
-					boolean caveTerritory = (caves >= maxTerrainHeight - (height - i / 1.5f) && caves > maxTerrainHeight / 2
-							&& i > 0);
+					boolean caveTerritory = (caves >= maxTerrainHeight - (height - i / 1.5f) && caves > maxTerrainHeight / 2 && i > 0);
 
 // 					if((getBlock(tmpBlockPos.set(x,i+1,z)) == primary.middle && getBlock(tmpBlockPos.set(x,i+2,z)) == primary.middle && getBlock(tmpBlockPos.set(x,i+3,z)) == primary.middle && getBlock(tmpBlockPos.set(x,i+4,z)) == primary.middle)) middleDone = true;
 
@@ -172,6 +178,7 @@ public final class World implements Disposable {
 					}
 				}
 				
+				///* sky islands
 				int centerX = mapSize / 4;
 				int centerY = mapHeight - mapHeight / 4;
 				int centerZ = mapSize / 4;
@@ -206,7 +213,7 @@ public final class World implements Disposable {
 							}
 						}
 					}
-				}
+				} //*/
 
 //				if(x == centerX && z == centerZ) {
 //					setBlock(centerX,centerY,centerZ,BlocksList.GOLD);
@@ -317,7 +324,7 @@ public final class World implements Disposable {
 						continue;
 					}
 					if (getShadow(x+1, z) < y || getShadow(x, z+1) < y ||
-							getShadow(x-1, z) < y || getShadow(x, z-1) < y || getShadow(x, z) < y+1) {
+						getShadow(x-1, z) < y || getShadow(x, z-1) < y || getShadow(x, z) < y+1) {
 
 						LightHandle.newSunlightAt(x, y, z, 14);
 					}
@@ -325,19 +332,41 @@ public final class World implements Disposable {
 				}
 			}
 	}
+	
+	// Gaussian matrix.	
+	private static final int GAUSSIAN_SIZE = 17;
+	private static final float[][] GAUSSIAN_MATRIX = new float[GAUSSIAN_SIZE][GAUSSIAN_SIZE];
+	static {
+		final int haft = GAUSSIAN_SIZE / 2;
+		final float size = GAUSSIAN_SIZE / 2.0f;
+		for (int x = 0; x < GAUSSIAN_SIZE; x++)
+		for (int z = 0; z < GAUSSIAN_SIZE; z++) {
+			final int xx = x - haft;
+			final int zz = z - haft;
+			final float sample = 1.0f - (sqrt((xx*xx)+(zz*zz)) / size);
+			GAUSSIAN_MATRIX[x][z] = sample > 0.0f ? smoother.apply(sample) : 0.0f;
+		}
+		
+	}
+	
+	private static float sqrt(int a) {
+		return (float)Math.sqrt(a);
+	}
 
 	/** Bilinear interpolation. */
 	private static float bilinear(float[][] map, int x, int z) {
 		float height = 0;
 		float total = 0;
 
-		for(int i = x - 4; i < x + 4; i++) {
-			for(int j = z - 4; j < z + 4; j++) {
-				if(Utils.inBounds(i,map.length)) {
-					if(Utils.inBounds(j,map[0].length)) {
-						height += map[i][j];
-						total++;
-					}
+		//final int size = 4;
+		x -= GAUSSIAN_SIZE / 2;
+		z -= GAUSSIAN_SIZE / 2;
+		for(int i = x; i < x + GAUSSIAN_SIZE; i++) {
+			for(int j = z; j < z + GAUSSIAN_SIZE; j++) {
+				if(Utils.inBounds(i,map.length) && Utils.inBounds(j,map[0].length)) {
+					float sample = GAUSSIAN_MATRIX[i-x][j-z];
+					height += map[i][j] * sample;
+					total += sample;
 				}
 			}
 		}
@@ -356,7 +385,11 @@ public final class World implements Disposable {
 	
 	public void render(Camera camera) {
 		LightHandle.calculateLights(); // Calculate lights.
-		final Plane[] planes = camera.frustum.planes;
+		
+		final Plane[] tmpPlanes =  camera.frustum.planes;
+		for (int i = 2; i < tmpPlanes.length; i++) {
+			planes[i-2].set(tmpPlanes[i]);
+		}
 
 		UltimateTexture.texture.bind();
 		VoxelTerrain.begin(camera);

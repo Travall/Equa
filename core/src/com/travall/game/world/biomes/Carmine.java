@@ -8,6 +8,7 @@ public class Carmine extends Biome {
 		this.heightOctaves = 8;
 		this.heightPersistence = 0.4f;
 		this.heightModifier = 1f;
+		this.size = -0.08;
 		this.top = BlocksList.CARMINE;
 		this.middle = BlocksList.DIRT;
 		this.underwater = BlocksList.DIRT;

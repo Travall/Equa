@@ -8,6 +8,7 @@ public class Ground extends Biome {
 		this.heightOctaves = 8;
 		this.heightPersistence = 0.4f;
 		this.heightModifier = 1f;
+		this.size = 0.05;
 		this.top = BlocksList.GRASS;
 		this.middle = BlocksList.DIRT;
 		this.underwater = BlocksList.DIRT;
