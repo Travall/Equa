@@ -5,6 +5,7 @@ import static com.travall.game.world.World.*;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.ReflectionPool;
 import com.travall.game.utils.BlockPos;
 
 public final class LightHandle {
@@ -20,12 +21,9 @@ public final class LightHandle {
 	private final SrcLight srcLight;
 	private final SunLight sunLight;
 	
-	public LightHandle() {
-		srcLight = new SrcLight();
-		sunLight = new SunLight();
-	}
-	
-	public LightHandle(Pool<LightNode> pool1, Pool<LightDelNode> pool2) {
+	public LightHandle(boolean useStaticPool) {
+		final Pool<LightNode> pool1 = useStaticPool ? LightNode.POOL : new ReflectionPool<>(LightNode.class, 64);
+		final Pool<LightDelNode> pool2 = useStaticPool ? LightDelNode.POOL : new ReflectionPool<>(LightDelNode.class, 64);
 		srcLight = new SrcLight(pool1, pool2);
 		sunLight = new SunLight(pool1, pool2);
 	}

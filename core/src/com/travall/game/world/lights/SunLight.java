@@ -15,11 +15,6 @@ final class SunLight {
 	private final Pool<LightNode> pool1;
 	private final Pool<LightDelNode> pool2;
 	
-	public SunLight() {
-		pool1 = LightNode.POOL;
-		pool2 = LightDelNode.POOL;
-	}
-	
 	public SunLight(Pool<LightNode> pool1, Pool<LightDelNode> pool2) {
 		this.pool1 = pool1;
 		this.pool2 = pool2;
