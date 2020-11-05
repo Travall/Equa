@@ -11,7 +11,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.travall.game.Main;
-import com.travall.game.TheGame;
+import com.travall.game.TheMenu;
+import com.travall.game.WorldLoading;
 import com.travall.game.ui.utils.PosOffset;
 import com.travall.game.ui.utils.UIBase;
 
@@ -20,7 +21,7 @@ public class Menu extends UIBase {
 	public final Label waterMark;
 	public final Group buttons;
 	
-	public Menu() {
+	public Menu(TheMenu menu) {
 		waterMark = new Label("Equa " + Main.VERSION, main.skin);
 		waterMark.setAlignment(Align.topLeft);
 		waterMark.setUserObject(new PosOffset(0f, 1f, 3, -3));
@@ -35,7 +36,7 @@ public class Menu extends UIBase {
 		butt.setPosition(0, 24, Align.center);
 		butt.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
-				main.setScreen(new TheGame());
+				main.setScreen(new WorldLoading(menu.background));
 			}
 		});
 		buttons.addActor(butt);

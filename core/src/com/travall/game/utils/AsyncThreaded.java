@@ -39,5 +39,6 @@ public abstract class AsyncThreaded<Packet> implements AsyncTask<Packet>, Dispos
 	public void dispose() {
 		clear();
 		exe.dispose();
+		result = null;
 	}
 }

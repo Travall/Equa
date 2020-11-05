@@ -18,7 +18,7 @@ import com.travall.game.utils.math.ChunkPlane;
 import com.travall.game.world.chunk.ChunkBuilder;
 import com.travall.game.world.chunk.ChunkMesh;
 import com.travall.game.world.chunk.CombinedChunk;
-import com.travall.game.world.gen.DefaultGen;
+import com.travall.game.world.gen.Generator;
 import com.travall.game.world.lights.LightHandle;
 
 public final class World implements Disposable {
@@ -50,7 +50,7 @@ public final class World implements Disposable {
 	private final ChunkMesh[][][] transparentChunkMeshes;
 	private final ChunkPlane[] planes = new ChunkPlane[4];
 
-	public World() {
+	public World(Generator generator) {
 		World.world = this;
 		
 		for (int i = 0; i < planes.length; i++) {
@@ -63,8 +63,7 @@ public final class World implements Disposable {
 		opaqueChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
 		transparentChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
 		
-		new DefaultGen().genrate(this);
-		buildMesh();
+		generator.genrate(this);
 	}
 	
 	public void buildMesh() {

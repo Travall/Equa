@@ -54,7 +54,7 @@ abstract class Base extends Game {
 		
 		if (screen == null) return;
 		screen.show();
-		screen.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		screen.resize(Utils.screen.w, Utils.screen.h);
 		StageUtils.resize(stage);
 	}
 	

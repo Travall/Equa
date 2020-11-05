@@ -11,6 +11,7 @@ import com.travall.game.blocks.BlocksList;
 import com.travall.game.blocks.materials.Material;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.Utils;
+import com.travall.game.utils.math.FastNoiseOctaves;
 import com.travall.game.utils.math.OpenSimplexOctaves;
 import com.travall.game.world.World;
 import com.travall.game.world.biomes.Biome;
@@ -38,79 +39,82 @@ public class DefaultGen extends Generator {
 	
 	@Override
 	public void genrate(final World world) {
+		setStatus("Creating noises..");
 		final Random random = new Random(seed);
-		final OpenSimplexOctaves CaveNoise = new OpenSimplexOctaves(5, 0.25, random.nextLong());
+		final FastNoiseOctaves CaveNoise = new FastNoiseOctaves(5, 0.25, random.nextLong());
 		final OpenSimplexOctaves FloatingIslandNoise = new OpenSimplexOctaves(7, 0.35, random.nextLong());
-		final int maxTerrainHeight = Math.round(mapHeight / 1.7f);
+		int maxTerrainHeight = Math.round(mapHeight / 1.7f);
+		final int terrainHeightOffset = 24;
+		final Biome prevalentBiomes[][] = new Biome[mapSize][mapSize];
 
 		for(int i = 0; i < biomes.length; i++) {
 			biomes[i].heightMap = new OpenSimplexOctaves(biomes[i].heightOctaves, biomes[i].heightPersistence, random.nextLong());
 			biomes[i].decisionMap = new OpenSimplexOctaves(biomes[i].decisionOctaves, biomes[i].decisionPersistence, random.nextLong());
 		}
 
-		final float heights[][] = new float[mapSize][mapSize];
-		final Biome prevalentBiomes[][] = new Biome[mapSize][mapSize];
-
+		setStatus("Creating Heightmap..");
+		final float heights[][]  = new float[mapSize][mapSize];
 		for (int x = 0; x < mapSize; x++)
 		for (int z = 0; z < mapSize; z++) {
 			Biome prevalent = getPrevalent(x/1.5,z/1.5);
 			prevalentBiomes[x][z] = prevalent;
-			heights[x][z] = 16.0f + (float)(Utils.normalize(prevalent.heightMap.getNoise(x, z), maxTerrainHeight)  * prevalent.heightModifier);
+			heights[x][z] = terrainHeightOffset + (float)(Utils.normalize(prevalent.heightMap.getNoise(x, z), maxTerrainHeight)  * prevalent.heightModifier);
 		}
-
+		maxTerrainHeight += terrainHeightOffset;
+		
+		setStatus("Creating Lands..");
 		for (int x = 0; x < mapSize; x++)
 		for (int z = 0; z < mapSize; z++) {
+			final Biome primary = prevalentBiomes[x][z];
 
-			Biome primary = prevalentBiomes[x][z];
-
-			float height = gaussian(heights, x, z);
-			int yValue = (int) height;
-
+			final float height = gaussian(heights, x, z);
+			final int yValue = (int) height;
+			
 			boolean middleDone = false;
-
+			
 			for (int i = yValue; i >= 0; i--) {
-				double caves = Utils.normalize(CaveNoise.getNoise(x, (i), z), maxTerrainHeight);
-				boolean caveTerritory = (caves >= maxTerrainHeight - (height - i / 1.5f) && caves > maxTerrainHeight / 2 && i > 0);
-
-// 					if((getBlock(tmpBlockPos.set(x,i+1,z)) == primary.middle && getBlock(tmpBlockPos.set(x,i+2,z)) == primary.middle && getBlock(tmpBlockPos.set(x,i+3,z)) == primary.middle && getBlock(tmpBlockPos.set(x,i+4,z)) == primary.middle)) middleDone = true;
-
-				if (i == yValue - (Math.abs(i - maxTerrainHeight) / 4)) middleDone = true;
-//					if((Math.abs(yValue - i) == 4)) middleDone = true;
-
+				
+				middleDone = middleDone ? true : i == yValue - (Math.abs(i - maxTerrainHeight) / 4);
+				
 				if (i == 0) {
 					world.setBlock(x, i, z, BlocksList.BEDROCK);
-				} else if (!caveTerritory) {
-					if (i == yValue) {
-						if (i < waterLevel) {
-							world.setBlock(x, i, z, primary.underwater);
-						} else {
-							world.setBlock(x, i, z, primary.top);
-						}
-					} else if (!middleDone) {
-						if (i < waterLevel) {
-							world.setBlock(x, i, z, primary.underwater);
-						} else {
-							world.setBlock(x, i, z, primary.middle);
-						}
+				} else if (i == yValue) {
+					if (i < waterLevel) {
+						world.setBlock(x, i, z, primary.underwater);
 					} else {
-						world.setBlock(x, i, z, BlocksList.STONE);
+						world.setBlock(x, i, z, primary.top);
 					}
-				}
-			}
-
-			// Water
-			for (int j = waterLevel; j > 0; j--) {
-				double caves = Utils.normalize(CaveNoise.getNoise(x, (int) (j), z), maxTerrainHeight);
-				boolean caveTerritory = (caves >= maxTerrainHeight - (height - j / 1.5f) && caves > maxTerrainHeight / 2
-						&& j > 0);
-				if (world.isAirBlock(x, j, z) && !caveTerritory) {
-					world.setBlock(x, j, z, BlocksList.WATER);
+				} else if (!middleDone) {
+					if (i < waterLevel) {
+						world.setBlock(x, i, z, primary.underwater);
+					} else {
+						world.setBlock(x, i, z, primary.middle);
+					}
 				} else {
-					break;
+					world.setBlock(x, i, z, BlocksList.STONE);
 				}
 			}
 			
-			///* sky islands
+			for (int y = waterLevel; y >= 0; y--) {
+				if (world.isAirBlock(x, y, z)) {
+					world.setBlock(x, y, z, BlocksList.WATER);
+					continue;
+				}
+				
+				break;
+			}
+			
+			for (int i = yValue; i >= 0; i--) {
+				final float caves = Utils.normalize(CaveNoise.getNoise(x, i, z), maxTerrainHeight) * 0.95f;
+				if (caves >= maxTerrainHeight - (height - i / 2f) && caves > maxTerrainHeight / 2f && i > 0) {
+					world.setBlock(x, i, z, BlocksList.AIR);
+				}
+			}
+		}
+
+		setStatus("Building SkyIslands..");
+		for (int x = 0; x < mapSize; x++)
+		for (int z = 0; z < mapSize; z++) {
 			int centerX = mapSize / 4;
 			int centerY = mapHeight - mapHeight / 4;
 			int centerZ = mapSize / 4;
@@ -129,7 +133,7 @@ public class DefaultGen extends Generator {
 			}
 
 			for(int j = mapHeight; j > mapHeight / 2; j--) {
-				float diff = Math.abs(tempVec3.set(x,j,z).dst(centerX,centerY,centerZ)) / 50;
+				double diff = Math.abs(tempVec3.set(x,j,z).dst(centerX,centerY,centerZ)) / 50.0;
 
 				if(FloatingIslandNoise.getNoise(x,j,z) / diff > 0.18) {
 					if(world.isAirBlock(x,j,z)) {
@@ -145,16 +149,10 @@ public class DefaultGen extends Generator {
 						}
 					}
 				}
-			} //*/
-
-//				if(x == centerX && z == centerZ) {
-//					setBlock(centerX,centerY,centerZ,BlocksList.GOLD);
-//				} else {
-//					setBlock(x,centerY,z,BlocksList.BEDROCK);
-//				}
-
+			}
 		}
 
+		setStatus("Creating Foliages..");
 		for (int x = 0; x < mapSize; x++)
 		for (int z = 0; z < mapSize; z++) {
 			Biome primary = prevalentBiomes[x][z];
@@ -235,6 +233,7 @@ public class DefaultGen extends Generator {
 		}
 
 		// creating shadow map.
+		setStatus("Creating Shadow Map..");
 		for (int x = 0; x < mapSize; x++)
 		for (int z = 0; z < mapSize; z++)
 		for (int y = mapHeight-1; y >= 0; y--) {
@@ -246,6 +245,7 @@ public class DefaultGen extends Generator {
 		}
 		
 		// adding filling nodes.
+		setStatus("Filling Skylights..");
 		final LightHandle lightHandle = new LightHandle(false);
 		for (int x = 0; x < mapSize; x++)
 		for (int z = 0; z < mapSize; z++)
@@ -264,8 +264,14 @@ public class DefaultGen extends Generator {
 			
 			continue;
 		}
-		
 		lightHandle.calculateLights(false);
+		
+		setStatus("Done!");
+		
+		try {
+			Thread.sleep(50);
+		} catch (InterruptedException e) {
+		}
 	}
 
 	private Biome getPrevalent(double x, double z) {
