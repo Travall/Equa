@@ -1,5 +1,6 @@
 package com.travall.game.blocks;
 
+import static com.travall.game.world.World.lightHandle;
 import static com.travall.game.world.World.world;
 
 import com.badlogic.gdx.math.Vector3;
@@ -16,7 +17,6 @@ import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.Facing;
 import com.travall.game.utils.UpdateState;
 import com.travall.game.utils.math.CollisionBox;
-import com.travall.game.world.lights.LightHandle;
 
 public class Block {
 	protected static final Vector3 MIN = new Vector3(), MAX = new Vector3();
@@ -148,27 +148,27 @@ public class Block {
 	protected final void handleLights(BlockPos pos, UpdateState state) {
 		if (state == UpdateState.ON_PLACE) {
 			if (isSrclight()) { // if place srclight block.
-				LightHandle.newSrclightAt(pos.x, pos.y, pos.z, getLightLevel());
+				lightHandle.newSrclightAt(pos.x, pos.y, pos.z, getLightLevel());
 			} else { // if place non-srclight block.
-				LightHandle.delSrclightAt(pos.x, pos.y, pos.z);
+				lightHandle.delSrclightAt(pos.x, pos.y, pos.z);
 			}
 			
 			if (material.canBlockLights() || material.canBlockSunRay()) {
-				LightHandle.newRaySunlightAt(pos.x, pos.y, pos.z);
-				LightHandle.delSunlightAt(pos.x, pos.y, pos.z);
+				lightHandle.newRaySunlightAt(pos.x, pos.y, pos.z);
+				lightHandle.delSunlightAt(pos.x, pos.y, pos.z);
 			}
 		} else
 		if (state == UpdateState.ON_BREAK) {
 			final Block block = world.getBlock(pos);
 			if (block.isSrclight()) { // if break srclight block.
-				LightHandle.delSrclightAt(pos.x, pos.y, pos.z);
+				lightHandle.delSrclightAt(pos.x, pos.y, pos.z);
 			} else { // if break non-srclight block.
-				LightHandle.newSrclightShellAt(pos.x, pos.y, pos.z);
+				lightHandle.newSrclightShellAt(pos.x, pos.y, pos.z);
 			}
 
 			if (block.material.canBlockLights() || block.material.canBlockSunRay()) {
-				LightHandle.newRaySunlightAt(pos.x, pos.y, pos.z);
-				LightHandle.newSunlightShellAt(pos.x, pos.y, pos.z);
+				lightHandle.newRaySunlightAt(pos.x, pos.y, pos.z);
+				lightHandle.newSunlightShellAt(pos.x, pos.y, pos.z);
 			}
 		}
 	}

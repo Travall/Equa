@@ -39,8 +39,10 @@ public final class World implements Disposable {
 	public static final int yChunks = mapHeight / chunkSize;
 	public static final int zChunks = mapSize / chunkSize;
 	public static final int downscale = 8; // 8 is a good value.
-
+	
 	public static final int waterLevel = Math.round(mapHeight/3.5f); // 4.5f
+	
+	public static final LightHandle lightHandle = new LightHandle();
 	
 	private static final int[][][] dataPool = new int[mapSize][mapHeight][mapSize];
 
@@ -305,32 +307,35 @@ public final class World implements Disposable {
 
 		// creating shadow map.
 		for (int x = 0; x < mapSize; x++)
-			for (int z = 0; z < mapSize; z++) {
-				for (int y = mapHeight-1; y >= 0; y--) {
-					if (BlocksList.get(data[x][y][z]).getMaterial().canBlockSunRay()) {
-						shadowMap[x][z] = (short)y;
-						break;
-					}
-					setSunLight(x, y, z, 15);
-				}
+		for (int z = 0; z < mapSize; z++)
+		for (int y = mapHeight-1; y >= 0; y--) {
+			if (BlocksList.get(data[x][y][z]).getMaterial().canBlockSunRay()) {
+				shadowMap[x][z] = (short)y;
+				break;
 			}
+			setSunLight(x, y, z, 15);
+		}
 
 		// adding filling nodes.
 		for (int x = 0; x < mapSize; x++)
-			for (int z = 0; z < mapSize; z++) {
-				for (int y = shadowMap[x][z]; y >= 0; y--) {
-					final Material material = BlocksList.get(data[x][y][z]).getMaterial();
-					if (material.canBlockSunRay() && material.canBlockLights()) {
-						continue;
-					}
-					if (getShadow(x+1, z) < y || getShadow(x, z+1) < y ||
-						getShadow(x-1, z) < y || getShadow(x, z-1) < y || getShadow(x, z) < y+1) {
-
-						LightHandle.newSunlightAt(x, y, z, 14);
-					}
-					continue;
-				}
+		for (int z = 0; z < mapSize; z++)
+		for (int y = shadowMap[x][z]; y >= 0; y--) {
+			final Material material = BlocksList.get(data[x][y][z]).getMaterial();
+			
+			if (material.canBlockSunRay() && material.canBlockLights()) {
+				continue;
 			}
+			
+			if (getShadow(x+1, z) < y || getShadow(x, z+1) < y ||
+				getShadow(x-1, z) < y || getShadow(x, z-1) < y || getShadow(x, z) < y+1) {
+	
+				lightHandle.newSunlightAt(x, y, z, 14);
+			}
+			
+			continue;
+		}
+		
+		lightHandle.calculateLights(false);
 	}
 	
 	// Gaussian matrix.	
@@ -383,7 +388,7 @@ public final class World implements Disposable {
 	private final Array<ChunkMesh> transMeshes = new Array<>(32);
 	
 	public void render(Camera camera) {
-		LightHandle.calculateLights(); // Calculate lights.
+		lightHandle.calculateLights(true); // Calculate lights.
 		
 		final Plane[] tmpPlanes =  camera.frustum.planes;
 		for (int i = 2; i < tmpPlanes.length; i++) {
@@ -467,11 +472,8 @@ public final class World implements Disposable {
 		if (indexX < 0 || indexX >= xChunks || indexY < 0 || indexY >= yChunks || indexZ < 0 || indexZ >= zChunks)
 			return;
 
-		if (opaqueChunkMeshes[indexX][indexY][indexZ] != null)
-			opaqueChunkMeshes[indexX][indexY][indexZ].isDirty = true;
-
-		if (transparentChunkMeshes[indexX][indexY][indexZ] != null)
-			transparentChunkMeshes[indexX][indexY][indexZ].isDirty = true;
+		opaqueChunkMeshes[indexX][indexY][indexZ].isDirty = true;
+		transparentChunkMeshes[indexX][indexY][indexZ].isDirty = true;
 	}
 
 	public boolean isAirBlock(int x, int y, int z) {
