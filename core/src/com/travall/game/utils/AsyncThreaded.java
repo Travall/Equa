@@ -21,10 +21,14 @@ public abstract class AsyncThreaded<Packet> implements AsyncTask<Packet>, Dispos
 	public abstract Packet call() throws Exception;
 	
 	/** Get the packet after the thread is finished executing. */
-	public abstract Packet get();
+	public Packet get() {
+		return result == null ? null : result.get();
+	}
 	
 	/** Check the thread is finished executing. */
-	public abstract boolean isDone();
+	public boolean isDone() {
+		return result == null ? true : result.isDone();
+	}
 	
 	/** Clear anything regardless of the thread is done. */
 	public void clear() {

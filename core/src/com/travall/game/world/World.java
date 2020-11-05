@@ -1,7 +1,6 @@
 package com.travall.game.world;
 
 import static com.badlogic.gdx.math.MathUtils.floor;
-import static com.badlogic.gdx.math.Interpolation.smoother;
 import static com.travall.game.utils.BlockUtils.*;
 
 import com.badlogic.gdx.Gdx;
@@ -38,7 +37,6 @@ public final class World implements Disposable {
 	public static final int xChunks = mapSize / chunkSize;
 	public static final int yChunks = mapHeight / chunkSize;
 	public static final int zChunks = mapSize / chunkSize;
-	public static final int downscale = 8; // 8 is a good value.
 	
 	public static final int waterLevel = Math.round(mapHeight/3.5f); // 4.5f
 	
@@ -50,23 +48,16 @@ public final class World implements Disposable {
 	public final short[][] shadowMap;
 	
 	private final ChunkBuilder blockBuilder;
-	private final GridPoint3 pos = new GridPoint3();
 	private final BlockPos blockPos = new BlockPos();
-	private Vector3 tempVec = new Vector3();
-	private Vector2 tempVec2 = new Vector2();
-	private Biome[] biomes = {new Desert(), new Ground(), new Carmine()};
+	private final Vector3 tempVec = new Vector3();
+	private final Vector2 tempVec2 = new Vector2();
+	private final Biome[] biomes = {new Desert(), new Ground(), new Carmine()};
 	private final ChunkMesh[][][] opaqueChunkMeshes;
 	private final ChunkMesh[][][] transparentChunkMeshes;
 	private final ChunkPlane[] planes = new ChunkPlane[4];
 
 	public World() {
 		World.world = this;
-		
-		for (int x = 0; x < mapSize; x++)
-		for (int y = 0; y < mapHeight; y++)
-		for (int z = 0; z < mapSize; z++) {
-			dataPool[x][y][z] = 0;
-		}
 		
 		for (int i = 0; i < planes.length; i++) {
 			planes[i] = new ChunkPlane();
@@ -75,11 +66,14 @@ public final class World implements Disposable {
 		this.data = dataPool;
 		this.shadowMap = new short[mapSize][mapSize];
 		this.blockBuilder = new ChunkBuilder(this);
-		generate(MathUtils.random.nextLong());
-
 		opaqueChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
 		transparentChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
 		
+		generate(MathUtils.random.nextLong());
+		buildMesh();
+	}
+	
+	public void buildMesh() {
 		final int haft = chunkSize / 2;
 		for (int x = 0; x < xChunks; x++)
 		for (int y = 0; y < yChunks; y++)
@@ -265,7 +259,7 @@ public final class World implements Disposable {
 
 							if(!open) continue;
 
-							Block log = BlocksList.LOG;
+							//Block log = BlocksList.LOG;
 
 							Block logType = primary.name.equals("Ground") ? BlocksList.LOG : BlocksList.DARKLOG;
 							Block leavesType = primary.name.equals("Ground") ? BlocksList.LEAVES : BlocksList.DARKLEAVES;
@@ -519,6 +513,12 @@ public final class World implements Disposable {
 		for (int z = 0; z < zChunks; z++) {
 			opaqueChunkMeshes[x][y][z].dispose();
 			transparentChunkMeshes[x][y][z].dispose();
+		}
+		
+		for (int x = 0; x < mapSize; x++)
+		for (int y = 0; y < mapHeight; y++)
+		for (int z = 0; z < mapSize; z++) {
+			dataPool[x][y][z] = 0;
 		}
 
 		World.world = null;

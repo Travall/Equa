@@ -19,7 +19,6 @@ public class ChunkBuilder {
 		this.combinedChunk = new CombinedChunk();
 		this.opaqeBuilder = new QuadBuilder();
 		this.transBuilder = new QuadBuilder();
-
 	}
 
 	private final BlockPos position = new BlockPos();
