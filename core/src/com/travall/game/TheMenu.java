@@ -15,25 +15,24 @@ import com.travall.game.ui.utils.UImanager;
 public class TheMenu extends ScreenAdapter {
 
 	public final UImanager manager = new UImanager();
-	
-	public Image backgound;
+	public final Image background;
 	
 	private final Stage stage = main.stage;
 	
 	public TheMenu() {
-		manager.put(new Menu());
+		manager.put(new Menu(this));
 		
 		TiledDrawableFix tile = new TiledDrawableFix(UltimateTexture.createRegion(1, 0));
 		tile.getColor().set(0.6f, 0.6f, 0.6f, 1f);
-		backgound = new Image(tile);
-		backgound.setUserObject(new Vector2(0.5f, 0.5f));
+		background = new Image(tile);
+		background.setUserObject(new Vector2(0.5f, 0.5f));
 	}
 	
 	@Override
 	public void show() {
 		final Viewport view = stage.getViewport();
-		backgound.setSize(view.getWorldWidth(), view.getWorldHeight());
-		stage.addActor(backgound);
+		background.setSize(view.getWorldWidth(), view.getWorldHeight());
+		stage.addActor(background);
 		
 		manager.bind(stage);
 		manager.setUI(Menu.class);
@@ -47,6 +46,6 @@ public class TheMenu extends ScreenAdapter {
 	@Override
 	public void resize(int width, int height) {
 		final Viewport view = stage.getViewport();
-		backgound.setSize(view.getWorldWidth(), view.getWorldHeight());
+		background.setSize(view.getWorldWidth(), view.getWorldHeight());
 	}
 }

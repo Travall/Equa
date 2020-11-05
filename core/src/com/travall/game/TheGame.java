@@ -7,7 +7,6 @@ import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.MathUtils;
@@ -60,7 +59,7 @@ public class TheGame extends ScreenAdapter {
 	final Label waterMark;
 	final Image crosshair;
 	
-	public TheGame() {
+	public TheGame(World world) {
 		blockType = BlocksList.STONE;
 
 		skybox = new Skybox();
@@ -71,7 +70,7 @@ public class TheGame extends ScreenAdapter {
 
 		cameraController = new FirstPersonCameraController(camera);
 
-		world = new World();
+		this.world = world;
 		Vector3 starting = new Vector3(World.mapSize / 2, World.mapHeight, World.mapSize / 2);
 		player = new Player(starting);
 
@@ -85,6 +84,8 @@ public class TheGame extends ScreenAdapter {
 		crosshair = new Image(crosshairTex);
 		crosshair.setUserObject(new Vector2(0.5f, 0.5f));
 		crosshair.setSize(8, 8);
+		
+		world.buildMesh();
 	}
 	
 	@Override

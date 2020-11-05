@@ -5,93 +5,104 @@ import static com.travall.game.world.World.*;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.ReflectionPool;
 import com.travall.game.utils.BlockPos;
 
 public final class LightHandle {
 	
-	private static final Pool<GridPoint3> POOL = new Pool<GridPoint3>() {
+	private final Pool<GridPoint3> pool = new Pool<GridPoint3>() {
 		protected GridPoint3 newObject() {
 			return new GridPoint3();
 		}
 	};
 	
-	private final static Array<GridPoint3> rayUpdate = new Array<>();
+	private Array<GridPoint3> rayUpdate = new Array<>();
+	
+	private final SrcLight srcLight;
+	private final SunLight sunLight;
+	
+	public LightHandle(boolean useStaticPool) {
+		final Pool<LightNode> pool1 = useStaticPool ? LightNode.POOL : new ReflectionPool<>(LightNode.class, 64);
+		final Pool<LightDelNode> pool2 = useStaticPool ? LightDelNode.POOL : new ReflectionPool<>(LightDelNode.class, 64);
+		srcLight = new SrcLight(pool1, pool2);
+		sunLight = new SunLight(pool1, pool2);
+	}
 
-	public static void newSrclightAt(int x, int y, int z, int light) {
+	public void newSrclightAt(int x, int y, int z, int light) {
 		world.setSrcLight(x, y, z, light);
-		SrcLight.newSrclightAt(x, y, z);
+		srcLight.newSrclightAt(x, y, z);
 	}
 	
-	public static void newSunlightAt(int x, int y, int z, int light) {
+	public void newSunlightAt(int x, int y, int z, int light) {
 		world.setSunLight(x, y, z, light);
-		SunLight.newSunlightAt(x, y, z);
+		sunLight.newSunlightAt(x, y, z);
 	}
 	
-	public static void delSrclightAt(int x, int y, int z) {
-		SrcLight.delSrclightAt(x, y, z);
+	public void delSrclightAt(int x, int y, int z) {
+		srcLight.delSrclightAt(x, y, z);
 		world.setSrcLight(x, y, z, 0);
 	}
 	
-	public static void delSunlightAt(int x, int y, int z) {
-		SunLight.delSunlightAt(x, y, z);
+	public void delSunlightAt(int x, int y, int z) {
+		sunLight.delSunlightAt(x, y, z);
 		world.setSunLight(x, y, z, 0);
 	}
 	
-	public static void newRaySunlightAt(int x, int y, int z) {
-		rayUpdate.add(POOL.obtain().set(x, y, z));
+	public void newRaySunlightAt(int x, int y, int z) {
+		if (world.shadowMap[x][z] > y) return;
+		rayUpdate.add(pool.obtain().set(x, y, z));
 	}
 	
-	public static void newSrclightShellAt(int x, int y, int z) {
+	public void newSrclightShellAt(int x, int y, int z) {
 		if (y+1 < mapHeight) {
-			SrcLight.newSrclightAt(x, y+1, z);
+			srcLight.newSrclightAt(x, y+1, z);
 		}
 		if (y-1 >= 0) {
-			SrcLight.newSrclightAt(x, y-1, z);
+			srcLight.newSrclightAt(x, y-1, z);
 		}
 		if (z-1 >= 0) {
-			SrcLight.newSrclightAt(x, y, z-1);
+			srcLight.newSrclightAt(x, y, z-1);
 		}
 		if (x-1 >= 0) {
-			SrcLight.newSrclightAt(x-1, y, z);
+			srcLight.newSrclightAt(x-1, y, z);
 		}
 		if (z+1 < mapSize) {
-			SrcLight.newSrclightAt(x, y, z+1);
+			srcLight.newSrclightAt(x, y, z+1);
 		}
 		if (x+1 < mapSize) {
-			SrcLight.newSrclightAt(x+1, y, z);
+			srcLight.newSrclightAt(x+1, y, z);
 		}
 	}
 	
-	public static void newSunlightShellAt(int x, int y, int z) {
-		SunLight.newSunlightAt(x, y, z);
+	public void newSunlightShellAt(int x, int y, int z) {
+		sunLight.newSunlightAt(x, y, z);
 		if (y+1 < mapHeight) {
-			SunLight.newSunlightAt(x, y+1, z);
+			sunLight.newSunlightAt(x, y+1, z);
 		}
 		if (y-1 >= 0) {
-			SunLight.newSunlightAt(x, y-1, z);
+			sunLight.newSunlightAt(x, y-1, z);
 		}
 		if (z-1 >= 0) {
-			SunLight.newSunlightAt(x, y, z-1);
+			sunLight.newSunlightAt(x, y, z-1);
 		}
 		if (x-1 >= 0) {
-			SunLight.newSunlightAt(x-1, y, z);
+			sunLight.newSunlightAt(x-1, y, z);
 		}
 		if (z+1 < mapSize) {
-			SunLight.newSunlightAt(x, y, z+1);
+			sunLight.newSunlightAt(x, y, z+1);
 		}
 		if (x+1 < mapSize) {
-			SunLight.newSunlightAt(x+1, y, z);
+			sunLight.newSunlightAt(x+1, y, z);
 		}
 	}
 	
-	public static void updateSunAt(int x, int y, int z) {
+	public void updateSunAt(int x, int y, int z) {
 		
 	}
 	
-	private static final BlockPos blockPos = new BlockPos();
-	public static void skyRay(int x, int z, int height) {
+	private final BlockPos blockPos = new BlockPos();
+	public void skyRay(int x, int z, int height) {
 		final int start = world.shadowMap[x][z];
-		if (start > height) return;
 		for (short y = (short)height; y >= 0; y--)
 		{
 			if (world.getBlock(blockPos.set(x, y, z)).getMaterial().canBlockSunRay()) {
@@ -102,7 +113,7 @@ public final class LightHandle {
 		}
 		
 		final int end = world.shadowMap[x][z];
-		//if (start == end) return;
+		if (start == end) return;
 		
 		if (start < end) {
 			for(int i = start; i < end; i++) {
@@ -115,16 +126,16 @@ public final class LightHandle {
 		}
 	}
 	
-	public static void calculateLights() {
+	public void calculateLights(final boolean updateMesh) {
 		for (GridPoint3 pos : rayUpdate) {
 			skyRay(pos.x, pos.z, pos.y);
-			POOL.free(pos);
+			pool.free(pos);
 		}
 		rayUpdate.size = 0;
 		
-		SrcLight.defillSrclight();
-		SrcLight.fillSrclight();
-		SunLight.defillSunlight();
-		SunLight.fillSunlight();
+		srcLight.defillSrclight();
+		srcLight.fillSrclight();
+		sunLight.defillSunlight(updateMesh);
+		sunLight.fillSunlight(updateMesh);
 	}
 }

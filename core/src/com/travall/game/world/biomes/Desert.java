@@ -10,6 +10,7 @@ public class Desert extends Biome {
 		this.heightOctaves = 8;
 		this.heightPersistence = 0.2f;
 		this.heightModifier = 1;
+		this.size = -0.1;
 		this.top = BlocksList.SAND;
 		this.middle = BlocksList.SAND;
 		this.underwater = BlocksList.SAND;

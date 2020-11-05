@@ -1,6 +1,6 @@
 package com.travall.game.utils.math;
 
-import com.badlogic.gdx.math.RandomXS128;
+import java.util.Random;
 
 public class OpenSimplexOctaves {
     private OpenSimplex[] octaves;
@@ -20,7 +20,7 @@ public class OpenSimplexOctaves {
         frequencies = new double[octaveCount];
         amplitudes = new double[octaveCount];
 
-        RandomXS128 rng = new RandomXS128(seed);
+        Random rng = new Random(seed);
         for(int i = 0; i < octaveCount; i++) {
             octaves[i] = new OpenSimplex(rng.nextLong());
 

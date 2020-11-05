@@ -13,6 +13,10 @@ public class Utils {
 	public static double normalize(double Input, int max) {
 		return ((Input - -1) / (1 - -1) * (max - 0) + 0);
 	}
+	
+	public static float normalize(float Input, int max) {
+		return ((Input - -1) / (1 - -1) * (max - 0) + 0);
+	}
 
 	public static int[] locateAttributes(ShaderProgram shader, VertexAttributes attributes) {
 		final int s = attributes.size();

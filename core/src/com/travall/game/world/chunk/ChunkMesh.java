@@ -4,14 +4,12 @@ import java.nio.ByteBuffer;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL30;
-import com.badlogic.gdx.math.Plane;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.FloatArray;
 import com.travall.game.glutils.VBO;
 import com.travall.game.glutils.VertContext;
-import com.travall.game.world.World;
+import com.travall.game.utils.math.ChunkPlane;
 
 public class ChunkMesh implements Disposable 
 {
@@ -62,13 +60,20 @@ public class ChunkMesh implements Disposable
 		isEmpty = false;
 	}
 	
-	public boolean isVisable(final Plane[] planes) {
-		final int size = planes.length;
-		for (int i = 2; i < size; i++) {
-			if (test(planes[i])) {
+	public boolean isVisable(final ChunkPlane[] planes) {
+		for (final ChunkPlane plane : planes) {
+			final float dist = plane.normal.dot(xPos, yPos, zPos) + plane.d;
+			final float radius = plane.radius;
+			
+			if (dist > radius) {
 				continue;
 			}
-			return false;
+			
+			if (dist < -radius) {
+				return false;
+			}
+			
+			continue;
 		}
 		return true;
 	}
@@ -76,29 +81,6 @@ public class ChunkMesh implements Disposable
 	// For future optimization.
 	public int getVAOhandle() {
 		return vbo.getVAOhandle();
-	}
-	
-	private static final float SIZE = World.chunkSize/2;
-	
-	private boolean test(final Plane plane) {
-		final Vector3 normal = plane.normal;
-		
-		final float radius = 
-		SIZE * Math.abs(normal.x) +
-		SIZE * Math.abs(normal.y) +
-		SIZE * Math.abs(normal.z);
-
-		final float dist = normal.dot(xPos, yPos, zPos) + plane.d;
-
-		if (dist > radius) {
-			return true;
-		}
-		
-		if (dist < -radius) {
-			return false;
-		}
-		
-		return true;
 	}
 
 	@Override
