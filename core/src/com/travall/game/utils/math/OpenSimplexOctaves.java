@@ -3,19 +3,11 @@ package com.travall.game.utils.math;
 import java.util.Random;
 
 public class OpenSimplexOctaves {
-    private OpenSimplex[] octaves;
-    private double[] frequencies;
-    private double[] amplitudes;
-
-    private int octaveCount;
-    private double persistence;
-    private long seed;
+    private final OpenSimplex[] octaves;
+    private final double[] frequencies;
+    private final double[] amplitudes;
 
     public OpenSimplexOctaves(int octaveCount,double persistence, long seed) {
-        this.octaveCount = octaveCount;
-        this.persistence = persistence;
-        this.seed = seed;
-
         octaves = new OpenSimplex[octaveCount];
         frequencies = new double[octaveCount];
         amplitudes = new double[octaveCount];
