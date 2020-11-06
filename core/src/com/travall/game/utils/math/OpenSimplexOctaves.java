@@ -3,50 +3,41 @@ package com.travall.game.utils.math;
 import java.util.Random;
 
 public class OpenSimplexOctaves {
-    private OpenSimplex[] octaves;
-    private double[] frequencies;
-    private double[] amplitudes;
+	private final OpenSimplex[] octaves;
+	private final double[] frequencies;
+	private final double[] amplitudes;
 
-    private int octaveCount;
-    private double persistence;
-    private long seed;
+	public OpenSimplexOctaves(int octaveCount, double persistence, long seed) {
+		octaves = new OpenSimplex[octaveCount];
+		frequencies = new double[octaveCount];
+		amplitudes = new double[octaveCount];
 
-    public OpenSimplexOctaves(int octaveCount,double persistence, long seed) {
-        this.octaveCount = octaveCount;
-        this.persistence = persistence;
-        this.seed = seed;
+		Random rng = new Random(seed);
+		for (int i = 0; i < octaveCount; i++) {
+			octaves[i] = new OpenSimplex(rng.nextLong());
 
-        octaves = new OpenSimplex[octaveCount];
-        frequencies = new double[octaveCount];
-        amplitudes = new double[octaveCount];
+			frequencies[i] = Math.pow(2, i);
+			amplitudes[i] = Math.pow(persistence, octaveCount - i);
+		}
+	}
 
-        Random rng = new Random(seed);
-        for(int i = 0; i < octaveCount; i++) {
-            octaves[i] = new OpenSimplex(rng.nextLong());
+	public double getNoise(double x, double y) {
+		double result = 0;
 
-            frequencies[i] = Math.pow(2,i);
-            amplitudes[i] = Math.pow(persistence,octaveCount-i);
-        }
-    }
+		for (int i = 0; i < octaves.length; i++) {
+			result += octaves[i].eval(x / frequencies[i], y / frequencies[i]) * amplitudes[i];
+		}
 
-    public double getNoise(double x, double y) {
-        double result = 0;
+		return result;
+	}
 
-        for(int i = 0; i < octaves.length; i++)  {
-            result += octaves[i].eval(x / frequencies[i], y / frequencies[i]) * amplitudes[i];
-        }
+	public double getNoise(double x, double y, double z) {
+		double result = 0;
 
-        return result;
-    }
+		for (int i = 0; i < octaves.length; i++) {
+			result += octaves[i].eval(x / frequencies[i], y / frequencies[i], z / frequencies[i]) * amplitudes[i];
+		}
 
-    public double getNoise(double x, double y, double z) {
-        double result = 0;
-
-        for(int i = 0; i < octaves.length; i++)  {
-            result += octaves[i].eval(x / frequencies[i], y / frequencies[i], z / frequencies[i]) * amplitudes[i];
-        }
-
-        return result;
-    }
+		return result;
+	}
 }
-

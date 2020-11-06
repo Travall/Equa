@@ -30,7 +30,7 @@ public class DefaultGen extends Generator {
 	private final Biome[] biomes = {new Desert(), new Ground(), new Carmine()};
 	
 	public DefaultGen() {
-		seed = new Random().nextLong();
+		this(new Random().nextLong());
 	}
 	
 	public DefaultGen(long seed) {
@@ -44,7 +44,7 @@ public class DefaultGen extends Generator {
 		final FastNoiseOctaves CaveNoise = new FastNoiseOctaves(5, 0.25, random.nextLong());
 		final OpenSimplexOctaves FloatingIslandNoise = new OpenSimplexOctaves(7, 0.35, random.nextLong());
 		int maxTerrainHeight = Math.round(mapHeight / 1.7f);
-		final int terrainHeightOffset = 24;
+		final int terrainHeightOffset = 20;
 		final Biome prevalentBiomes[][] = new Biome[mapSize][mapSize];
 
 		for(int i = 0; i < biomes.length; i++) {
@@ -132,20 +132,20 @@ public class DefaultGen extends Generator {
 				centerZ = mapSize / 2;
 			}
 
-			for(int j = mapHeight; j > mapHeight / 2; j--) {
-				double diff = Math.abs(tempVec3.set(x,j,z).dst(centerX,centerY,centerZ)) / 50.0;
+			for(int y = mapHeight; y > mapHeight / 2; y--) {
+				double diff = dst(centerX,centerY,centerZ,x,y,z) / 50.0;
 
-				if(FloatingIslandNoise.getNoise(x,j,z) / diff > 0.18) {
-					if(world.isAirBlock(x,j,z)) {
-						if(world.isAirBlock(x,j+1,z)) {
-							world.setBlock(x,j,z,BlocksList.GRASS);
+				if(FloatingIslandNoise.getNoise(x,y,z) / diff > 0.18) {
+					if(world.isAirBlock(x,y,z)) {
+						if(world.isAirBlock(x,y+1,z)) {
+							world.setBlock(x,y,z,BlocksList.GRASS);
 							if(random.nextInt(10) == 1) {
-								world.setBlock(x,j+1,z,BlocksList.TALLGRASS);
+								world.setBlock(x,y+1,z,BlocksList.TALLGRASS);
 							}
-						} else if(world.getBlock(blockPos.set(x,j+1,z)) == BlocksList.GRASS) {
-							world.setBlock(x,j,z,BlocksList.DIRT);
+						} else if(world.getBlock(blockPos.set(x,y+1,z)) == BlocksList.GRASS) {
+							world.setBlock(x,y,z,BlocksList.DIRT);
 						} else {
-							world.setBlock(x,j,z,BlocksList.STONE);
+							world.setBlock(x,y,z,BlocksList.STONE);
 						}
 					}
 				}
@@ -322,5 +322,12 @@ public class DefaultGen extends Generator {
 	
 	private static float sqrt(int a) {
 		return (float)Math.sqrt(a);
+	}
+	
+	private static double dst(int x0, int y0, int z0, int x1, int y1, int z1) {
+		final int a = x1 - x0;
+		final int b = y1 - y0;
+		final int c = z1 - z0;
+		return Math.sqrt(a * a + b * b + c * c);
 	}
 }
