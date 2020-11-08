@@ -38,6 +38,11 @@ public final class UImanager
 	}
 	
 	@SuppressWarnings("unchecked")
+	public <T extends UI> T getUI(Class<T> clazz) {
+		return (T) map.get(clazz);
+	}
+	
+	@SuppressWarnings("unchecked")
 	public <T extends UI> T getCurrentUI() {
 		return (T) currentUI;
 	}

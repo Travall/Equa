@@ -4,11 +4,13 @@ import static com.badlogic.gdx.math.MathUtils.floor;
 import static com.travall.game.utils.BlockUtils.*;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
+import com.badlogic.gdx.utils.Null;
 import com.travall.game.blocks.Block;
 import com.travall.game.blocks.BlocksList;
 import com.travall.game.renderer.block.UltimateTexture;
@@ -34,12 +36,11 @@ public final class World implements Disposable {
 	public static final int xChunks = mapSize / chunkSize;
 	public static final int yChunks = mapHeight / chunkSize;
 	public static final int zChunks = mapSize / chunkSize;
+	public static final int[][][] STATIC_DATA = new int[mapSize][mapHeight][mapSize];
 	
 	public static final int waterLevel = Math.round(mapHeight/3.4f); // 4.5f
 	
 	public static final LightHandle lightHandle = new LightHandle(true);
-	
-	private static final int[][][] dataPool = new int[mapSize][mapHeight][mapSize];
 
 	public final int[][][] data;
 	public final short[][] shadowMap;
@@ -49,21 +50,24 @@ public final class World implements Disposable {
 	private final ChunkMesh[][][] opaqueChunkMeshes;
 	private final ChunkMesh[][][] transparentChunkMeshes;
 	private final ChunkPlane[] planes = new ChunkPlane[4];
+	
+	public final FileHandle folder;
 
-	public World(Generator generator) {
+	public World(FileHandle folder, @Null Generator generator) {
 		World.world = this;
+		this.folder = folder;
 		
 		for (int i = 0; i < planes.length; i++) {
 			planes[i] = new ChunkPlane();
 		}
 		
-		this.data = dataPool;
+		this.data = STATIC_DATA;
 		this.shadowMap = new short[mapSize][mapSize];
 		this.blockBuilder = new ChunkBuilder(this);
 		opaqueChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
 		transparentChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
 		
-		generator.genrate(this);
+		if (generator != null) generator.genrate(this);
 	}
 	
 	public void buildMesh() {
@@ -226,10 +230,11 @@ public final class World implements Disposable {
 			transparentChunkMeshes[x][y][z].dispose();
 		}
 		
+		final int[][][] data = this.data;
 		for (int x = 0; x < mapSize; x++)
 		for (int y = 0; y < mapHeight; y++)
 		for (int z = 0; z < mapSize; z++) {
-			dataPool[x][y][z] = 0;
+			data[x][y][z] = 0;
 		}
 
 		World.world = null;
