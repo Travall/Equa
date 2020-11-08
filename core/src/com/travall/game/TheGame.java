@@ -124,6 +124,10 @@ public class TheGame extends ScreenAdapter {
 
 		main.stage.draw();
 		BlockPos.reset(); // Always reset the pool.
+		
+		if (Inputs.isKeyJustPressed(Keys.ESCAPE)) {
+			main.setScreen(new WorldScreen(this));
+		}
 	}
 
 	private void update() {
