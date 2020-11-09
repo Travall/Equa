@@ -89,7 +89,7 @@ public final class World implements Disposable {
 		}
 	}
 	
-	public void createShadowMap() {
+	public void createShadowMap(final boolean fillLights) {
 		for (int x = 0; x < mapSize; x++)
 		for (int z = 0; z < mapSize; z++)
 		for (int y = mapHeight-1; y >= 0; y--) {
@@ -97,7 +97,7 @@ public final class World implements Disposable {
 				shadowMap[x][z] = (short)y;
 				break;
 			}
-			setSunLight(x, y, z, 15);
+			if (fillLights) setSunLight(x, y, z, 15);
 		}
 	}
 

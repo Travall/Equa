@@ -47,7 +47,7 @@ public class WorldIOhandle extends AsyncThreaded<World> {
 		
 		if (folder.exists()) {
 			final World world = WorldIO.load(folder);
-			world.createShadowMap();
+			world.createShadowMap(false);
 			return world;
 		}
 		

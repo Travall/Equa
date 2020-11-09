@@ -234,7 +234,7 @@ public class DefaultGen extends Generator {
 
 		// creating shadow map.
 		setStatus("Creating Shadow Map..");
-		world.createShadowMap();
+		world.createShadowMap(true);
 		
 		// adding filling nodes.
 		setStatus("Filling Skylights..");
