@@ -234,15 +234,7 @@ public class DefaultGen extends Generator {
 
 		// creating shadow map.
 		setStatus("Creating Shadow Map..");
-		for (int x = 0; x < mapSize; x++)
-		for (int z = 0; z < mapSize; z++)
-		for (int y = mapHeight-1; y >= 0; y--) {
-			if (BlocksList.get(world.data[x][y][z]).getMaterial().canBlockSunRay()) {
-				world.shadowMap[x][z] = (short)y;
-				break;
-			}
-			world.setSunLight(x, y, z, 15);
-		}
+		world.createShadowMap();
 		
 		// adding filling nodes.
 		setStatus("Filling Skylights..");

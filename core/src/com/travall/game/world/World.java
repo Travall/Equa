@@ -2,6 +2,8 @@ package com.travall.game.world;
 
 import static com.badlogic.gdx.math.MathUtils.floor;
 import static com.travall.game.utils.BlockUtils.*;
+import static com.travall.game.world.World.mapHeight;
+import static com.travall.game.world.World.mapSize;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -84,6 +86,18 @@ public final class World implements Disposable {
 			
 			opaqueChunkMeshes[x][y][z] = combinedChunk.opaque.setPos(xPos, yPos, zPos);
 			transparentChunkMeshes[x][y][z] = combinedChunk.transparent.setPos(xPos, yPos, zPos);
+		}
+	}
+	
+	public void createShadowMap() {
+		for (int x = 0; x < mapSize; x++)
+		for (int z = 0; z < mapSize; z++)
+		for (int y = mapHeight-1; y >= 0; y--) {
+			if (BlocksList.get(data[x][y][z]).getMaterial().canBlockSunRay()) {
+				shadowMap[x][z] = (short)y;
+				break;
+			}
+			setSunLight(x, y, z, 15);
 		}
 	}
 
