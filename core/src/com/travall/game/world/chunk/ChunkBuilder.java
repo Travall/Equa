@@ -1,31 +1,23 @@
 package com.travall.game.world.chunk;
 
+import static com.travall.game.world.World.world;
+
 import com.badlogic.gdx.graphics.GL20;
 import com.travall.game.blocks.Block;
 import com.travall.game.blocks.BlocksList;
 import com.travall.game.renderer.quad.QuadBuilder;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.BlockUtils;
-import com.travall.game.world.World;
 
-public class ChunkBuilder {
-	private final World world;
-	private final QuadBuilder opaqeBuilder;
-	private final QuadBuilder transBuilder;
-	private final CombinedChunk combinedChunk;
+public final class ChunkBuilder {
+	private static final QuadBuilder opaqeBuilder = new QuadBuilder();
+	private static final QuadBuilder transBuilder = new QuadBuilder();
+	private static final CombinedChunk combinedChunk = new CombinedChunk();
 
-	public ChunkBuilder(World world) {
-		this.world = world;
-		this.combinedChunk = new CombinedChunk();
-		this.opaqeBuilder = new QuadBuilder();
-		this.transBuilder = new QuadBuilder();
-	}
+	private static final BlockPos position = new BlockPos();
 
-	private final BlockPos position = new BlockPos();
-
-	public CombinedChunk buildChunk(int indexX, int indexY, int indexZ, int chunkSize, ChunkMesh opaqeMesh, ChunkMesh transMesh) {
+	public static CombinedChunk buildChunk(int indexX, int indexY, int indexZ, int chunkSize, ChunkMesh opaqeMesh, ChunkMesh transMesh) {
 		final int[][][] data = world.data;
-		final BlockPos position = this.position;
 		
 		opaqeBuilder.begin();
 		transBuilder.begin();

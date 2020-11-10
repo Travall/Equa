@@ -2,8 +2,6 @@ package com.travall.game.world;
 
 import static com.badlogic.gdx.math.MathUtils.floor;
 import static com.travall.game.utils.BlockUtils.*;
-import static com.travall.game.world.World.mapHeight;
-import static com.travall.game.world.World.mapSize;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -32,7 +30,7 @@ public final class World implements Disposable {
 	public static final int mapSize = 512;
 	public static final int mapHeight = 256;
 
-	public static final int chunkShift = 4; // 1 << 4 = 16. I set it back from 32 to 16 due to vertices limitations.
+	public static final int chunkShift = 4;
 	public static final int chunkSize = 1 << chunkShift;
 	public static final int chunkMask = chunkSize - 1;
 	public static final int xChunks = mapSize / chunkSize;
@@ -47,7 +45,6 @@ public final class World implements Disposable {
 	public final int[][][] data;
 	public final short[][] shadowMap;
 	
-	private final ChunkBuilder blockBuilder;
 	private final BlockPos blockPos = new BlockPos();
 	private final ChunkMesh[][][] opaqueChunkMeshes;
 	private final ChunkMesh[][][] transparentChunkMeshes;
@@ -65,7 +62,6 @@ public final class World implements Disposable {
 		
 		this.data = STATIC_DATA;
 		this.shadowMap = new short[mapSize][mapSize];
-		this.blockBuilder = new ChunkBuilder(this);
 		opaqueChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
 		transparentChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
 		
@@ -77,7 +73,7 @@ public final class World implements Disposable {
 		for (int x = 0; x < xChunks; x++)
 		for (int y = 0; y < yChunks; y++)
 		for (int z = 0; z < zChunks; z++) {
-			CombinedChunk combinedChunk = blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, null,null);
+			CombinedChunk combinedChunk = ChunkBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, null,null);
 			
 			final float
 			xPos = (x << chunkShift) + haft,
@@ -129,7 +125,7 @@ public final class World implements Disposable {
 		for(int z = 0; z < zChunks; z++) {
 			ChunkMesh mesh = opaqueChunkMeshes[x][y][z];
 			if (mesh.isDirty) {
-				blockBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, opaqueChunkMeshes[x][y][z],transparentChunkMeshes[x][y][z]);
+				ChunkBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, opaqueChunkMeshes[x][y][z],transparentChunkMeshes[x][y][z]);
 			}
 
 			int isVisable = -1;
