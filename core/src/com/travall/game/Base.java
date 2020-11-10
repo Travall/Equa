@@ -28,8 +28,8 @@ abstract class Base extends Game {
 	
 	@Override
 	public void render() {
-		super.render();
 		nextScreen();
+		super.render();
 		Inputs.reset();
 	}
 	
