@@ -1,12 +1,9 @@
 package com.travall.game;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.travall.game.handles.Inputs;
@@ -18,7 +15,8 @@ abstract class Base extends Game {
 	public Stage stage;
 	
 	public final InputMultiplexer inputs = new InputMultiplexer();
-	public final Array<Actor> actors = new Array<>();
+	
+	protected Screen newScreen;
 	
 	public void scale(float scale) {
 		final ScreenViewport view = (ScreenViewport)stage.getViewport();
@@ -30,6 +28,7 @@ abstract class Base extends Game {
 	
 	@Override
 	public void render() {
+		nextScreen();
 		super.render();
 		Inputs.reset();
 	}
@@ -44,18 +43,24 @@ abstract class Base extends Game {
 		Inputs.clear();
 	}
 	
-	@Override
-	public void setScreen(Screen screen) {
-		if (this.screen != null) this.screen.hide();
-		this.screen = screen;
+	protected void nextScreen() {
+		if (newScreen == null) return;
+		
+		if (screen != null) screen.hide();
+		screen = newScreen;
+		newScreen = null;
 		
 		stage.clear(); // Always clear UI when switching screen.
 		inputs.clear(); // Always clear the input processors.
 		
-		if (screen == null) return;
 		screen.show();
 		screen.resize(Utils.screen.w, Utils.screen.h);
 		StageUtils.resize(stage);
+	}
+	
+	@Override
+	public void setScreen(Screen screen) {
+		newScreen = screen;
 	}
 	
 	@Override

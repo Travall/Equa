@@ -71,7 +71,6 @@ public class WorldScreen extends ScreenAdapter {
 		
 		if (worldhandle.isDone()) {
 			if (isSaving) {
-				game.dispose();
 				main.setScreen(main.menu);
 			} else {
 				World world = null;
@@ -98,6 +97,7 @@ public class WorldScreen extends ScreenAdapter {
 	
 	@Override
 	public void dispose() {
+		if (game != null) game.dispose();
 		worldhandle.dispose();
 	}
 }

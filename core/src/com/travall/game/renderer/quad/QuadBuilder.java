@@ -1,7 +1,6 @@
 package com.travall.game.renderer.quad;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.FloatArray;
 import com.travall.game.glutils.QuadIndexBuffer;
 import com.travall.game.renderer.vertices.VertInfo;
@@ -12,7 +11,7 @@ public class QuadBuilder extends QuadInfo {
 
 	private static final int maxFloats = QuadIndexBuffer.maxVertex*VoxelTerrain.floatSize;
 
-	private final FloatArray vertices = new FloatArray(256) {
+	private final FloatArray vertices = new FloatArray(512) {
 		protected float[] resize (int newSize) {
 			if (items.length == maxFloats) throw new IllegalStateException("Max vertex size has been reached!");
 			return super.resize(Math.min(newSize, maxFloats));
