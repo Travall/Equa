@@ -108,7 +108,7 @@ public class ChunkManager implements Disposable {
 	public void dispose() {
 		if (!hasInts) return;
 		
-		Arrays.fill(trans.items, 0, trans.items.length, null);
+		Arrays.fill(trans.items, null);
 		for (int x = 0; x < xChunks; x++)
 		for (int y = 0; y < yChunks; y++)
 		for (int z = 0; z < zChunks; z++) {
