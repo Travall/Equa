@@ -1,25 +1,15 @@
 package com.travall.game.world;
 
-import static com.badlogic.gdx.math.MathUtils.floor;
 import static com.travall.game.utils.BlockUtils.*;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.math.*;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Null;
 import com.travall.game.blocks.Block;
 import com.travall.game.blocks.BlocksList;
-import com.travall.game.renderer.block.UltimateTexture;
-import com.travall.game.renderer.vertices.VoxelTerrain;
 import com.travall.game.utils.BlockPos;
-import com.travall.game.utils.math.ChunkPlane;
-import com.travall.game.world.chunk.ChunkBuilder;
-import com.travall.game.world.chunk.ChunkMesh;
-import com.travall.game.world.chunk.CombinedChunk;
+import com.travall.game.world.chunk.ChunkManager;
 import com.travall.game.world.gen.Generator;
 import com.travall.game.world.lights.LightHandle;
 
@@ -45,44 +35,22 @@ public final class World implements Disposable {
 	public final int[][][] data;
 	public final short[][] shadowMap;
 	
-	private final BlockPos blockPos = new BlockPos();
-	private final ChunkMesh[][][] opaqueChunkMeshes;
-	private final ChunkMesh[][][] transparentChunkMeshes;
-	private final ChunkPlane[] planes = new ChunkPlane[4];
-	
+	public final ChunkManager chunkManager;
 	public final FileHandle folder;
 
 	public World(FileHandle folder, @Null Generator generator) {
 		World.world = this;
 		this.folder = folder;
 		
-		for (int i = 0; i < planes.length; i++) {
-			planes[i] = new ChunkPlane();
-		}
-		
 		this.data = STATIC_DATA;
 		this.shadowMap = new short[mapSize][mapSize];
-		opaqueChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
-		transparentChunkMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
+		this.chunkManager = new ChunkManager();
 		
 		if (generator != null) generator.genrate(this);
 	}
 	
-	public void buildMesh() {
-		final int haft = chunkSize / 2;
-		for (int x = 0; x < xChunks; x++)
-		for (int y = 0; y < yChunks; y++)
-		for (int z = 0; z < zChunks; z++) {
-			CombinedChunk combinedChunk = ChunkBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, null,null);
-			
-			final float
-			xPos = (x << chunkShift) + haft,
-			yPos = (y << chunkShift) + haft,
-			zPos = (z << chunkShift) + haft;
-			
-			opaqueChunkMeshes[x][y][z] = combinedChunk.opaque.setPos(xPos, yPos, zPos);
-			transparentChunkMeshes[x][y][z] = combinedChunk.transparent.setPos(xPos, yPos, zPos);
-		}
+	public void intsMeshes() {
+		chunkManager.intsMeshes();
 	}
 	
 	public void createShadowMap(final boolean fillLights) {
@@ -103,96 +71,41 @@ public final class World implements Disposable {
 
 		return shadowMap[x][z];
 	}
-
-	private final Array<ChunkMesh> transMeshes = new Array<>(32);
 	
 	public void render(Camera camera) {
 		lightHandle.calculateLights(true); // Calculate lights.
-		
-		final Plane[] tmpPlanes =  camera.frustum.planes;
-		for (int i = 2; i < tmpPlanes.length; i++) {
-			planes[i-2].set(tmpPlanes[i]);
-		}
-
-		UltimateTexture.texture.bind();
-		VoxelTerrain.begin(camera);
-		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
-		Gdx.gl.glDisable(GL20.GL_BLEND);
-		
-		transMeshes.size = 0;
-		for(int x = 0; x < xChunks; x++)
-		for(int y = 0; y < yChunks; y++)
-		for(int z = 0; z < zChunks; z++) {
-			ChunkMesh mesh = opaqueChunkMeshes[x][y][z];
-			if (mesh.isDirty) {
-				ChunkBuilder.buildChunk(x*chunkSize, y*chunkSize, z*chunkSize, chunkSize, opaqueChunkMeshes[x][y][z],transparentChunkMeshes[x][y][z]);
-			}
-
-			int isVisable = -1;
-			if(!mesh.isEmpty && (isVisable = mesh.isVisable(planes)?1:0) == 1) {
-				mesh.render();
-			}
-			
-			mesh = transparentChunkMeshes[x][y][z];
-			if (!mesh.isEmpty && (isVisable == 1 || (isVisable == -1 && mesh.isVisable(planes)))) {
-				transMeshes.add(mesh);
-			}
-		}
-		Gdx.gl30.glBindVertexArray(0);
-		
-		if (transMeshes.notEmpty()) {
-			if (getBlock(blockPos.set(floor(camera.position.x), floor(camera.position.y), floor(camera.position.z))).getMaterial().isTransparent())
-				Gdx.gl.glDisable(GL20.GL_CULL_FACE);
-
-			Gdx.gl.glEnable(GL20.GL_BLEND);
-			for (ChunkMesh mesh : transMeshes) {
-				mesh.render();
-			}
-			Gdx.gl30.glBindVertexArray(0);
-			Gdx.gl.glDisable(GL20.GL_BLEND);
-		}
-		
-		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
-		VoxelTerrain.end();
+		chunkManager.render(camera);
 	}
 
 	public void setMeshDirtyShellAt(int x, int y, int z) {
 		final int indexX = x >> chunkShift;
 		final int indexY = y >> chunkShift;
 		final int indexZ = z >> chunkShift;
-		setMeshDirtyAt(indexX, indexY, indexZ);
+		chunkManager.setDirtyIndex(indexX, indexY, indexZ);
 
 		if ((x & chunkMask) == 0) {
-			setMeshDirtyAt(indexX - 1, indexY, indexZ);
+			chunkManager.setDirtyIndex(indexX - 1, indexY, indexZ);
 		}
 
 		if ((x & chunkMask) == 15) {
-			setMeshDirtyAt(indexX + 1, indexY, indexZ);
+			chunkManager.setDirtyIndex(indexX + 1, indexY, indexZ);
 		}
 
 		if ((y & chunkMask) == 0) {
-			setMeshDirtyAt(indexX, indexY - 1, indexZ);
+			chunkManager.setDirtyIndex(indexX, indexY - 1, indexZ);
 		}
 
 		if ((y & chunkMask) == 15) {
-			setMeshDirtyAt(indexX, indexY + 1, indexZ);
+			chunkManager.setDirtyIndex(indexX, indexY + 1, indexZ);
 		}
 
 		if ((z & chunkMask) == 0) {
-			setMeshDirtyAt(indexX, indexY, indexZ - 1);
+			chunkManager.setDirtyIndex(indexX, indexY, indexZ - 1);
 		}
 
 		if ((z & chunkMask) == 15) {
-			setMeshDirtyAt(indexX, indexY, indexZ + 1);
+			chunkManager.setDirtyIndex(indexX, indexY, indexZ + 1);
 		}
-	}
-
-	public void setMeshDirtyAt(int indexX, int indexY, int indexZ) {
-		if (indexX < 0 || indexX >= xChunks || indexY < 0 || indexY >= yChunks || indexZ < 0 || indexZ >= zChunks)
-			return;
-
-		opaqueChunkMeshes[indexX][indexY][indexZ].isDirty = true;
-		transparentChunkMeshes[indexX][indexY][indexZ].isDirty = true;
 	}
 
 	public boolean isAirBlock(int x, int y, int z) {
@@ -233,12 +146,7 @@ public final class World implements Disposable {
 
 	@Override
 	public void dispose() {
-		for (int x = 0; x < xChunks; x++)
-		for (int y = 0; y < yChunks; y++)
-		for (int z = 0; z < zChunks; z++) {
-			opaqueChunkMeshes[x][y][z].dispose();
-			transparentChunkMeshes[x][y][z].dispose();
-		}
+		chunkManager.dispose();
 		
 		final int[][][] data = this.data;
 		for (int x = 0; x < mapSize; x++)

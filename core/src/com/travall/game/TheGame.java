@@ -85,7 +85,7 @@ public class TheGame extends ScreenAdapter {
 		crosshair.setUserObject(new Vector2(0.5f, 0.5f));
 		crosshair.setSize(8, 8);
 		
-		world.buildMesh();
+		world.intsMeshes();
 	}
 	
 	@Override

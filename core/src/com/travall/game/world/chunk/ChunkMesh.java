@@ -19,8 +19,6 @@ public class ChunkMesh implements Disposable
 	
 	public boolean isEmpty;
 	public boolean isDirty;
-	
-	private float xPos, yPos, zPos;
 
 	public ChunkMesh(ByteBuffer buffer, FloatArray verts, VertContext context, int glDraw) {
 		byteSize = context.getAttrs().vertexSize;
@@ -34,13 +32,6 @@ public class ChunkMesh implements Disposable
 		count = (verts.size / byteSize) * 6;
 		BufferUtils.copy(verts.items, buffer, verts.size, 0);
 		vbo = new VBO(buffer, context, glDraw, true);
-	}
-	
-	public ChunkMesh setPos(float x, float y, float z) {
-		xPos = x;
-		yPos = y;
-		zPos = z;
-		return this;
 	}
 	
 	public void render() {
@@ -60,9 +51,9 @@ public class ChunkMesh implements Disposable
 		isEmpty = false;
 	}
 	
-	public boolean isVisable(final ChunkPlane[] planes) {
+	public boolean isVisable(final ChunkPlane[] planes, float x, float y, float z) {
 		for (final ChunkPlane plane : planes) {
-			final float dist = plane.normal.dot(xPos, yPos, zPos) + plane.d;
+			final float dist = plane.normal.dot(x, y, z) + plane.d;
 			final float radius = plane.radius;
 			
 			if (dist > radius) {

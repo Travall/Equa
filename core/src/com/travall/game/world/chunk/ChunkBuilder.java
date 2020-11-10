@@ -19,6 +19,10 @@ public final class ChunkBuilder {
 	public static CombinedChunk buildChunk(int indexX, int indexY, int indexZ, int chunkSize, ChunkMesh opaqeMesh, ChunkMesh transMesh) {
 		final int[][][] data = world.data;
 		
+		indexX *= chunkSize;
+		indexY *= chunkSize;
+		indexZ *= chunkSize;
+		
 		opaqeBuilder.begin();
 		transBuilder.begin();
 		for (int x = indexX; x < indexX + chunkSize; x++)
