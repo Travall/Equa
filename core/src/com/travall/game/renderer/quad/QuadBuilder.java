@@ -3,9 +3,10 @@ package com.travall.game.renderer.quad;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.FloatArray;
 import com.travall.game.glutils.QuadIndexBuffer;
+import com.travall.game.renderer.chunk.ChunkMesh;
+import com.travall.game.renderer.chunk.ChunkVBO;
 import com.travall.game.renderer.vertices.VertInfo;
 import com.travall.game.renderer.vertices.VoxelTerrain;
-import com.travall.game.world.chunk.ChunkMesh;
 
 public class QuadBuilder extends QuadInfo {
 
@@ -66,13 +67,11 @@ public class QuadBuilder extends QuadInfo {
 	}
 
 	/** Will return null if vertices are empty.  */
-	public ChunkMesh end(int glDraw) {
-		return new ChunkMesh(VoxelTerrain.BUFFER, vertices, VoxelTerrain.context, glDraw);
+	public ChunkVBO end() {
+		return new ChunkVBO(vertices);
 	}
 
-	public ChunkMesh end(ChunkMesh mesh) {
-		mesh.setVertices(vertices);
-		mesh.isDirty = false;
-		return mesh;
+	public void end(ChunkVBO vbo) {
+		vbo.setVertices(vertices);
 	}
 }

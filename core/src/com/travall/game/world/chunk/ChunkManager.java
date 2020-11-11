@@ -12,13 +12,13 @@ import com.badlogic.gdx.math.Plane;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.travall.game.renderer.block.UltimateTexture;
+import com.travall.game.renderer.chunk.ChunkMesh;
 import com.travall.game.renderer.vertices.VoxelTerrain;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.math.ChunkPlane;
 
 public class ChunkManager implements Disposable {
-	private final ChunkMesh[][][] opaqeMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
-	private final ChunkMesh[][][] transMeshes = new ChunkMesh[xChunks][yChunks][zChunks];
+	private final ChunkMesh[][][] meshes = new ChunkMesh[xChunks][yChunks][zChunks];
 	
 	private static final ChunkPlane[] planes = new ChunkPlane[4];
 	private static final BlockPos blockPos = new BlockPos();
@@ -28,13 +28,11 @@ public class ChunkManager implements Disposable {
 	private boolean hasInts;
 	
 	public void intsMeshes() {
-		CombinedChunk combinedChunk;
+		if (hasInts) return;
 		for (int x = 0; x < xChunks; x++)
 		for (int y = 0; y < yChunks; y++)
 		for (int z = 0; z < zChunks; z++) {
-			combinedChunk = ChunkBuilder.buildChunk(x, y, z, chunkSize, null,null);
-			opaqeMeshes[x][y][z] = combinedChunk.opaque;
-			transMeshes[x][y][z] = combinedChunk.transparent;
+			meshes[x][y][z] = ChunkBuilder.buildChunk(x, y, z, null);
 		}
 		hasInts = true;
 	}
@@ -54,9 +52,9 @@ public class ChunkManager implements Disposable {
 		for(int x = 0; x < xChunks; x++)
 		for(int y = 0; y < yChunks; y++)
 		for(int z = 0; z < zChunks; z++) {
-			ChunkMesh mesh = opaqeMeshes[x][y][z];
+			final ChunkMesh mesh = meshes[x][y][z];
 			if (mesh.isDirty) {
-				ChunkBuilder.buildChunk(x, y, z, chunkSize, opaqeMeshes[x][y][z], transMeshes[x][y][z]);
+				ChunkBuilder.buildChunk(x, y, z, mesh);
 			}
 
 			final float xPos, yPos, zPos;
@@ -65,12 +63,11 @@ public class ChunkManager implements Disposable {
 			zPos = (z << chunkShift) + haft;
 			
 			int isVisable = -1;
-			if(!mesh.isEmpty && (isVisable = mesh.isVisable(planes, xPos, yPos, zPos)?1:0) == 1) {
-				mesh.render();
+			if(!mesh.opaqeVBO.isEmpty && (isVisable = mesh.isVisable(planes, xPos, yPos, zPos)?1:0) == 1) {
+				mesh.opaqeVBO.render();
 			}
 			
-			mesh = transMeshes[x][y][z];
-			if (!mesh.isEmpty && (isVisable == 1 || (isVisable == -1 && mesh.isVisable(planes, xPos, yPos, zPos)))) {
+			if (!mesh.transVBO.isEmpty && (isVisable == 1 || (isVisable == -1 && mesh.isVisable(planes, xPos, yPos, zPos)))) {
 				trans.add(mesh);
 			}
 		}
@@ -82,7 +79,7 @@ public class ChunkManager implements Disposable {
 
 			Gdx.gl.glEnable(GL20.GL_BLEND);
 			for (ChunkMesh mesh : trans) {
-				mesh.render();
+				mesh.transVBO.render();
 			}
 			Gdx.gl30.glBindVertexArray(0);
 			Gdx.gl.glDisable(GL20.GL_BLEND);
@@ -100,8 +97,7 @@ public class ChunkManager implements Disposable {
 		if (x < 0 || x >= xChunks || y < 0 || y >= yChunks || z < 0 || z >= zChunks)
 			return;
 		
-		opaqeMeshes[x][y][z].isDirty = true;
-		transMeshes[z][y][z].isDirty = true;
+		meshes[x][y][z].isDirty = true;
 	}
 	
 	@Override
@@ -112,8 +108,7 @@ public class ChunkManager implements Disposable {
 		for (int x = 0; x < xChunks; x++)
 		for (int y = 0; y < yChunks; y++)
 		for (int z = 0; z < zChunks; z++) {
-			opaqeMeshes[x][y][z].dispose();
-			transMeshes[z][y][z].dispose();
+			meshes[x][y][z].dispose();
 		}
 		
 		hasInts = false;
