@@ -108,6 +108,7 @@ public class Main extends Base {
 	private void getAssets() {
 		Assets.gui = asset.get("Textures/gui.png");
 		skin.add("default", asset.get("Fonts/Mozart.fnt"));
+		skin.getFont("default").setUseIntegerPositions(true);
 		
 		loadSkin();
 	}
