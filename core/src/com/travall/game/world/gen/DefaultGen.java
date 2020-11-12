@@ -104,6 +104,7 @@ public class DefaultGen extends Generator {
 				break;
 			}
 			
+			// Caves
 			for (int i = yValue; i >= 0; i--) {
 				final float caves = Utils.normalize(CaveNoise.getNoise(x, i, z), maxTerrainHeight) * 0.95f;
 				if (caves >= maxTerrainHeight - (height - i / 2f) && caves > maxTerrainHeight / 2f && i > 0) {
@@ -262,8 +263,7 @@ public class DefaultGen extends Generator {
 		
 		try {
 			Thread.sleep(50);
-		} catch (InterruptedException e) {
-		}
+		} catch (InterruptedException e) {}
 	}
 
 	private Biome getPrevalent(double x, double z) {
@@ -289,7 +289,6 @@ public class DefaultGen extends Generator {
 			final float sample = 1.0f - (sqrt((xx*xx)+(zz*zz)) / size);
 			GAUSSIAN_MATRIX[x][z] = sample > 0.0f ? sample : 0.0f;
 		}
-		
 	}
 
 	/** Bilinear interpolation. */

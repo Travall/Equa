@@ -66,5 +66,6 @@ abstract class Base extends Game {
 	@Override
 	public void dispose() {
 		if (screen != null) screen.dispose();
+		if (newScreen != null) newScreen.dispose();
 	}
 }

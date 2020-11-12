@@ -95,8 +95,13 @@ public class WorldScreen extends ScreenAdapter {
 		dispose();
 	}
 	
+	private boolean hasDispose;
+	
 	@Override
 	public void dispose() {
+		if (hasDispose) return;
+		hasDispose = true;
+		
 		if (game != null) game.dispose();
 		worldhandle.dispose();
 	}

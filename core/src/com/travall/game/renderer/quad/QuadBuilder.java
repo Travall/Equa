@@ -3,7 +3,6 @@ package com.travall.game.renderer.quad;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.FloatArray;
 import com.travall.game.glutils.QuadIndexBuffer;
-import com.travall.game.renderer.chunk.ChunkMesh;
 import com.travall.game.renderer.chunk.ChunkVBO;
 import com.travall.game.renderer.vertices.VertInfo;
 import com.travall.game.renderer.vertices.VoxelTerrain;
@@ -66,7 +65,6 @@ public class QuadBuilder extends QuadInfo {
 		vertices.clear();
 	}
 
-	/** Will return null if vertices are empty.  */
 	public ChunkVBO end() {
 		return new ChunkVBO(vertices);
 	}

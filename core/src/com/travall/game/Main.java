@@ -89,6 +89,8 @@ public class Main extends Base {
 		Picker.dispose();
 		asset.dispose();
 		skin.dispose();
+		
+		menu.dispose();
 		super.dispose();
 		stage.dispose();
 		

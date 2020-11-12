@@ -183,8 +183,13 @@ public class TheGame extends ScreenAdapter {
 		Gdx.input.setCursorCatched(false);
 	}
 
+	private boolean hasDispose;
+	
 	@Override
 	public void dispose() {
+		if (hasDispose) return;
+		hasDispose = true;
+		
 		crosshairTex.dispose();
 		world.dispose();
 		skybox.dispose();

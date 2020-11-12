@@ -4,14 +4,13 @@ import static com.travall.game.world.World.STATIC_DATA;
 import static com.travall.game.world.World.mapHeight;
 import static com.travall.game.world.World.mapSize;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
 public class WorldOutputStream extends OutputStream {
 	private int pos;
 
 	@Override
-	public void write(int b) throws IOException {
+	public void write(int b) {
 		if (pos >= WorldIO.SIZE) return;
 		
 		final int byteIndex = pos & 3;
