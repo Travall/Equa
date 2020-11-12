@@ -76,7 +76,7 @@ public class VBObase implements Disposable {
 	
 	/** Create the VAO and buffer handle and bind it. */
 	protected final void createHandles() {
-		// Create the VAO and buffer handle.
+		// Create the VAO handle.
 		tmpHandle.clear();
 		gl30.glGenVertexArrays(1, tmpHandle);
 		vaoHandle = tmpHandle.get();
