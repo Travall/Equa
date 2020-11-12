@@ -2,14 +2,13 @@ package com.travall.game.io;
 
 import static com.travall.game.world.World.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 public class WorldInputStream extends InputStream {
 	private int pos;
 
 	@Override
-	public int read() throws IOException {
+	public int read() {
 		if (pos >= WorldIO.SIZE) return -1;
 		
 		final int byteIndex = pos & 3;

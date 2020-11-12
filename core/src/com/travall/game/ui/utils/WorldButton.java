@@ -38,7 +38,6 @@ public class WorldButton extends TextButton {
 	public boolean isWorldExists() {
 		final boolean exists = folder.exists();
 		setText(exists ? "*"+getName()+"*" : getName());
-		//pack();
 		return exists;
 	}
 }

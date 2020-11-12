@@ -14,6 +14,7 @@ import com.travall.game.Main;
 import com.travall.game.TheMenu;
 import com.travall.game.ui.utils.PosOffset;
 import com.travall.game.ui.utils.UIBase;
+import com.travall.game.ui.utils.UImanager;
 
 public class Menu extends UIBase {
 	
@@ -30,19 +31,31 @@ public class Menu extends UIBase {
 		buttons.setUserObject(new Vector2(0.5f, 0.4f));
 		actors.add(buttons);
 		
+		final UImanager manager = menu.manager;
+		
 		TextButton butt = new TextButton("Start", main.skin);
 		butt.setSize(128, 28);
-		butt.setPosition(0, 24, Align.center);
+		butt.setPosition(0, 48, Align.center);
 		butt.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
-				menu.manager.setUI(WorldSeletion.class);
+				manager.setUI(WorldSeletion.class);
+			}
+		});
+		buttons.addActor(butt);
+		
+		butt = new TextButton("Option", main.skin);
+		butt.setSize(128, 28);
+		butt.setPosition(0, 8, Align.center);
+		butt.addListener(new ClickListener() {
+			public void clicked(InputEvent event, float x, float y) {
+				manager.setUI(Option.class);
 			}
 		});
 		buttons.addActor(butt);
 		
 		butt = new TextButton("Exit", main.skin);
 		butt.setSize(128, 28);
-		butt.setPosition(0, -24, Align.center);
+		butt.setPosition(0, -32, Align.center);
 		butt.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
 				Gdx.app.exit();

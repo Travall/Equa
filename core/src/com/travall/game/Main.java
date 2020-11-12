@@ -89,6 +89,8 @@ public class Main extends Base {
 		Picker.dispose();
 		asset.dispose();
 		skin.dispose();
+		
+		menu.dispose();
 		super.dispose();
 		stage.dispose();
 		
@@ -106,6 +108,7 @@ public class Main extends Base {
 	private void getAssets() {
 		Assets.gui = asset.get("Textures/gui.png");
 		skin.add("default", asset.get("Fonts/Mozart.fnt"));
+		skin.getFont("default").setUseIntegerPositions(true);
 		
 		loadSkin();
 	}
