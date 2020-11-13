@@ -4,8 +4,10 @@ import static com.travall.game.world.World.*;
 
 import java.util.Random;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.travall.game.blocks.Block;
 import com.travall.game.blocks.BlocksList;
 import com.travall.game.blocks.materials.Material;
@@ -41,10 +43,10 @@ public class DefaultGen extends Generator {
 	public void genrate(final World world) {
 		setStatus("Creating noises..");
 		final Random random = new Random(seed);
-		final FastNoiseOctaves CaveNoise = new FastNoiseOctaves(5, 0.25, random.nextLong());
-		final OpenSimplexOctaves FloatingIslandNoise = new OpenSimplexOctaves(7, 0.35, random.nextLong());
+		final FastNoiseOctaves CaveNoise = new FastNoiseOctaves(5, 0.32, random.nextLong()); // 0.25 for FastNoise, and 0.24 for SimplexNoise
+		final FastNoiseOctaves FloatingIslandNoise = new FastNoiseOctaves(7, 0.37, random.nextLong());
 		int maxTerrainHeight = Math.round(mapHeight / 1.7f);
-		final int terrainHeightOffset = 20;
+		final int terrainHeightOffset = 32;
 		final Biome prevalentBiomes[][] = new Biome[mapSize][mapSize];
 
 		for(int i = 0; i < biomes.length; i++) {
@@ -105,19 +107,34 @@ public class DefaultGen extends Generator {
 			}
 			
 			// Caves
-			for (int i = yValue; i >= 0; i--) {
-				final float caves = Utils.normalize(CaveNoise.getNoise(x, i, z), maxTerrainHeight) * 0.95f;
-				if (caves >= maxTerrainHeight - (height - i / 2f) && caves > maxTerrainHeight / 2f && i > 0) {
-					world.setBlock(x, i, z, BlocksList.AIR);
+			// /*
+			float frequent = 0.75f;
+			for (int y = yValue; y >= 0; y--) {
+				if (CaveNoise.getNoise(x*0.7f, y*0.8f, z*0.7f) * frequent > 0.17f) { // 0.115f for FastNoise, and 0.13f for SimplexNoise
+					world.setBlock(x, y, z, BlocksList.AIR);
 				}
+				frequent = Math.min(1.0f, frequent + 0.025f);
+			} 
+			// */
+		}
+		
+		
+		setStatus("Creating Worms..");
+		final Array<Worm> worms = new Array<>();
+		for (int x = 0; x < xChunks; x++)
+		for (int y = 0; y < xChunks; y++)
+		for (int z = 0; z < xChunks; z++) {
+			if (random.nextInt(55) == 0) {
+				worms.add(new Worm(random, x << chunkShift, y << chunkShift, z << chunkShift));
 			}
 		}
-
+		Worm.updateAll(worms); 
+		
 		setStatus("Building SkyIslands..");
 		for (int x = 0; x < mapSize; x++)
 		for (int z = 0; z < mapSize; z++) {
 			int centerX = mapSize / 4;
-			int centerY = mapHeight - mapHeight / 4;
+			int centerY = mapHeight - mapHeight / 5;
 			int centerZ = mapSize / 4;
 
 			if(x >= mapSize / 2) {
@@ -134,9 +151,9 @@ public class DefaultGen extends Generator {
 			}
 
 			for(int y = mapHeight; y > mapHeight / 2; y--) {
-				double diff = dst(centerX,centerY,centerZ,x,y,z) / 50.0;
+				float diff = dst(centerX,centerY,centerZ,x,y,z) / 40.0f;
 
-				if(FloatingIslandNoise.getNoise(x,y,z) / diff > 0.18) {
+				if((FloatingIslandNoise.getNoise(x,y,z) + 0.15f) / diff > 0.2f) {
 					if(world.isAirBlock(x,y,z)) {
 						if(world.isAirBlock(x,y+1,z)) {
 							world.setBlock(x,y,z,BlocksList.GRASS);
@@ -162,7 +179,7 @@ public class DefaultGen extends Generator {
 				if(!world.isAirBlock(x,j,z)) {
 					if(world.getBlock(blockPos.set(x,j,z)) == BlocksList.GRASS || world.getBlock(blockPos.set(x,j,z)) == BlocksList.CARMINE) {
 
-						if(random.nextInt(10) == 1) {
+						if(random.nextInt(10) == 0) {
 							if(world.getBlock(blockPos.set(x,j,z)) == BlocksList.GRASS) world.setBlock(x,j+1,z,BlocksList.TALLGRASS);
 							if(world.getBlock(blockPos.set(x,j,z)) == BlocksList.CARMINE) world.setBlock(x,j+1,z,BlocksList.DARKSHRUB);
 						}
@@ -198,7 +215,7 @@ public class DefaultGen extends Generator {
 						Block logType = primary.name.equals("Ground") ? BlocksList.LOG : BlocksList.DARKLOG;
 						Block leavesType = primary.name.equals("Ground") ? BlocksList.LEAVES : BlocksList.DARKLEAVES;
 
-						if (random.nextInt(100) == 1 && x > 0 && z > 0 && x <= mapSize && z <= mapSize) {
+						if (random.nextInt(100) == 0 && x > 0 && z > 0 && x <= mapSize && z <= mapSize) {
 							world.setBlock(x, j+1, z, logType);
 							world.setBlock(x, j+2, z, logType);
 							world.setBlock(x, j+3, z, logType);
@@ -220,10 +237,10 @@ public class DefaultGen extends Generator {
 
 						}
 					} else if (world.getBlock(blockPos.set(x,j,z)) == BlocksList.SAND && world.isAirBlock(x,j+1,z)) {
-						if(random.nextInt(100) == 1) {
+						if(random.nextInt(100) == 0) {
 							world.setBlock(x,j+1,z,BlocksList.SHRUB);
 						}
-						if (random.nextInt(200) == 1 && j > waterLevel) {
+						if (random.nextInt(200) == 0 && j > waterLevel) {
 							world.setBlock(x, j+1, z, BlocksList.CACTUS);
 							world.setBlock(x, j+2, z, BlocksList.CACTUS);
 							world.setBlock(x, j+3, z, BlocksList.CACTUS);
@@ -315,10 +332,10 @@ public class DefaultGen extends Generator {
 		return (float)Math.sqrt(a);
 	}
 	
-	private static double dst(int x0, int y0, int z0, int x1, int y1, int z1) {
+	private static float dst(int x0, int y0, int z0, int x1, int y1, int z1) {
 		final int a = x1 - x0;
-		final int b = y1 - y0;
+		final int b = (y1 - y0) << 1;
 		final int c = z1 - z0;
-		return Math.sqrt(a * a + b * b + c * c);
+		return (float) Math.sqrt(a * a + b * b + c * c);
 	}
 }

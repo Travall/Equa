@@ -28,7 +28,7 @@ public final class World implements Disposable {
 	public static final int zChunks = mapSize / chunkSize;
 	public static final int[][][] STATIC_DATA = new int[mapSize][mapHeight][mapSize];
 	
-	public static final int waterLevel = Math.round(mapHeight/3.4f); // 4.5f
+	public static final int waterLevel = Math.round(mapHeight/3f); // 4.5f
 	
 	public static final LightHandle lightHandle = new LightHandle(true);
 

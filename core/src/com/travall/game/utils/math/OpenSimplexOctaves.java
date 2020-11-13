@@ -6,13 +6,16 @@ public class OpenSimplexOctaves {
 	private final OpenSimplex[] octaves;
 	private final double[] frequencies;
 	private final double[] amplitudes;
-
+	
 	public OpenSimplexOctaves(int octaveCount, double persistence, long seed) {
+		this(octaveCount, persistence, new Random());
+	}
+
+	public OpenSimplexOctaves(int octaveCount, double persistence, Random rng) {
 		octaves = new OpenSimplex[octaveCount];
 		frequencies = new double[octaveCount];
 		amplitudes = new double[octaveCount];
 
-		Random rng = new Random(seed);
 		for (int i = 0; i < octaveCount; i++) {
 			octaves[i] = new OpenSimplex(rng.nextLong());
 
