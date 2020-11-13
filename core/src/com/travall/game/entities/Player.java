@@ -151,21 +151,23 @@ public class Player {
 
 	public void move(World world, float xMove, float yMove, float zMove) {
 
-		collisionBox.expand(xMove, yMove, zMove, bintersector);
+		if (!isFlying) {
+			collisionBox.expand(xMove, yMove, zMove, bintersector);
 
-		final int xMin = MathUtils.floor(bintersector.xMin);
-		final int yMin = MathUtils.floor(bintersector.yMin);
-		final int zMin = MathUtils.floor(bintersector.zMin);
-		final int xMax = MathUtils.ceil(bintersector.xMax);
-		final int yMax = MathUtils.ceil(bintersector.yMax);
-		final int zMax = MathUtils.ceil(bintersector.zMax);
-		
-		for (int x = xMin; x < xMax; x++)
-		for (int y = yMin; y < yMax; y++)
-		for (int z = zMin; z < zMax; z++) {
-			Block block = world.getBlock(blockPos.set(x, y, z));
-			block.addCollisions(blockPos, boxes, CollisionBox.POOL);
-			if (!block.isAir()) block.onEntityCollide(blockPos);
+			final int xMin = MathUtils.floor(bintersector.xMin);
+			final int yMin = MathUtils.floor(bintersector.yMin);
+			final int zMin = MathUtils.floor(bintersector.zMin);
+			final int xMax = MathUtils.ceil(bintersector.xMax);
+			final int yMax = MathUtils.ceil(bintersector.yMax);
+			final int zMax = MathUtils.ceil(bintersector.zMax);
+			
+			for (int x = xMin; x < xMax; x++)
+			for (int y = yMin; y < yMax; y++)
+			for (int z = zMin; z < zMax; z++) {
+				Block block = world.getBlock(blockPos.set(x, y, z));
+				block.addCollisions(blockPos, boxes, CollisionBox.POOL);
+				if (!block.isAir()) block.onEntityCollide(blockPos);
+			}
 		}
 
 		final float xLastMove = xMove;

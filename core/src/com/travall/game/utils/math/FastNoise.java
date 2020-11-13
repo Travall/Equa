@@ -24,8 +24,22 @@ public final class FastNoise {
 	private final static int Y_PRIME = 31337;
 	private final static int Z_PRIME = 6971;
 	
-	private static float GradCoord2D(final int seed, int x, int y, float xd, float yd) {
-		int hash = seed;
+	public int seed;
+	
+	public FastNoise(int seed) {
+		this.seed = seed;
+	}
+	
+	private static float GradCoord1D(int hash, int x, float xd) {
+		hash ^= Y_PRIME * x;
+
+		hash = hash * hash * hash * 60493;
+		hash = (hash >> 13) ^ hash;
+
+		return xd * (float) ((hash & 3) - 1);
+	}
+	
+	private static float GradCoord2D(int hash, int x, int y, float xd, float yd) {
 		hash ^= X_PRIME * x;
 		hash ^= Y_PRIME * y;
 
@@ -37,8 +51,7 @@ public final class FastNoise {
 		return xd * g.x + yd * g.y;
 	}
 	
-	private static float GradCoord3D(final int seed, int x, int y, int z, float xd, float yd, float zd) {
-		int hash = seed;
+	private static float GradCoord3D(int hash, int x, int y, int z, float xd, float yd, float zd) {
 		hash ^= X_PRIME * x;
 		hash ^= Y_PRIME * y;
 		hash ^= Z_PRIME * z;
@@ -51,7 +64,26 @@ public final class FastNoise {
 		return xd * g.x + yd * g.y + zd * g.z;
 	}
 	
-	public static float getPerlin(final int seed, float x, float y) 
+	public float getPerlin(float x) {
+		return getPerlin(seed, x);
+	}
+
+	public float getPerlin(float x, float y) {
+		return getPerlin(seed, x, y);
+	}
+	
+	public float getPerlin(float x, float y, float z) {
+		return getPerlin(seed, x, y, z);
+	}
+	
+	public static float getPerlin(int seed, float x) 
+	{
+		final int x0 = MathUtils.floor(x);
+		final float xd0 = x - x0;
+		return MathUtils.lerp(GradCoord1D(seed, x0, xd0), GradCoord1D(seed, x0 + 1, xd0 - 1f), smoother.apply(xd0));
+	}
+	
+	public static float getPerlin(int seed, float x, float y) 
 	{
 		final int x0 = MathUtils.floor(x);
 		final int y0 = MathUtils.floor(y);
@@ -74,7 +106,7 @@ public final class FastNoise {
 		return MathUtils.lerp(xf0, xf1, ys);
 	}
 	
-	public static float getPerlin(final int seed, float x, float y, float z) {
+	public static float getPerlin(int seed, float x, float y, float z) {
 		final int x0 = MathUtils.floor(x);
 		final int y0 = MathUtils.floor(y);
 		final int z0 = MathUtils.floor(z);
