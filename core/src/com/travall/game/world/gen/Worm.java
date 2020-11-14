@@ -28,7 +28,7 @@ public class Worm {
 		this.posision = new Vector3(x, y, z);
 		
 		this.steps = 2.0f;
-		this.length = 130.0f;
+		this.length = 128.0f;
 		this.size = 5;
 		this.offset = (random.nextFloat() * (length * 0.5f)) - length;
 	}
@@ -36,19 +36,23 @@ public class Worm {
 	public boolean update() {
 		QUAT.setEulerAngles(noiseYaw.getNoise((move + offset) / 28f) * MathUtils.radiansToDegrees, noisePitch.getNoise((move + offset) / 28f)  * MathUtils.radiansToDegrees, 0f);
 		QUAT.transform(velocity);
-		posision.add(velocity.x * steps, velocity.y * steps * 0.75f, velocity.z * steps);
+		posision.add(velocity.x * steps, velocity.y * steps * 0.7f, velocity.z * steps);
 		
 		final int x, y, z;
 		x = MathUtils.floor(posision.x);
 		y = MathUtils.floor(posision.y);
 		z = MathUtils.floor(posision.z);
 		
-		final int haft = size / 2;
-		final double haftd = size / 2.0;
+		final int haft = (size / 2) + 2;
+		final float haftd = size / 2.0f;
 		for (int xx = -haft; xx < haft+1; xx++)
 		for (int yy = -haft; yy < haft+1; yy++)
 		for (int zz = -haft; zz < haft+1; zz++) {
-			if (Math.sqrt(xx*xx + yy*yy + zz*zz) < haftd) {
+			final double xd, yd, zd;
+			xd = xx * xx;
+			yd = (yy * yy) * 1.2;
+			zd = zz * zz;
+			if ((float)Math.sqrt(xd + yd + zd) < haftd+noiseYaw.getNoise(xx+x, y+(yy/1.2f), zz+z)*1.1f) {
 				world.setBlock(xx+x, yy+y, zz+z, BlocksList.AIR);
 			}
 		}
