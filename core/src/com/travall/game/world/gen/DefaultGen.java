@@ -158,6 +158,7 @@ public class DefaultGen extends Generator {
 				}
 			}
 		}
+		// */
 		
 		setStatus("Creating Worms..");
 		final Array<Worm> worms = new Array<>();

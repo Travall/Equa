@@ -13,6 +13,7 @@ import com.travall.game.utils.math.FastNoiseOctaves;
 
 public class Worm {
 	private static final Quaternion QUAT = new Quaternion();
+	private static final FastNoiseOctaves ROUGH = new FastNoiseOctaves(3, 0.5, MathUtils.random);
 	
 	private final FastNoiseOctaves noisePitch, noiseYaw;
 	private final Vector3 velocity = new Vector3().setToRandomDirection();
@@ -23,8 +24,8 @@ public class Worm {
 	private float move;
 	
 	public Worm(Random random, float x, float y, float z) {
-		this.noisePitch = new FastNoiseOctaves(3, 0.5, random);
-		this.noiseYaw = new FastNoiseOctaves(3, 0.5, random);
+		this.noisePitch = new FastNoiseOctaves(3, 0.2, random);
+		this.noiseYaw = new FastNoiseOctaves(3, 0.2, random);
 		this.posision = new Vector3(x, y, z);
 		
 		this.steps = 2.0f;
@@ -34,7 +35,7 @@ public class Worm {
 	}
 	
 	public boolean update() {
-		QUAT.setEulerAngles(noiseYaw.getNoise((move + offset) / 28f) * MathUtils.radiansToDegrees, noisePitch.getNoise((move + offset) / 28f)  * MathUtils.radiansToDegrees, 0f);
+		QUAT.setEulerAngles(noiseYaw.getNoise((move + offset) / 32f) * 180f, noisePitch.getNoise((move + offset) / 32f) * 180f, 0f);
 		QUAT.transform(velocity);
 		posision.add(velocity.x * steps, velocity.y * steps * 0.7f, velocity.z * steps);
 		
@@ -52,7 +53,7 @@ public class Worm {
 			xd = xx * xx;
 			yd = (yy * yy) * 1.2;
 			zd = zz * zz;
-			if ((float)Math.sqrt(xd + yd + zd) < haftd+noiseYaw.getNoise(xx+x, y+(yy/1.2f), zz+z)*1.1f) {
+			if ((float)Math.sqrt(xd + yd + zd) < haftd+ROUGH.getNoise(xx+x, y+(yy/1.2f), zz+z)*1.1f) {
 				world.setBlock(xx+x, yy+y, zz+z, BlocksList.AIR);
 			}
 		}
