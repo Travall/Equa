@@ -5,12 +5,14 @@ import static com.travall.game.Main.main;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.travall.game.TheMenu;
+import com.travall.game.ui.utils.PosOffset;
 import com.travall.game.ui.utils.UIBase;
 import com.travall.game.ui.utils.UImanager;
 import com.travall.game.ui.utils.WorldButton;
@@ -24,7 +26,12 @@ public class WorldSeletion extends UIBase {
 	public WorldSeletion(TheMenu manu, DeletePrompt delPromp) {
 		final UImanager manager = manu.manager;
 		buttons = new Group();
-		buttons.setUserObject(new Vector2(0.5f, 0.5f));
+		buttons.setUserObject(new PosOffset(0.5f, 0.5f, 0, -10));
+		
+		Label label = new Label("World Seletion", main.skin);
+		label.setUserObject(new Vector2(0.5f, 0.85f));
+		label.setAlignment(Align.center);
+		actors.add(label);
 
 		final int size = 4;
 		worldButts = new Array<>(size);

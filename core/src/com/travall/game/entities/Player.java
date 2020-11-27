@@ -98,9 +98,6 @@ public class Player {
 		noam.set(camera.direction).nor();
 		float angle = MathUtils.atan2(noam.x, noam.z);
 
-//        player.instance.nodes.first().rotation.set(Vector3.Y,angle);
-//        player.instance.calculateTransforms();
-
 		direction.set(MathUtils.sin(angle), 0, MathUtils.cos(angle));
 		add.setZero();
 

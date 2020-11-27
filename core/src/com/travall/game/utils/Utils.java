@@ -1,14 +1,21 @@
 package com.travall.game.utils;
 
+import java.nio.IntBuffer;
+
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.utils.BufferUtils;
 import com.travall.game.utils.math.Size;
 
-public class Utils {
+public final class Utils {
+	private Utils () {}
 	
 	/** A cached screen size. */
 	public static final Size screen = new Size();
+	
+	/** A temporally int buffer. */ 
+	public static final IntBuffer intbuf = BufferUtils.newIntBuffer(1);
 
 	public static double normalize(double Input, int max) {
 		return ((Input - -1) / (1 - -1) * (max - 0) + 0);

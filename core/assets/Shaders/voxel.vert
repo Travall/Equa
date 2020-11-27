@@ -1,31 +1,33 @@
-#version 100
+#version 310 es
 #ifdef GL_ES
 #define LOWP lowp
 #define MEDIUMP mediump
+#define HIGHP highp
 precision highp float;
 #else
 #define LOWP
 #define MEDIUMP
+#define HIGHP
 #endif
 
-attribute vec4 a_position;
-attribute LOWP vec4 a_data;
-attribute MEDIUMP vec2 a_texCoord;
+in HIGHP vec4 position;
+in LOWP vec4 data;
+in MEDIUMP vec2 texCoord;
 
-uniform mat4 u_projTrans;
+out LOWP float shade;
+out LOWP float light;
+out MEDIUMP vec2 texCoords;
+
+uniform HIGHP mat4 projTrans;
 uniform LOWP float sunLightIntensity;
 uniform LOWP float brightness;
 uniform int toggleAO;
 
-varying LOWP float v_shade;
-varying LOWP float v_light;
-varying MEDIUMP vec2 v_texCoords;
-
 // data[sideLight&Ambiant, source-light, skylight, unused]
 void main()
 {
-	v_light = min(mix(a_data.y + a_data.z * sunLightIntensity, 1.0, brightness), 1.0);
-	v_shade = toggleAO == 1 ? a_data.x : 1.0;
-	v_texCoords = a_texCoord;
-	gl_Position = u_projTrans * a_position;
+	light = min(mix(data.y + data.z * sunLightIntensity, 1.0, brightness), 1.0);
+	shade = toggleAO == 1 ? data.x : 1.0;
+	texCoords = texCoord;
+	gl_Position = projTrans * position;
 }

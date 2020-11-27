@@ -1,14 +1,14 @@
 package com.travall.game.glutils;
 
 import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.travall.game.glutils.shaders.ShaderHandle;
 
 public interface VertContext 
 {
-	public ShaderProgram getShader();
+	public ShaderHandle getShader();
 	public VertexAttributes getAttrs();
 	
-	public default int getLocation(int i) {
-		return getShader().getAttributeLocation(getAttrs().get(i).alias);
+	public default void setVertexAttributes() {
+		getShader().setVertexAttributes(getAttrs());
 	}
 }
