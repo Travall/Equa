@@ -2,18 +2,13 @@ package com.travall.game.glutils;
 
 import static com.badlogic.gdx.Gdx.gl30;
 import static com.badlogic.gdx.graphics.GL20.GL_ARRAY_BUFFER;
+import static com.travall.game.utils.Utils.intbuf;
 
 import java.nio.Buffer;
-import java.nio.IntBuffer;
 
-import com.badlogic.gdx.graphics.VertexAttribute;
-import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.Disposable;
 
 public class VBObase implements Disposable {
-	protected final static IntBuffer tmpHandle = BufferUtils.newIntBuffer(1);
 	
 	protected Buffer buffer;
 	protected int glDraw;
@@ -42,7 +37,8 @@ public class VBObase implements Disposable {
 		if (buffer.hasRemaining())
 			gl30.glBufferData(GL_ARRAY_BUFFER, 0, buffer, glDraw);
 
-		setAttributes(context);
+		/** Enable vertex attributes and set the pointers. */
+		context.setVertexAttributes();
 		
 		// Attach QuadIndexBuffer to the current VAO for quad rendering.
 		if (usingQuadIndex) QuadIndexBuffer.attach();
@@ -58,28 +54,12 @@ public class VBObase implements Disposable {
 		if (!isBound) gl30.glBindVertexArray(0);
 	}
 	
-	/** Enable vertex attributes and set the pointers. */
-	protected final void setAttributes(VertContext context) {
-		final VertexAttributes attributes = context.getAttrs();
-		final int numAttributes = attributes.size();
-		for (int i = 0; i < numAttributes; ++i) {
-			final VertexAttribute attribute = attributes.get(i);
-			final int location = context.getLocation(i);
-
-			final ShaderProgram shader = context.getShader();
-			shader.enableVertexAttribute(location);
-
-			shader.setVertexAttribute(location, attribute.numComponents, attribute.type, attribute.normalized,
-					attributes.vertexSize, attribute.offset);
-		}
-	}
-	
 	/** Create the VAO and buffer handle and bind it. */
 	protected final void createHandles() {
 		// Create the VAO handle.
-		tmpHandle.clear();
-		gl30.glGenVertexArrays(1, tmpHandle);
-		vaoHandle = tmpHandle.get();
+		intbuf.clear();
+		gl30.glGenVertexArrays(1, intbuf);
+		vaoHandle = intbuf.get();
 		gl30.glBindVertexArray(vaoHandle);
 
 		// Create the buffer handle.
@@ -98,9 +78,9 @@ public class VBObase implements Disposable {
 		gl30.glBindBuffer(GL_ARRAY_BUFFER, 0);
 		gl30.glDeleteBuffer(bufferHandle);
 
-		tmpHandle.clear();
-		tmpHandle.put(vaoHandle);
-		tmpHandle.flip();
-		gl30.glDeleteVertexArrays(1, tmpHandle);
+		intbuf.clear();
+		intbuf.put(vaoHandle);
+		intbuf.flip();
+		gl30.glDeleteVertexArrays(1, intbuf);
 	}
 }

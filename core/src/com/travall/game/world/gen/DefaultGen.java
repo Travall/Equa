@@ -43,15 +43,15 @@ public class DefaultGen extends Generator {
 	public void genrate(final World world) {
 		setStatus("Creating noises..");
 		final Random random = new Random(seed);
-		final FastNoiseOctaves CaveNoise = new FastNoiseOctaves(5, 0.32, random.nextLong()); // 0.25 for FastNoise, and 0.24 for SimplexNoise
-		final FastNoiseOctaves FloatingIslandNoise = new FastNoiseOctaves(7, 0.37, random.nextLong());
+		final FastNoiseOctaves CaveNoise = new FastNoiseOctaves(5, 0.29, random); // 0.25 for FastNoise, and 0.24 for SimplexNoise
+		final FastNoiseOctaves FloatingIslandNoise = new FastNoiseOctaves(7, 0.37, random);
 		int maxTerrainHeight = Math.round(mapHeight / 1.7f);
-		final int terrainHeightOffset = 32;
+		final int terrainHeightOffset = 50;
 		final Biome prevalentBiomes[][] = new Biome[mapSize][mapSize];
 
 		for(int i = 0; i < biomes.length; i++) {
-			biomes[i].heightMap = new OpenSimplexOctaves(biomes[i].heightOctaves, biomes[i].heightPersistence, random.nextLong());
-			biomes[i].decisionMap = new OpenSimplexOctaves(biomes[i].decisionOctaves, biomes[i].decisionPersistence, random.nextLong());
+			biomes[i].heightMap = new OpenSimplexOctaves(biomes[i].heightOctaves, biomes[i].heightPersistence, random);
+			biomes[i].decisionMap = new OpenSimplexOctaves(biomes[i].decisionOctaves, biomes[i].decisionPersistence, random);
 		}
 
 		setStatus("Creating Heightmap..");
@@ -60,7 +60,7 @@ public class DefaultGen extends Generator {
 		for (int z = 0; z < mapSize; z++) {
 			Biome prevalent = getPrevalent(x/1.5,z/1.5);
 			prevalentBiomes[x][z] = prevalent;
-			heights[x][z] = terrainHeightOffset + (float)(Utils.normalize(prevalent.heightMap.getNoise(x, z), maxTerrainHeight)  * prevalent.heightModifier);
+			heights[x][z] = terrainHeightOffset + (float)(Utils.normalize(prevalent.heightMap.getNoise(x, z) * prevalent.heightModifier, maxTerrainHeight)  );
 		}
 		maxTerrainHeight += terrainHeightOffset;
 		
@@ -108,28 +108,17 @@ public class DefaultGen extends Generator {
 			
 			// Caves
 			// /*
-			float frequent = 0.75f;
+			float frequent = 0.7f;
 			for (int y = yValue; y >= 0; y--) {
-				if (CaveNoise.getNoise(x*0.7f, y*0.8f, z*0.7f) * frequent > 0.17f) { // 0.115f for FastNoise, and 0.13f for SimplexNoise
+				if (CaveNoise.getNoise(x*0.7f, y*0.8f, z*0.7f) * frequent > 0.155f) { // 0.115f for FastNoise, and 0.13f for SimplexNoise
 					world.setBlock(x, y, z, BlocksList.AIR);
 				}
-				frequent = Math.min(1.0f, frequent + 0.025f);
+				frequent = Math.min(1.0f, frequent + 0.03f);
 			} 
 			// */
 		}
 		
-		
-		setStatus("Creating Worms..");
-		final Array<Worm> worms = new Array<>();
-		for (int x = 0; x < xChunks; x++)
-		for (int y = 0; y < xChunks; y++)
-		for (int z = 0; z < xChunks; z++) {
-			if (random.nextInt(55) == 0) {
-				worms.add(new Worm(random, x << chunkShift, y << chunkShift, z << chunkShift));
-			}
-		}
-		Worm.updateAll(worms); 
-		
+		// /*
 		setStatus("Building SkyIslands..");
 		for (int x = 0; x < mapSize; x++)
 		for (int z = 0; z < mapSize; z++) {
@@ -153,7 +142,7 @@ public class DefaultGen extends Generator {
 			for(int y = mapHeight; y > mapHeight / 2; y--) {
 				float diff = dst(centerX,centerY,centerZ,x,y,z) / 40.0f;
 
-				if((FloatingIslandNoise.getNoise(x,y,z) + 0.15f) / diff > 0.2f) {
+				if((FloatingIslandNoise.getNoise(x,y,z) + 0.16f) / diff > 0.2f) {
 					if(world.isAirBlock(x,y,z)) {
 						if(world.isAirBlock(x,y+1,z)) {
 							world.setBlock(x,y,z,BlocksList.GRASS);
@@ -169,6 +158,19 @@ public class DefaultGen extends Generator {
 				}
 			}
 		}
+		// */
+		
+		setStatus("Creating Worms..");
+		final Array<Worm> worms = new Array<>();
+		for (int x = 0; x < xChunks; x++)
+		for (int y = 0; y < xChunks; y++)
+		for (int z = 0; z < xChunks; z++) {
+			if (random.nextInt(40) == 0) {
+				worms.add(new Worm(random, x << chunkShift, y << chunkShift, z << chunkShift));
+			}
+		}
+		Worm.updateAll(worms); 
+		// */
 
 		setStatus("Creating Foliages..");
 		for (int x = 0; x < mapSize; x++)

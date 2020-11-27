@@ -19,7 +19,7 @@ public class VertInfo {
 		return Float.intBitsToFloat((((int) (255*sunLit)<<16) | ((int) (255*srcLit)<<8) | ((int) (255*ambLit))));
 	}
 
-	private static final float[] AMB = {0.6f, 0.7f, 0.8f, 1f};
+	private static final float[] AMB = {0.6f, 0.74f, 0.82f, 1f};
 
 	private void vertAO(Block center, Block side1, Block side2, Block corner) {
 		final boolean bool = side1.getAmbiantType() == FULLBRIGHT || side2.getAmbiantType() == FULLBRIGHT || center.getAmbiantType() == FULLBRIGHT;

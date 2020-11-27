@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.travall.game.blocks.BlocksList;
+import com.travall.game.glutils.shaders.ShaderPart;
 import com.travall.game.handles.Assets;
 import com.travall.game.handles.Inputs;
 import com.travall.game.renderer.Picker;
@@ -96,6 +97,8 @@ public class Main extends Base {
 		
 		texture1.dispose();
 		texture2.dispose();
+		
+		ShaderPart.removeAll();
 	}
 	
 	private void loadAssets() {
@@ -121,7 +124,12 @@ public class Main extends Base {
 		NinePatch ninePatch = new NinePatch(new TextureRegion(Assets.gui, 16, 0, 16, 16), 3, 3, 3, 3);
 		NinePatchDrawable ninePatchDrawable = new NinePatchDrawable(ninePatch);
 		ButtonStyle button = new ButtonStyle(ninePatchDrawable.tint(new Color(0.6f, 0.6f, 0.6f, 1)), ninePatchDrawable.tint(new Color(0.4f, 0.7f, 0.7f, 1)), null);
+		button.disabled = ninePatchDrawable.tint(new Color(0.4f, 0.4f, 0.4f, 1));
+		
+		TextButtonStyle textButton = new TextButtonStyle(button.up, button.down, button.checked, skin.getFont("default"));
+		textButton.disabled = button.disabled;
+		
 		skin.add("default", button);
-		skin.add("default", new TextButtonStyle(button.up, button.down, button.checked, skin.getFont("default")));
+		skin.add("default", textButton);
 	}
 }

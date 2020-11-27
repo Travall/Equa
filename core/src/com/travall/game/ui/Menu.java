@@ -31,6 +31,11 @@ public class Menu extends UIBase {
 		buttons.setUserObject(new Vector2(0.5f, 0.4f));
 		actors.add(buttons);
 		
+		Label label = new Label("Main Menu", main.skin);
+		label.setUserObject(new Vector2(0.5f, 0.85f));
+		label.setAlignment(Align.center);
+		actors.add(label);
+		
 		final UImanager manager = menu.manager;
 		
 		TextButton butt = new TextButton("Start", main.skin);

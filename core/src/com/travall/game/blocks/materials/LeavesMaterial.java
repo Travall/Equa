@@ -1,7 +1,6 @@
 package com.travall.game.blocks.materials;
 
 public class LeavesMaterial extends Material {
-	
 	@Override
 	public boolean isFullCube() {
 		return true;
