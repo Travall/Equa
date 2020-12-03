@@ -138,7 +138,7 @@ public class Player {
 
 		if(!current.isAir() && this.onGround && this.isWalking && this.isSprinting) {
 				ParicleSystem.newParticle(BlockBreak.class)
-						.ints(temp.set(this.position).sub(0,0.25f,0), current.getBlockModel().getDefaultTexture());
+						.ints(temp.set(this.position).sub(0,0.23f,0), current.getBlockModel().getDefaultTexture(null, 0));
 		}
 	}
 

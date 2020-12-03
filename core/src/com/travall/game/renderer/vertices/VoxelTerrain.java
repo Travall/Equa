@@ -65,7 +65,7 @@ public final class VoxelTerrain {
 		shader.bind();
 		gl.glUniformMatrix4fv(shader.getUniLoc("projTrans"), 1, false, cam.combined.val, 0);
 		gl.glUniform1f(shader.getUniLoc("sunLightIntensity"), 1f);
-		gl.glUniform1f(shader.getUniLoc("brightness"), 0.0f);
+		gl.glUniform1f(shader.getUniLoc("brightness"), 0.35f);
 		gl.glUniform1i(shader.getUniLoc("toggleAO"), toggleAO);
 	}
 	

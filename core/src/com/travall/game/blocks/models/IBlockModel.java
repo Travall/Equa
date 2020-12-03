@@ -20,8 +20,12 @@ public interface IBlockModel {
 	/** Do not modify this. */
 	static final Array<BoundingBox> EMPTY_BOX = new Array<BoundingBox>(0);
 	
-	public void build(QuadBuilder builder, @Null BlockPos position);
-	public TextureRegion getDefaultTexture();
+	public void build(QuadBuilder builder, BlockPos position);
+	
+	/** Get get default texture. 
+	 * @param pos optional, use null to bypass and use <code>data</code>.
+	 * @param data optional, use 0. <code>pos</code> can override this. */
+	public TextureRegion getDefaultTexture(@Null BlockPos pos, int data);
 	
 	/** Optional. You can add bounding boxes in Block class and it will override this.  */
 	public default Array<BoundingBox> getBoundingBoxes(BlockPos pos) {
@@ -33,7 +37,7 @@ public interface IBlockModel {
 		return false;
 	}
 	
-	/** Optional. You can change <code>isFaceSolid()</code> in Block class and it will override this.  */
+	/** Optional. Block class can override this.  */
 	public default boolean canAddFace(BlockPos primaray, BlockPos secondary, Facing face) {
 		final Block block = world.getBlock(secondary);
 		if (block.isAir()) return true;

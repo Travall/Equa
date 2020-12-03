@@ -109,9 +109,12 @@ public class Main extends Base {
 	}
 	
 	private void getAssets() {
-		Assets.gui = asset.get("Textures/gui.png");
+		Assets.GUI = asset.get("Textures/gui.png");
 		skin.add("default", asset.get("Fonts/Mozart.fnt"));
 		skin.getFont("default").setUseIntegerPositions(true);
+		
+		// Set testure regions.
+		Assets.BLANK = new TextureRegion(Assets.GUI, 0, 0, 8, 8);
 		
 		loadSkin();
 	}
@@ -121,7 +124,7 @@ public class Main extends Base {
 		lable.font = skin.getFont("default");
 		skin.add("default", lable);
 		
-		NinePatch ninePatch = new NinePatch(new TextureRegion(Assets.gui, 16, 0, 16, 16), 3, 3, 3, 3);
+		NinePatch ninePatch = new NinePatch(new TextureRegion(Assets.GUI, 16, 0, 16, 16), 3, 3, 3, 3);
 		NinePatchDrawable ninePatchDrawable = new NinePatchDrawable(ninePatch);
 		ButtonStyle button = new ButtonStyle(ninePatchDrawable.tint(new Color(0.6f, 0.6f, 0.6f, 1)), ninePatchDrawable.tint(new Color(0.4f, 0.7f, 0.7f, 1)), null);
 		button.disabled = ninePatchDrawable.tint(new Color(0.4f, 0.4f, 0.4f, 1));

@@ -12,7 +12,7 @@ import com.travall.game.ui.DeletePrompt;
 import com.travall.game.ui.Menu;
 import com.travall.game.ui.Option;
 import com.travall.game.ui.WorldSeletion;
-import com.travall.game.ui.utils.TiledDrawableFix;
+import com.travall.game.ui.actors.TiledDrawableFix;
 import com.travall.game.ui.utils.UImanager;
 
 public class TheMenu extends ScreenAdapter {

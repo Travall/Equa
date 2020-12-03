@@ -123,7 +123,7 @@ public class TorchModel implements IBlockModel {
 	}
 
 	@Override
-	public TextureRegion getDefaultTexture() {
+	public TextureRegion getDefaultTexture(BlockPos pos, int data) {
 		return texture;
 	}
 	

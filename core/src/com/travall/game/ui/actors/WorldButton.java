@@ -1,4 +1,4 @@
-package com.travall.game.ui.utils;
+package com.travall.game.ui.actors;
 
 import static com.travall.game.Main.main;
 
@@ -10,6 +10,7 @@ import com.travall.game.TheMenu;
 import com.travall.game.WorldScreen;
 import com.travall.game.io.WorldIO;
 import com.travall.game.ui.DeletePrompt;
+import com.travall.game.ui.utils.UImanager;
 
 public class WorldButton extends TextButton {
 	

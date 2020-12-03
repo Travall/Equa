@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 import com.travall.game.blocks.materials.Material;
 import com.travall.game.blocks.models.SlabModel;
 import com.travall.game.renderer.block.UltimateTexture;
+import com.travall.game.ui.actors.BlockSeletion;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.Facing;
 
@@ -14,6 +15,7 @@ public class Slab extends Block {
 		this.model = new SlabModel(this, UltimateTexture.createRegion(7, 1));
 		this.material = Material.SLAB;
 		this.boundingBoxes.add(new BoundingBox(MIN.setZero(), MAX.set(1, 0.5f, 1)));
+		BlockSeletion.add(this);
 	}
 	
 	@Override

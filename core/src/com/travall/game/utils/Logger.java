@@ -4,10 +4,6 @@ public class Logger
 {
 	private final String tag, original;
 	
-	public Logger (Object obj) {
-		this(obj.getClass());
-	}
-	
 	public Logger (Class<?> clazz) {
 		this(clazz.getSimpleName());
 	}
