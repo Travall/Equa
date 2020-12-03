@@ -87,7 +87,7 @@ public final class World implements Disposable {
 			chunkManager.setDirtyIndex(indexX - 1, indexY, indexZ);
 		}
 
-		if ((x & chunkMask) == 15) {
+		if ((x & chunkMask) == chunkMask) {
 			chunkManager.setDirtyIndex(indexX + 1, indexY, indexZ);
 		}
 
@@ -95,7 +95,7 @@ public final class World implements Disposable {
 			chunkManager.setDirtyIndex(indexX, indexY - 1, indexZ);
 		}
 
-		if ((y & chunkMask) == 15) {
+		if ((y & chunkMask) == chunkMask) {
 			chunkManager.setDirtyIndex(indexX, indexY + 1, indexZ);
 		}
 
@@ -103,7 +103,7 @@ public final class World implements Disposable {
 			chunkManager.setDirtyIndex(indexX, indexY, indexZ - 1);
 		}
 
-		if ((z & chunkMask) == 15) {
+		if ((z & chunkMask) == chunkMask) {
 			chunkManager.setDirtyIndex(indexX, indexY, indexZ + 1);
 		}
 	}

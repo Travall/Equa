@@ -9,6 +9,7 @@ import com.travall.game.blocks.materials.Material;
 import com.travall.game.blocks.models.DoorModel;
 import com.travall.game.entities.Player;
 import com.travall.game.handles.Raycast.RayInfo;
+import com.travall.game.ui.actors.BlockSeletion;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.Facing;
 import com.travall.game.world.World;
@@ -24,6 +25,7 @@ public class Door extends Block {
 		this.model = new DoorModel(this);
 		this.manager.addCompoment(doorComponent);
 		this.manager.addCompoment(horizontalComponent);
+		BlockSeletion.add(this);
 	}
 	
 	@Override

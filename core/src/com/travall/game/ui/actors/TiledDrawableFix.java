@@ -1,4 +1,4 @@
-package com.travall.game.ui.utils;
+package com.travall.game.ui.actors;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;

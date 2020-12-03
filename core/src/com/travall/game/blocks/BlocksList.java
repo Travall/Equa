@@ -22,11 +22,8 @@ public final class BlocksList {
 	TALLGRASS = new TallGrass(ID++),
 	SHRUB = new Shrub(ID++),
 	TORCH = new Torch(ID++),
-	CARMINE = new Carmine(ID++),
-	DARKLOG = new DarkLog(ID++),
-	DARKLEAVES = new DarkLeaves(ID++),
 	DOOR = new Door(ID++),
-	DARKSHRUB = new DarkShrub(ID++);
+	DARKSHRUB = new FlaxShrub(ID++);
 
 
 	public static final int SIZE = ID;
@@ -50,9 +47,6 @@ public final class BlocksList {
 		addBlock(TALLGRASS);
 		addBlock(SHRUB);
 		addBlock(TORCH);
-		addBlock(CARMINE);
-		addBlock(DARKLOG);
-		addBlock(DARKLEAVES);
 		addBlock(DOOR);
 		addBlock(DARKSHRUB);
 

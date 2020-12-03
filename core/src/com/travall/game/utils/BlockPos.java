@@ -7,7 +7,8 @@ public final class BlockPos {
 	private static final Logger LOG = new Logger(BlockPos.class);
 	
 	/** Max buffer size. */
-	private static final int MAX_BUFFER_SIZE = 1<<12;
+	private static final int MAX_BUFFER_SIZE = 1<<11;
+	
 	/** BlockPos buffer. */
 	private static final BlockPos[] TABLE = new BlockPos[MAX_BUFFER_SIZE];
 	

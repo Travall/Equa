@@ -9,6 +9,7 @@ import com.travall.game.entities.Player;
 import com.travall.game.handles.Raycast.RayInfo;
 import com.travall.game.renderer.block.BlockTextures;
 import com.travall.game.renderer.block.UltimateTexture;
+import com.travall.game.ui.actors.BlockSeletion;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.Facing;
 
@@ -23,6 +24,7 @@ public class Torch extends Block {
 		this.lightLevel = 15;
 		
 		this.manager.addCompoment(face);
+		BlockSeletion.add(this);
 	}
 	
 	@Override

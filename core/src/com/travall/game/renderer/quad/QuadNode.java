@@ -24,7 +24,7 @@ public class QuadNode {
 	public boolean isInside;
 	public boolean simpleLight;
 	
-	public final TextureRegion region = new TextureRegion();
+	public TextureRegion region = new TextureRegion();
 	
 	private final BlockPos
 	center = new BlockPos(),

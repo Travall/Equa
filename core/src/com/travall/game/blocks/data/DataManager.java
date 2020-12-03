@@ -6,6 +6,7 @@ import com.travall.game.utils.BlockUtils;
 public final class DataManager {
 	private final ObjectMap<String, DataComponent> components = new ObjectMap<>();
 	
+	/** Bit size allcated. */
 	private int bitSize;
 	
 	public void addCompoment(DataComponent component) {
@@ -13,8 +14,8 @@ public final class DataManager {
 	}
 	
 	public void addCompoment(String key, DataComponent component) {
-		if (bitSize+component.size >= 16) throw new IllegalStateException("Block data has reached the bit limit!");
-		if (components.containsKey(key)) throw new IllegalStateException("Duplicated key - use the different key.");
+		if (bitSize+component.size >= 16) throw new IllegalStateException("Block data has reached the bit limit! Max bits: 16");
+		if (components.containsKey(key)) throw new IllegalStateException("Duplicated key - use the different key. Key: " + key);
 		component.genData(BlockUtils.DATA_SHIFT+bitSize);
 		bitSize += component.size;
 		components.put(key, component);
@@ -30,6 +31,11 @@ public final class DataManager {
 	
 	@SuppressWarnings("unchecked")
 	public <T extends DataComponent> T getComponent(String key) {
-		return (T)components.get(key);
+		return (T) components.get(key);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <T extends DataComponent> T getComponent(Class<T> clazz, String key) {
+		return (T) components.get(key);
 	}
 }

@@ -1,6 +1,6 @@
 package com.travall.game.world.biomes;
 
-import com.travall.game.blocks.Block;
+import com.travall.game.items.BlockItem;
 import com.travall.game.utils.math.OpenSimplexOctaves;
 
 public class Biome {
@@ -11,9 +11,9 @@ public class Biome {
 	public double decisionPersistence = 0.4;
 	public double heightModifier;
 	public double size = 0.0;
-	public Block top;
-	public Block middle;
-	public Block underwater;
+	public BlockItem top;
+	public BlockItem middle;
+	public BlockItem underwater;
 	public OpenSimplexOctaves heightMap;
 	public OpenSimplexOctaves decisionMap;
 	

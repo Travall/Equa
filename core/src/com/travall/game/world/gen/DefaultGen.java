@@ -4,11 +4,9 @@ import static com.travall.game.world.World.*;
 
 import java.util.Random;
 
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-import com.travall.game.blocks.Block;
 import com.travall.game.blocks.BlocksList;
 import com.travall.game.blocks.materials.Material;
 import com.travall.game.utils.BlockPos;
@@ -17,9 +15,11 @@ import com.travall.game.utils.math.FastNoiseOctaves;
 import com.travall.game.utils.math.OpenSimplexOctaves;
 import com.travall.game.world.World;
 import com.travall.game.world.biomes.Biome;
-import com.travall.game.world.biomes.Carmine;
+import com.travall.game.world.biomes.Flaxen;
 import com.travall.game.world.biomes.Desert;
 import com.travall.game.world.biomes.Ground;
+import com.travall.game.world.gen.features.Tree;
+import com.travall.game.world.gen.features.Tree.TreeType;
 import com.travall.game.world.lights.LightHandle;
 
 public class DefaultGen extends Generator {
@@ -29,7 +29,7 @@ public class DefaultGen extends Generator {
 	private final BlockPos blockPos = new BlockPos();
 	private final Vector3 tempVec3 = new Vector3();
 	private final Vector2 tempVec2 = new Vector2();
-	private final Biome[] biomes = {new Desert(), new Ground(), new Carmine()};
+	private final Biome[] biomes = {new Desert(), new Ground(), new Flaxen()};
 	
 	public DefaultGen() {
 		this(new Random().nextLong());
@@ -82,15 +82,15 @@ public class DefaultGen extends Generator {
 					world.setBlock(x, i, z, BlocksList.BEDROCK);
 				} else if (i == yValue) {
 					if (i < waterLevel) {
-						world.setBlock(x, i, z, primary.underwater);
+						primary.underwater.setBlock(blockPos.set(x, i, z));
 					} else {
-						world.setBlock(x, i, z, primary.top);
+						primary.top.setBlock(blockPos.set(x, i, z));
 					}
 				} else if (!middleDone) {
 					if (i < waterLevel) {
-						world.setBlock(x, i, z, primary.underwater);
+						primary.underwater.setBlock(blockPos.set(x, i, z));
 					} else {
-						world.setBlock(x, i, z, primary.middle);
+						primary.middle.setBlock(blockPos.set(x, i, z));
 					}
 				} else {
 					world.setBlock(x, i, z, BlocksList.STONE);
@@ -162,11 +162,11 @@ public class DefaultGen extends Generator {
 		
 		setStatus("Creating Worms..");
 		final Array<Worm> worms = new Array<>();
-		for (int x = 0; x < xChunks; x++)
-		for (int y = 0; y < xChunks; y++)
-		for (int z = 0; z < xChunks; z++) {
+		for (int x = 0; x < 32; x++)
+		for (int y = 0; y < 16; y++)
+		for (int z = 0; z < 32; z++) {
 			if (random.nextInt(40) == 0) {
-				worms.add(new Worm(random, x << chunkShift, y << chunkShift, z << chunkShift));
+				worms.add(new Worm(random, x << 4, y << 4, z << 4));
 			}
 		}
 		Worm.updateAll(worms); 
@@ -179,11 +179,11 @@ public class DefaultGen extends Generator {
 			// Foliage
 			for(int j = mapHeight; j > 0; j--) {
 				if(!world.isAirBlock(x,j,z)) {
-					if(world.getBlock(blockPos.set(x,j,z)) == BlocksList.GRASS || world.getBlock(blockPos.set(x,j,z)) == BlocksList.CARMINE) {
+					if(world.getBlock(blockPos.set(x,j,z)) == BlocksList.GRASS) {
 
 						if(random.nextInt(10) == 0) {
 							if(world.getBlock(blockPos.set(x,j,z)) == BlocksList.GRASS) world.setBlock(x,j+1,z,BlocksList.TALLGRASS);
-							if(world.getBlock(blockPos.set(x,j,z)) == BlocksList.CARMINE) world.setBlock(x,j+1,z,BlocksList.DARKSHRUB);
+							//if(world.getBlock(blockPos.set(x,j,z)) == BlocksList.CARMINE) world.setBlock(x,j+1,z,BlocksList.DARKSHRUB);
 						}
 
 						boolean open = world.isAirBlock(x,j + 1,z) && world.isAirBlock(x,j + 2,z) && world.isAirBlock(x,j + 3,z);
@@ -214,30 +214,12 @@ public class DefaultGen extends Generator {
 
 						//Block log = BlocksList.LOG;
 
-						Block logType = primary.name.equals("Ground") ? BlocksList.LOG : BlocksList.DARKLOG;
-						Block leavesType = primary.name.equals("Ground") ? BlocksList.LEAVES : BlocksList.DARKLEAVES;
-
+						TreeType treeType = primary.name.equals("Ground") ? TreeType.NORMAL : TreeType.FLAX;
 						if (random.nextInt(100) == 0 && x > 0 && z > 0 && x <= mapSize && z <= mapSize) {
-							world.setBlock(x, j+1, z, logType);
-							world.setBlock(x, j+2, z, logType);
-							world.setBlock(x, j+3, z, logType);
-
-							for (int xx = x - 2; xx <= x + 2; xx++) {
-								for (int zz = z - 2; zz <= z + 2; zz++) {
-									world.setBlock(xx, j+4, zz, leavesType);
-								}
-							}
-
-							for (int xx = x - 1; xx <= x + 1; xx++) {
-								for (int zz = z - 1; zz <= z + 1; zz++) {
-									world.setBlock(xx, j+5, zz, leavesType);
-								}
-							}
-
-							world.setBlock(x, j+4, z, logType);
-							world.setBlock(x, j+6, z, leavesType);
+							Tree.create(treeType, x, j, z);
 
 						}
+						
 					} else if (world.getBlock(blockPos.set(x,j,z)) == BlocksList.SAND && world.isAirBlock(x,j+1,z)) {
 						if(random.nextInt(100) == 0) {
 							world.setBlock(x,j+1,z,BlocksList.SHRUB);

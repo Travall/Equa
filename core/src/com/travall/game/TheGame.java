@@ -12,56 +12,55 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.StringBuilder;
 import com.travall.game.blocks.Block;
-import com.travall.game.blocks.BlocksList;
 import com.travall.game.entities.Player;
 import com.travall.game.handles.FirstPersonCameraController;
 import com.travall.game.handles.Inputs;
 import com.travall.game.handles.Raycast;
 import com.travall.game.handles.Raycast.RayInfo;
+import com.travall.game.items.BlockItem;
 import com.travall.game.particles.BlockBreak;
 import com.travall.game.particles.ParicleSystem;
 import com.travall.game.renderer.Picker;
 import com.travall.game.renderer.Skybox;
 import com.travall.game.renderer.block.UltimateTexture;
 import com.travall.game.renderer.vertices.VoxelTerrain;
+import com.travall.game.ui.actors.BlockSeletion;
 import com.travall.game.ui.utils.PosOffset;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.world.World;
 
 public class TheGame extends ScreenAdapter {
 	
-	PerspectiveCamera camera;
-	FirstPersonCameraController cameraController;
+	final PerspectiveCamera camera;
+	final FirstPersonCameraController cameraController;
 
-	Skybox skybox;
-	World world;
+	final Skybox skybox;
+	final World world;
+	final Stage stage = main.stage;
 
-	Block blockType;
-
-	Player player;
-
-	Texture crosshairTex;
+	BlockItem blockType;
+	final Player player;
+	final Texture crosshairTex;
 	
 	Texture texture1;
 	Texture texture2;
+	
 	boolean bool;
-
 	float increase = 0;
-
 	boolean debug = false;
 
 	final StringBuilder info = new StringBuilder();
 	final Label waterMark;
 	final Image crosshair;
+	final BlockSeletion seletion = new BlockSeletion();
 	
 	public TheGame(World world) {
-		blockType = BlocksList.STONE;
-
 		skybox = new Skybox();
 
 		camera = new PerspectiveCamera(80, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -76,6 +75,8 @@ public class TheGame extends ScreenAdapter {
 
 		ParicleSystem.ints(camera);
 		
+		
+		
 		waterMark = new Label("Equa " + Main.VERSION, main.skin);
 		waterMark.setAlignment(Align.topLeft);
 		waterMark.setUserObject(new PosOffset(0f, 1f, 3, -3));
@@ -85,13 +86,17 @@ public class TheGame extends ScreenAdapter {
 		crosshair.setUserObject(new Vector2(0.5f, 0.5f));
 		crosshair.setSize(8, 8);
 		
+		seletion.setUserObject(new PosOffset(0.5f, 0.0f, -16, 12));
+		
 		world.intsMeshes();
 	}
 	
 	@Override
 	public void show() {
-		main.stage.addActor(waterMark);
-		main.stage.addActor(crosshair);
+		stage.addActor(waterMark);
+		stage.addActor(crosshair);
+		stage.addActor(seletion);
+		seletion.addInput();
 		Gdx.input.setCursorCatched(true);
 	}
 
@@ -102,8 +107,6 @@ public class TheGame extends ScreenAdapter {
 		camera.update(); // Update the camera projection
 
 		skybox.render(camera);
-		//if (Gdx.input.isKeyJustPressed(Keys.F1)) bool = !bool;
-		//UltimateTexture.texture = bool ? texture2 : texture1;
 		
 		if (Inputs.isKeyJustPressed(Keys.F1)) bool = !bool;
 		UltimateTexture.texture = bool ? main.texture2 : main.texture1;
@@ -122,7 +125,8 @@ public class TheGame extends ScreenAdapter {
 			info.append("Vel Z: ").append(player.getVelocity().z).append('\n');
 		}
 
-		main.stage.draw();
+		stage.act(delta);
+		stage.draw();
 		BlockPos.reset(); // Always reset the pool.
 		
 		if (Inputs.isKeyJustPressed(Keys.ESCAPE)) {
@@ -133,7 +137,7 @@ public class TheGame extends ScreenAdapter {
 	private void update() {
 		cameraController.updateDirection();
 
-		increase+= 0.15f;
+		increase += 0.15f;
 
 		player.update(world, camera, cameraController);
 
@@ -157,17 +161,13 @@ public class TheGame extends ScreenAdapter {
 			player.isFlying = !player.isFlying;
 		}
 
-		if (Inputs.isKeyPressed(Keys.Q))
-			blockType = BlocksList.TORCH;
-		if (Inputs.isKeyPressed(Keys.E))
-			blockType = BlocksList.DOOR;
-
 		if (Inputs.isKeyJustPressed(Keys.P))
 			VoxelTerrain.toggleAO();
 
 		camera.position.set(player.getPosition());
 		camera.position.add(0f, 1.65f, 0f);
 
+		blockType = seletion.getBlockItem();
 		cameraRaycast();
 	}
 
@@ -216,17 +216,21 @@ public class TheGame extends ScreenAdapter {
 			if (button != -1) {
 				
 				if(button == Buttons.MIDDLE) {
-					blockType = world.getBlock(info.in);
+					blockType = new BlockItem(world.getBlock(info.in));
 				} else if (!info.blockHit.onClick(player, info, button)) {
 					if (button == Buttons.RIGHT) {
 						if (!world.isOutBound(info.out.x, info.out.y, info.out.z)) {
-							blockType.onPlace(player, info);
+							blockType.placeBlock(player, info);
 						}
 					} else if (button == Buttons.LEFT){
-						if (blockType.onDestroy(player,info)) {
-							for (int i = 0; i < 35; i++)
-							ParicleSystem.newParticle(BlockBreak.class)
-							.ints(tmpVec3.set(info.in.x+0.5f, info.in.y+0.5f, info.in.z+0.5f), info.blockHit.getBlockModel().getDefaultTexture());
+						final BlockPos in = info.in;
+						final Block block = info.blockHit;
+						final int type = block.getType(in);
+						if (block.onDestroy(in)) {
+							for (int i = 0; i < 35; i++) {
+								ParicleSystem.newParticle(BlockBreak.class)
+								.ints(tmpVec3.set(in.x+0.5f, in.y+0.5f, in.z+0.5f), block.getBlockModel().getDefaultTexture(null, type));
+							}
 						}
 					}
 				}

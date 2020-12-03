@@ -6,8 +6,10 @@ import static com.travall.game.world.World.world;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Null;
 import com.badlogic.gdx.utils.Pool;
 import com.travall.game.blocks.data.DataManager;
+import com.travall.game.blocks.data.TypeComponent;
 import com.travall.game.blocks.materials.Material;
 import com.travall.game.blocks.models.IBlockModel;
 import com.travall.game.entities.Player;
@@ -29,11 +31,14 @@ public class Block {
 
 	/** Must be in between 0-15 (optional) */
 	protected int lightLevel;
+	
 	/** Material of this block. (required) */
 	protected Material material;
+	
 	/** Bounding boxes of this block. (might create one if this block is not a full-block).
 	 * It can have bounding boxes here or at model, but here will override the model's bounding boxes. */
 	protected final Array<BoundingBox> boundingBoxes = new Array<BoundingBox>(4);
+	
 	/** Model of this block. (required) */
 	protected IBlockModel model;
 	
@@ -45,13 +50,38 @@ public class Block {
 	
 	/** ID of this block. */
 	protected final int ID;
+	
+	/** Block type component. */
+	private TypeComponent typeComponent;
 
 	protected Block(final int blockID) {
 		this.ID = blockID;
 	}
 	
-	/** Get the name of this block. */
-	public String getName() {
+	/** Set block type component. */
+	protected final void newTypeComponent(int size) {
+		typeComponent = new TypeComponent(size);
+		manager.addCompoment(typeComponent);
+	}
+	
+	/** Set block type. */
+	public final void setType(BlockPos pos, int type) {
+		if (typeComponent != null) {
+			typeComponent.setType(pos, type);
+		}
+	}
+	
+	public final int getType(BlockPos pos) {
+		if (typeComponent != null) {
+			return typeComponent.getType(pos);
+		}
+		return 0;
+	}
+	
+	/** Get the name of this block. 
+	 * @param pos optional, use null to bypass and use <code>data</code>.
+	 * @param data optional, use 0. <code>pos</code> can override this. */
+	public String getName(@Null BlockPos pos, int data) {
 		return name;
 	}
 
@@ -61,7 +91,7 @@ public class Block {
 	}
 	
 	/** Get model of this block. */
-	public IBlockModel getBlockModel() {
+	public final IBlockModel getBlockModel() {
 		return model;
 	}
 	
@@ -202,12 +232,12 @@ public class Block {
 	}	
 	
 	/** Is this block contains data. */
-	public boolean hasData() {
+	public final boolean hasData() {
 		return !manager.isEmpty();
 	}
 	
 	/** Get block's data component manager. */
-	public DataManager getData() {
+	public final DataManager getData() {
 		return manager;
 	}
 	
@@ -234,5 +264,10 @@ public class Block {
 	/** Is this block is air. */
 	public boolean isAir() {
 		return false;
+	}
+	
+	@Override
+	public String toString() {
+		return name;
 	}
 }

@@ -17,7 +17,7 @@ public class FirstPersonCameraController {
     float camTiltAngle;
     Quaternion quat = new Quaternion();
 
-    float mouseSensitivity = 0.5f;
+    float mouseSensitivity = 0.3f;
 
     float increase;
 
