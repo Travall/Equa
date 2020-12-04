@@ -1,8 +1,6 @@
 package com.travall.game.io;
 
 import static com.travall.game.world.World.STATIC_DATA;
-import static com.travall.game.world.World.mapHeight;
-import static com.travall.game.world.World.mapSize;
 
 import java.io.OutputStream;
 
@@ -18,9 +16,14 @@ public class WorldOutputStream extends OutputStream {
 		pos++;
 		
 		final int x, y, z;
+		/*
 		x = intIndex % mapSize;
 		y = (intIndex / mapSize) % mapHeight;
 		z = (intIndex / mapHeight / mapSize) % mapSize;
+		*/
+		x = intIndex & 511;
+		y = (intIndex >>> 9) & 255;
+		z = (intIndex >>> 8 >>> 9) & 511;
 
 		STATIC_DATA[x][y][z] = (STATIC_DATA[x][y][z] & WorldIO.AND[byteIndex]) | (b << WorldIO.OFFSET[byteIndex]);
 	}
