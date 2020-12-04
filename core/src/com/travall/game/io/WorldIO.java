@@ -1,5 +1,6 @@
 package com.travall.game.io;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.Deflater;
@@ -50,7 +51,7 @@ public final class WorldIO {
 			input = new InflaterInputStream(folder.child(WORLD_DAT).read());
 			output = new WorldOutputStream();
 			world = new World(folder, null);
-			StreamUtils.copyStream(input, output, STREAM_BUFFER);
+			copyStream(input, output);
 			//Lzma.decompress(input, output);
 		} finally {
 			StreamUtils.closeQuietly(input);
@@ -58,6 +59,18 @@ public final class WorldIO {
 		System.out.println("Loading done!");
 		
 		return world;
+	}
+	
+	private static void copyStream(InputStream input, OutputStream output) throws IOException {
+		int bytesRead, size = 0;
+		while ((bytesRead = input.read(STREAM_BUFFER, size, BUFFER_SIZE - size)) != -1) {
+			size += bytesRead;
+			if (size != BUFFER_SIZE) {
+				continue;
+			}
+			output.write(STREAM_BUFFER, 0, size);
+			size = 0;
+		}
 	}
 	
 	public static FileHandle getFolder(String folder) {

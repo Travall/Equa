@@ -24,20 +24,20 @@ public class Worm {
 	private float move;
 	
 	public Worm(Random random, float x, float y, float z) {
-		this.noisePitch = new FastNoiseOctaves(3, 0.2, random);
-		this.noiseYaw = new FastNoiseOctaves(3, 0.2, random);
+		this.noisePitch = new FastNoiseOctaves(3, 0.15, random);
+		this.noiseYaw = new FastNoiseOctaves(3, 0.15, random);
 		this.posision = new Vector3(x, y, z);
 		
-		this.steps = 2.0f;
+		this.steps = 2f;
 		this.length = 128.0f;
 		this.size = 5;
 		this.offset = (random.nextFloat() * (length * 0.5f)) - length;
 	}
 	
 	public boolean update() {
-		QUAT.setEulerAngles(noiseYaw.getNoise((move + offset) / 32f) * 180f, noisePitch.getNoise((move + offset) / 32f) * 180f, 0f);
+		QUAT.setEulerAngles(noiseYaw.getNoise((move/15f) + offset) * 200f, noisePitch.getNoise((move/15f) + offset) * 200f, 0f);
 		QUAT.transform(velocity);
-		posision.add(velocity.x * steps, velocity.y * steps * 0.6f, velocity.z * steps);
+		posision.add(velocity.x * steps, velocity.y * steps * 0.7f, velocity.z * steps);
 		
 		final int x, y, z;
 		x = MathUtils.floor(posision.x);
@@ -45,7 +45,7 @@ public class Worm {
 		z = MathUtils.floor(posision.z);
 		
 		final int haft = (size / 2) + 2;
-		final float haftd = size / 2.0f;
+		final float haftf = size / 2.0f;
 		for (int xx = -haft; xx < haft+1; xx++)
 		for (int yy = -haft; yy < haft+1; yy++)
 		for (int zz = -haft; zz < haft+1; zz++) {
@@ -53,7 +53,7 @@ public class Worm {
 			xd = xx * xx;
 			yd = (yy * yy) * 1.2;
 			zd = zz * zz;
-			if ((float)Math.sqrt(xd + yd + zd) < haftd+ROUGH.getNoise(xx+x, y+(yy/1.2f), zz+z)*1.1f) {
+			if ((float)Math.sqrt(xd + yd + zd) < haftf+ROUGH.getNoise(xx+x, y+(yy/1.2f), zz+z)*1.1f) {
 				world.setBlock(xx+x, yy+y, zz+z, BlocksList.AIR);
 			}
 		}

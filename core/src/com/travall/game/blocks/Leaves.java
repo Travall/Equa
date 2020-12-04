@@ -4,6 +4,7 @@ import static com.travall.game.renderer.block.UltimateTexture.createRegion;
 
 import com.travall.game.blocks.materials.Material;
 import com.travall.game.blocks.models.CubeModel;
+import com.travall.game.options.Options;
 import com.travall.game.renderer.block.BlockTextures;
 import com.travall.game.ui.actors.BlockSeletion;
 import com.travall.game.utils.AmbiantType;
@@ -33,7 +34,7 @@ public class Leaves extends Block {
 	
 	@Override
 	public boolean canAddFace(BlockPos primaray, BlockPos secondary, Facing face) {
-		return true;
+		return Options.GRAPHIC ? true : super.canAddFace(primaray, secondary, face);
 	}
 	
 	@Override

@@ -20,6 +20,7 @@ import com.travall.game.blocks.BlocksList;
 import com.travall.game.glutils.shaders.ShaderPart;
 import com.travall.game.handles.Assets;
 import com.travall.game.handles.Inputs;
+import com.travall.game.options.Options;
 import com.travall.game.renderer.Picker;
 import com.travall.game.renderer.block.UltimateTexture;
 import com.travall.game.renderer.vertices.VoxelTerrain;
@@ -82,6 +83,8 @@ public class Main extends Base {
 		Picker.ints();
 		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 		Gdx.gl.glCullFace(GL20.GL_BACK);
+		
+		Options.load(Gdx.app.getPreferences(Options.FILE));
 	}
 	
 	@Override
