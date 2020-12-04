@@ -3,7 +3,7 @@ package com.travall.game.io;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class DeflaterOutputStream extends java.util.zip.DeflaterOutputStream {
+class DeflaterOutputStream extends java.util.zip.DeflaterOutputStream {
 	
 	private final byte[] bufTmp;
 

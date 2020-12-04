@@ -3,7 +3,7 @@ package com.travall.game.io;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class InflaterInputStream extends java.util.zip.InflaterInputStream {
+class InflaterInputStream extends java.util.zip.InflaterInputStream {
 
 	public InflaterInputStream(InputStream in) {
 		super(in, WorldIO.INFLATER, 1);
