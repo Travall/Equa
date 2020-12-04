@@ -43,7 +43,7 @@ public class DefaultGen extends Generator {
 	public void genrate(final World world) {
 		setStatus("Creating noises..");
 		final Random random = new Random(seed);
-		final FastNoiseOctaves CaveNoise = new FastNoiseOctaves(5, 0.29, random); // 0.25 for FastNoise, and 0.24 for SimplexNoise
+		final FastNoiseOctaves CaveNoise = new FastNoiseOctaves(5, 0.3, random); // 0.25 for FastNoise, and 0.24 for SimplexNoise
 		final FastNoiseOctaves FloatingIslandNoise = new FastNoiseOctaves(7, 0.37, random);
 		int maxTerrainHeight = Math.round(mapHeight / 1.7f);
 		final int terrainHeightOffset = 50;
@@ -110,7 +110,7 @@ public class DefaultGen extends Generator {
 			// /*
 			float frequent = 0.7f;
 			for (int y = yValue; y >= 0; y--) {
-				if (CaveNoise.getNoise(x*0.7f, y*0.8f, z*0.7f) * frequent > 0.155f) { // 0.115f for FastNoise, and 0.13f for SimplexNoise
+				if (CaveNoise.getNoise(x*0.75f, y*0.82f, z*0.75f) * frequent > 0.15f) { // 0.115f for FastNoise, and 0.13f for SimplexNoise
 					world.setBlock(x, y, z, BlocksList.AIR);
 				}
 				frequent = Math.min(1.0f, frequent + 0.03f);
@@ -160,12 +160,13 @@ public class DefaultGen extends Generator {
 		}
 		// */
 		
+		// /*
 		setStatus("Creating Worms..");
 		final Array<Worm> worms = new Array<>();
 		for (int x = 0; x < 32; x++)
 		for (int y = 0; y < 16; y++)
 		for (int z = 0; z < 32; z++) {
-			if (random.nextInt(40) == 0) {
+			if (random.nextInt(30) == 0) {
 				worms.add(new Worm(random, x << 4, y << 4, z << 4));
 			}
 		}
