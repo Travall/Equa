@@ -37,7 +37,7 @@ public class Worm {
 	public boolean update() {
 		QUAT.setEulerAngles(noiseYaw.getNoise((move + offset) / 32f) * 180f, noisePitch.getNoise((move + offset) / 32f) * 180f, 0f);
 		QUAT.transform(velocity);
-		posision.add(velocity.x * steps, velocity.y * steps * 0.7f, velocity.z * steps);
+		posision.add(velocity.x * steps, velocity.y * steps * 0.6f, velocity.z * steps);
 		
 		final int x, y, z;
 		x = MathUtils.floor(posision.x);
