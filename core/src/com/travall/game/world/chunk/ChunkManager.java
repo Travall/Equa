@@ -1,6 +1,7 @@
 package com.travall.game.world.chunk;
 
 import static com.badlogic.gdx.math.MathUtils.floor;
+import static com.travall.game.options.Options.DISTANCE;
 import static com.travall.game.world.World.*;
 
 import java.util.Arrays;
@@ -8,7 +9,10 @@ import java.util.Arrays;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.math.GridPoint3;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Plane;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.travall.game.renderer.block.UltimateTexture;
@@ -26,6 +30,7 @@ public class ChunkManager implements Disposable {
 	private static final int haft = chunkSize / 2;
 	
 	private boolean hasInts;
+	private GridPoint3 chunkPos = new GridPoint3();
 	
 	public void intsMeshes() {
 		if (hasInts) return;
@@ -48,10 +53,17 @@ public class ChunkManager implements Disposable {
 		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
 		Gdx.gl.glDisable(GL20.GL_BLEND);
 		
+		final Vector3 pos = camera.position;
+		chunkPos.set(MathUtils.floor(pos.x)>>4, MathUtils.floor(pos.y)>>4, MathUtils.floor(pos.z)>>4);
+		
 		trans.size = 0;
-		for(int x = 0; x < xChunks; x++)
-		for(int y = 0; y < yChunks; y++)
-		for(int z = 0; z < zChunks; z++) {
+		for(int x = chunkPos.x-DISTANCE.chunks-1; x < chunkPos.x+DISTANCE.chunks; x++)
+		for(int y = chunkPos.y-DISTANCE.chunks-1; y < chunkPos.y+DISTANCE.chunks; y++)
+		for(int z = chunkPos.z-DISTANCE.chunks-1; z < chunkPos.z+DISTANCE.chunks; z++) {
+			if (x < 0 || x >= xChunks || y < 0 || y >= yChunks || z < 0 || z >= zChunks || z < 0 || z >= zChunks) {
+				continue;
+			}
+			
 			final ChunkMesh mesh = meshes[x][y][z];
 			if (mesh.isDirty) {
 				ChunkBuilder.buildChunk(x, y, z, mesh);

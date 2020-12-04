@@ -10,7 +10,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.travall.game.renderer.block.UltimateTexture;
 import com.travall.game.ui.DeletePrompt;
 import com.travall.game.ui.Menu;
-import com.travall.game.ui.Option;
+import com.travall.game.ui.OptionUI;
 import com.travall.game.ui.WorldSeletion;
 import com.travall.game.ui.actors.TiledDrawableFix;
 import com.travall.game.ui.utils.UImanager;
@@ -28,7 +28,7 @@ public class TheMenu extends ScreenAdapter {
 		manager.put(new Menu(this));
 		manager.put(delPrompt);
 		manager.put(new WorldSeletion(this, delPrompt));
-		manager.put(new Option(manager));
+		manager.put(new OptionUI(manager));
 		
 		TiledDrawableFix tile = new TiledDrawableFix(UltimateTexture.createRegion(1, 0));
 		tile.getColor().set(0.6f, 0.6f, 0.6f, 1f);

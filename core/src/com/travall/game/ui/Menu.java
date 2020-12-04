@@ -53,7 +53,7 @@ public class Menu extends UIBase {
 		butt.setPosition(0, 8, Align.center);
 		butt.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
-				manager.setUI(Option.class);
+				manager.setUI(OptionUI.class);
 			}
 		});
 		buttons.addActor(butt);
