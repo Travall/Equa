@@ -1,7 +1,7 @@
 package com.travall.game.entities;
 
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
@@ -12,24 +12,28 @@ import com.travall.game.handles.Inputs;
 import com.travall.game.particles.BlockBreak;
 import com.travall.game.particles.ParicleSystem;
 import com.travall.game.utils.BlockPos;
+import com.travall.game.utils.Properties;
+import com.travall.game.utils.Serializable;
 import com.travall.game.utils.math.CollisionBox;
 import com.travall.game.world.World;
 
-public class Player {
+public class Player implements Serializable {
 
 	final CollisionBox collisionBox = new CollisionBox();
 
 	final Vector3 position = new Vector3();
 	final Vector3 velocity = new Vector3();
 	final Vector3 acceleration = new Vector3();
+	
+	public final FirstPersonCameraController camera;
 
 	public boolean onGround;
 	public boolean isFlying = false;
 	public boolean isWalking = false;
 	public boolean isSprinting = false;
-
-	public Player(Vector3 position) {
-		setPosition(position);
+	
+	public Player(PerspectiveCamera camera) {
+		this.camera = new FirstPersonCameraController(camera);
 	}
 
 	public void applyForce(Vector3 force) {
@@ -56,8 +60,9 @@ public class Player {
 		return velocity;
 	}
 
-	public void update(World world, Camera camera, FirstPersonCameraController cameraController) {
-		process(camera, cameraController, world);
+	public void update(World world) {
+		camera.updateDirection();
+		process(world);
 		velocity.add(acceleration);
 		move(world, this.velocity.x, this.velocity.y, this.velocity.z);
 		acceleration.setZero();
@@ -71,13 +76,14 @@ public class Player {
 		if(velocity.dst(Vector3.Zero) < 0.001) velocity.set(Vector3.Zero);
 
 		this.isWalking = (velocity.x != 0 || velocity.z != 0);
+		camera.update(isWalking, isFlying);
 	}
 
-	final Vector3 add = new Vector3(), direction = new Vector3(), noam = new Vector3(), temp = new Vector3();
+	final Vector3 add = new Vector3(), direction = new Vector3(), temp = new Vector3();
 
 	BlockPos tempBlockPos = new BlockPos();
 
-	public void process(Camera camera, FirstPersonCameraController cameraController, World world) {
+	public void process(World world) {
 		float y = this.isFlying ? 0 : -0.01f;
 		float speed = 0.015f;
 
@@ -95,10 +101,9 @@ public class Player {
 			y = -0.02f;
 		}
 
-		noam.set(camera.direction).nor();
-		float angle = MathUtils.atan2(noam.x, noam.z);
+		final float angle = camera.camRotateAngle;
 
-		direction.set(MathUtils.sin(angle), 0, MathUtils.cos(angle));
+		direction.set(MathUtils.sinDeg(angle), 0, MathUtils.cosDeg(angle));
 		add.setZero();
 
 		temp.set(direction);
@@ -120,9 +125,9 @@ public class Player {
 
 		if (!add.equals(Vector3.Zero) && this.isSprinting
 				&& Inputs.isKeyPressed(Keys.W))
-			cameraController.targetFOV = 90; // changed from 110 to 90
+			camera.targetFOV = 90; // changed from 110 to 90
 		else
-			cameraController.targetFOV = 80; // changed from 90 to 80
+			camera.targetFOV = 80; // changed from 90 to 80
 
 		add.y = y;
 		this.applyForce(add);
@@ -269,5 +274,21 @@ public class Player {
 		}
 		
 		return true;
+	}
+
+	@Override
+	public void write(Properties props) {
+		Properties playerProps = props.newProps("player");
+		playerProps.put("position", getPosition());
+		playerProps.put("velocity", getVelocity());
+		playerProps.put("isFlying", isFlying);
+	}
+
+	@Override
+	public void read(Properties props) {
+		Properties playerProps = props.getProps("player");
+		setPosition((Vector3)playerProps.get("position", new Vector3()));
+		velocity.set((Vector3)playerProps.get("velocity", new Vector3()));
+		isFlying = (boolean) playerProps.get("isFlying", false);	
 	}
 }

@@ -10,8 +10,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.travall.game.io.WorldIO.Packet;
 import com.travall.game.ui.utils.StageUtils;
-import com.travall.game.world.World;
 import com.travall.game.world.handles.WorldIOhandle;
 
 public class WorldScreen extends ScreenAdapter {
@@ -42,6 +42,7 @@ public class WorldScreen extends ScreenAdapter {
 		this.game = game;
 		this.folder = null;
 		
+		game.save();
 		label = new Label(null, main.skin);
 		label.setUserObject(new Vector2(0.5f, 0.5f));
 		label.setAlignment(Align.center);
@@ -56,7 +57,7 @@ public class WorldScreen extends ScreenAdapter {
 		stage.addActor(label);
 		
 		if (isSaving) {
-			worldhandle.save(game.world);
+			worldhandle.save(game.world, game.props);
 		} else {
 			worldhandle.load(folder);
 		}
@@ -73,13 +74,22 @@ public class WorldScreen extends ScreenAdapter {
 			if (isSaving) {
 				main.setScreen(main.menu);
 			} else {
-				World world = null;
+				Packet packet = null;
+				
 				try {
-					world = worldhandle.get();
+					packet = worldhandle.get();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				main.setScreen(world == null ? main.menu : new TheGame(worldhandle.get()));
+				
+				main.setScreen(packet == null ? main.menu : new TheGame(packet));
+				
+				if (packet != null) {
+					packet.props.clear();
+					
+					packet.world = null;
+					packet.props = null;
+				}
 			}
 		}
 	}

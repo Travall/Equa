@@ -5,7 +5,6 @@ import static com.travall.game.utils.BlockUtils.*;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.Null;
 import com.travall.game.blocks.Block;
 import com.travall.game.blocks.BlocksList;
 import com.travall.game.utils.BlockPos;
@@ -38,7 +37,7 @@ public final class World implements Disposable {
 	public final ChunkManager chunkManager;
 	public final FileHandle folder;
 
-	public World(FileHandle folder, @Null Generator generator) {
+	public World(FileHandle folder, Generator generator) {
 		World.world = this;
 		this.folder = folder;
 		
@@ -46,7 +45,16 @@ public final class World implements Disposable {
 		this.shadowMap = new short[mapSize][mapSize];
 		this.chunkManager = new ChunkManager();
 		
-		if (generator != null) generator.genrate(this);
+		generator.genrate(this);
+	}
+	
+	public World(FileHandle folder) {
+		World.world = this;
+		this.folder = folder;
+		
+		this.data = STATIC_DATA;
+		this.shadowMap = new short[mapSize][mapSize];
+		this.chunkManager = new ChunkManager();
 	}
 	
 	public void intsMeshes() {
