@@ -1,27 +1,23 @@
 package com.travall.game.handles;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Quaternion;
-import com.badlogic.gdx.math.Vector2;
 
 public class FirstPersonCameraController {
-    private final Camera camera;
+    public final PerspectiveCamera camera;
     
-    Vector2 mousePos = new Vector2(Gdx.input.getX(),Gdx.input.getY());
     public float targetFOV = 80;
 
-    float camRotateAngle;
-    float camTiltAngle;
-    Quaternion quat = new Quaternion();
+    public float camRotateAngle, camTiltAngle;
+    private final Quaternion quat = new Quaternion();
 
-    float mouseSensitivity = 0.3f;
+    public float mouseSensitivity = 0.3f;
 
     float increase;
 
-    public FirstPersonCameraController (Camera camera) {
+    public FirstPersonCameraController (PerspectiveCamera camera) {
         this.camera = camera;
     }
 
@@ -29,6 +25,7 @@ public class FirstPersonCameraController {
         if(walking && !flying) increase += 0.25f;
         else increase = 0;
         camera.rotate(camera.direction, MathUtils.sin(increase) / 48f);
+        camera.fieldOfView = MathUtils.lerp(camera.fieldOfView, targetFOV, 0.2f);
     }
 
     public void updateDirection() {
@@ -37,8 +34,7 @@ public class FirstPersonCameraController {
         camRotateAngle += delta.x * mouseSensitivity;
         camTiltAngle -= delta.y * mouseSensitivity;
 
-        if (camTiltAngle > 89.9) camTiltAngle = 89.9f;
-        if (camTiltAngle < -89.9) camTiltAngle = -89.9f;
+        camTiltAngle = MathUtils.clamp(camTiltAngle, -90f, 90f);
 
         quat.setEulerAngles(camRotateAngle, camTiltAngle, MathUtils.sin(increase) / 48f);
         camera.direction.set(0, 0, 1);

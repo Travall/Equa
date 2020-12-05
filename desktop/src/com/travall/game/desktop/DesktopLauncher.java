@@ -15,6 +15,10 @@ public class DesktopLauncher {
 		config.setWindowedMode(800, 600);
 		config.setTitle("Equa");
 		config.setPreferencesConfig(FileIO.DIR, FileType.External);
+		
+		//config.useVsync(false);
+		//config.setForegroundFPS(500);
+		
 		new Lwjgl3Application(Main.main, config);
 	}
 }
