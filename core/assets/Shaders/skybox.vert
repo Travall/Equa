@@ -8,11 +8,11 @@ precision mediump float;
 
 attribute MEDIUMP vec4 a_position;
 
-uniform MEDIUMP mat4 u_projTrans;
+uniform MEDIUMP mat4 projTrans;
 
 varying MEDIUMP float v_yCoord;
 
 void main() {
 	v_yCoord = a_position.y;
-	gl_Position = u_projTrans * a_position;
+	gl_Position = projTrans * a_position;
 }

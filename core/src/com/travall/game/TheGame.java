@@ -39,7 +39,6 @@ public class TheGame extends ScreenAdapter {
 	
 	final PerspectiveCamera camera;
 	
-	final Skybox skybox;
 	final World world;
 	final Stage stage = main.stage;
 
@@ -63,8 +62,6 @@ public class TheGame extends ScreenAdapter {
 	final Properties props;
 
 	public TheGame(Packet packet) {
-		skybox = new Skybox();
-
 		camera = new PerspectiveCamera(80, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		camera.near = 0.1f;
 		camera.far = 1000f;
@@ -106,8 +103,6 @@ public class TheGame extends ScreenAdapter {
 	public void render(final float delta) {
 		update();
 		camera.update(); // Update the camera projection
-
-		skybox.render(camera);
 
 		if (Inputs.isKeyJustPressed(Keys.F1))
 			bool = !bool;
@@ -194,7 +189,6 @@ public class TheGame extends ScreenAdapter {
 
 		crosshairTex.dispose();
 		world.dispose();
-		skybox.dispose();
 
 		ParicleSystem.dispose();
 	}
@@ -246,12 +240,14 @@ public class TheGame extends ScreenAdapter {
 	public void save() {
 		final Properties props = this.props;
 		player.write(props);
+		world.write(props);
 	}
 
 	// Load properties.
 	private void load() {
 		final Properties props = this.props;
 		player.read(props);
+		world.read(props);
 	}
 	
 	// First time loaded the world.

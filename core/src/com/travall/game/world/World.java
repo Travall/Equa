@@ -2,17 +2,23 @@ package com.travall.game.world;
 
 import static com.travall.game.utils.BlockUtils.*;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Disposable;
 import com.travall.game.blocks.Block;
 import com.travall.game.blocks.BlocksList;
+import com.travall.game.renderer.Skybox;
 import com.travall.game.utils.BlockPos;
+import com.travall.game.utils.Properties;
+import com.travall.game.utils.Serializable;
 import com.travall.game.world.chunk.ChunkManager;
 import com.travall.game.world.gen.Generator;
 import com.travall.game.world.lights.LightHandle;
 
-public final class World implements Disposable {
+public final class World implements Disposable, Serializable {
 	/** Easy world access. */
 	public static World world;
 
@@ -36,6 +42,9 @@ public final class World implements Disposable {
 	
 	public final ChunkManager chunkManager;
 	public final FileHandle folder;
+	public Skybox skybox;
+	
+	public float cycle;
 
 	public World(FileHandle folder, Generator generator) {
 		World.world = this;
@@ -59,6 +68,7 @@ public final class World implements Disposable {
 	
 	public void intsMeshes() {
 		chunkManager.intsMeshes();
+		skybox = new Skybox(this);
 	}
 	
 	public void createShadowMap(final boolean fillLights) {
@@ -80,8 +90,15 @@ public final class World implements Disposable {
 		return shadowMap[x][z];
 	}
 	
-	public void render(Camera camera) {
+	public void render(PerspectiveCamera camera) {
 		lightHandle.calculateLights(true); // Calculate lights.
+		
+		cycle += 0.1f * Gdx.graphics.getDeltaTime();
+		if (cycle > MathUtils.PI2) {
+			cycle -= MathUtils.PI2;
+		}
+		skybox.render(camera);
+		
 		chunkManager.render(camera);
 	}
 
@@ -155,6 +172,7 @@ public final class World implements Disposable {
 	@Override
 	public void dispose() {
 		chunkManager.dispose();
+		skybox.dispose();
 		
 		final int[][][] data = this.data;
 		for (int x = 0; x < mapSize; x++)
@@ -164,5 +182,17 @@ public final class World implements Disposable {
 		}
 
 		World.world = null;
+	}
+
+	@Override
+	public void write(Properties props) {
+		Properties worldProps = props.newProps("world");
+		worldProps.put("cycle", cycle);
+	}
+
+	@Override
+	public void read(Properties props) {
+		Properties worldProps = props.getProps("world");
+		cycle = worldProps.got("cycle", 1f);
 	}
 }

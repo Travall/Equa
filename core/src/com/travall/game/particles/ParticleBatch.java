@@ -41,7 +41,7 @@ class ParticleBatch implements Disposable {
 	
 	
 	public void begin() {
-		VoxelTerrain.begin(cam);
+		VoxelTerrain.begin(cam, world);
 		vbo.bind();
 		idx = 0;
 		

@@ -18,6 +18,7 @@ import com.travall.game.glutils.shaders.ModenShader;
 import com.travall.game.glutils.shaders.ShaderHandle;
 import com.travall.game.glutils.shaders.ShaderPart;
 import com.travall.game.glutils.shaders.ShaderType;
+import com.travall.game.world.World;
 
 // Needs update comments after attribute change.
 /** The static class contains vertex attributes and shader */
@@ -57,14 +58,14 @@ public final class VoxelTerrain {
 	static float sine = 0;
 	
 	/** Begins the shader. */
-	public static void begin(Camera cam) {
+	public static void begin(Camera cam, World world) {
 		sine += 0.01f;
 		if (sine > MathUtils.PI2) {
 			sine -= MathUtils.PI2;
 		}
 		shader.bind();
 		gl.glUniformMatrix4fv(shader.getUniLoc("projTrans"), 1, false, cam.combined.val, 0);
-		gl.glUniform1f(shader.getUniLoc("sunLightIntensity"), 1f);
+		gl.glUniform1f(shader.getUniLoc("sunLightIntensity"), MathUtils.clamp((MathUtils.sin(world.cycle)+0.2f)*2f, 0f, 1f));
 		gl.glUniform1f(shader.getUniLoc("brightness"), 0.35f);
 		gl.glUniform1i(shader.getUniLoc("toggleAO"), toggleAO);
 	}
