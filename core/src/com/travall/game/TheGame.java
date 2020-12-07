@@ -34,6 +34,7 @@ import com.travall.game.ui.utils.PosOffset;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.Properties;
 import com.travall.game.world.World;
+import com.travall.game.world.features.Clouds;
 
 public class TheGame extends ScreenAdapter {
 	
@@ -41,6 +42,7 @@ public class TheGame extends ScreenAdapter {
 	
 	final World world;
 	final Stage stage = main.stage;
+	final Clouds clouds;
 
 	BlockItem blockType;
 	final Player player;
@@ -62,6 +64,7 @@ public class TheGame extends ScreenAdapter {
 	final Properties props;
 
 	public TheGame(Packet packet) {
+		clouds = new Clouds();
 		camera = new PerspectiveCamera(80, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		camera.near = 0.1f;
 		camera.far = 1000f;
@@ -129,6 +132,8 @@ public class TheGame extends ScreenAdapter {
 		if (Inputs.isKeyJustPressed(Keys.ESCAPE)) {
 			main.setScreen(new WorldScreen(this));
 		}
+
+		clouds.render(camera);
 	}
 
 	private void update() {
