@@ -287,8 +287,8 @@ public class Player implements Serializable {
 	@Override
 	public void read(Properties props) {
 		Properties playerProps = props.getProps("player");
-		setPosition((Vector3)playerProps.get("position", new Vector3()));
-		velocity.set((Vector3)playerProps.get("velocity", new Vector3()));
-		isFlying = (boolean) playerProps.get("isFlying", false);	
+		setPosition(playerProps.got("position", new Vector3()));
+		velocity.set(playerProps.got("velocity", new Vector3()));
+		isFlying = playerProps.got("isFlying", false);	
 	}
 }

@@ -26,7 +26,7 @@ uniform int toggleAO;
 // data[sideLight&Ambiant, source-light, skylight, unused]
 void main()
 {
-	light = min(mix(data.y + data.z * sunLightIntensity, 1.0, brightness), 1.0);
+	light = min(mix(max(data.y, data.z * sunLightIntensity), 1.0, brightness), 1.0);
 	shade = toggleAO == 1 ? data.x : 1.0;
 	texCoords = texCoord;
 	gl_Position = projTrans * position;

@@ -49,7 +49,7 @@ public class ChunkManager implements Disposable {
 		}
 
 		UltimateTexture.texture.bind();
-		VoxelTerrain.begin(camera);
+		VoxelTerrain.begin(camera, world);
 		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
 		Gdx.gl.glDisable(GL20.GL_BLEND);
 		
@@ -57,9 +57,9 @@ public class ChunkManager implements Disposable {
 		chunkPos.set(MathUtils.floor(pos.x)>>4, MathUtils.floor(pos.y)>>4, MathUtils.floor(pos.z)>>4);
 		
 		trans.size = 0;
-		for(int x = chunkPos.x-DISTANCE.chunks-1; x < chunkPos.x+DISTANCE.chunks; x++)
-		for(int y = chunkPos.y-DISTANCE.chunks-1; y < chunkPos.y+DISTANCE.chunks; y++)
-		for(int z = chunkPos.z-DISTANCE.chunks-1; z < chunkPos.z+DISTANCE.chunks; z++) {
+		for(int x = chunkPos.x-DISTANCE.chunks; x < chunkPos.x+DISTANCE.chunks+1; x++)
+		for(int y = chunkPos.y-DISTANCE.chunks; y < chunkPos.y+DISTANCE.chunks+1; y++)
+		for(int z = chunkPos.z-DISTANCE.chunks; z < chunkPos.z+DISTANCE.chunks+1; z++) {
 			if (x < 0 || x >= xChunks || y < 0 || y >= yChunks || z < 0 || z >= zChunks || z < 0 || z >= zChunks) {
 				continue;
 			}

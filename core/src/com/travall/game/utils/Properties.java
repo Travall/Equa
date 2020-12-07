@@ -17,6 +17,11 @@ public class Properties extends OrderedMap<String, Object> {
 		super(1, 0.99f);
 		isDummy = true;
 	}
+	
+	@SuppressWarnings("unchecked")
+	public <V> V got(String key, V defaultValue) {
+		return (V) get(key, defaultValue);
+	}
 
 	@Override
 	public Object put(String key, Object value) {
