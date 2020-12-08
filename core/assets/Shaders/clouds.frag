@@ -1,10 +1,10 @@
-#version 100
+#version 310 es
 #ifdef GL_ES
     precision lowp float;
 #endif
 
-in float scale;
+out vec4 color;
 
 void main() {
-	gl_FragColor = vec4(1.0,1.0,1.0,0.1);
+	color = vec4(1.0,1.0,1.0,0.02);
 }
