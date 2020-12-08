@@ -1,6 +1,7 @@
 package com.travall.game.renderer;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
@@ -25,7 +26,9 @@ public class Clouds implements Disposable
 
 	private final static int CLOUD_ROW = 200;
 	private final static int CLOUD_COUNT = CLOUD_ROW * CLOUD_ROW;
-	FastNoiseOctaves noise = new FastNoiseOctaves(4,0.5,new Random());
+	public int octaves = 6;
+	public double persistence = 1.0;
+	FastNoiseOctaves noise = new FastNoiseOctaves(octaves,persistence,1000);
 
 	float offsetX = 0;
 	float offsetY = 0;
@@ -50,16 +53,25 @@ public class Clouds implements Disposable
 	
 	public void render(PerspectiveCamera camera) {
 
+		octaves = (Gdx.input.isKeyJustPressed(Input.Keys.Y) ? octaves - 1 : octaves);
+		octaves = (Gdx.input.isKeyJustPressed(Input.Keys.U) ? octaves + 1 : octaves);
+
+		persistence = (Gdx.input.isKeyJustPressed(Input.Keys.H) ? Math.round((persistence - 0.1) * 100.0) / 100.0 : persistence);
+		persistence = (Gdx.input.isKeyJustPressed(Input.Keys.J) ? Math.round((persistence + 0.1) * 100.0) / 100.0 : persistence);
+
+		if(Gdx.input.isKeyJustPressed(Input.Keys.Y) || Gdx.input.isKeyJustPressed(Input.Keys.U)
+			|| Gdx.input.isKeyJustPressed(Input.Keys.H) || Gdx.input.isKeyJustPressed(Input.Keys.J)) noise = new FastNoiseOctaves(octaves,persistence,1000);
+
 		offsets.clear();
 		for (int x = 1; x <= CLOUD_ROW; x++) {
 			for (int y = 1; y <= CLOUD_ROW; y++) {
-				float height = (noise.getNoise((x * 0.3f) + offsetX, (y * 0.3f) + offsetY, offsetTime)+0.03f) * 60f;
-				if(height < 0.01) continue;
-				
-				temp[0] = x * 6;
-				temp[1] = y * 6;
+				float height = (noise.getNoise((x * 0.3f) + offsetX, (y * 0.3f) + offsetY, offsetTime)+0.03f);
+				if(height < 0.01) height = 0;
+
+				temp[0] = x;
+				temp[1] = y;
 				temp[2] = height;
-				
+
 				offsets.put(temp);
 			}
 		}
@@ -78,9 +90,9 @@ public class Clouds implements Disposable
 		Gdx.gl.glDepthMask(true);
 		Gdx.gl.glDisable(GL_CULL_FACE);
 		
-		offsetX += 0.02f;
-		offsetY += 0.02f;
-		offsetTime += 0.02f;
+		offsetX += 0.01f;
+		offsetY += 0.01f;
+		offsetTime += 0.01f;
 	}
 
 	@Override
