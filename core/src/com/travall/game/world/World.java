@@ -97,6 +97,7 @@ public final class World implements Disposable, Serializable {
 		if (cycle > MathUtils.PI2) {
 			cycle -= MathUtils.PI2;
 		}
+		cycle = MathUtils.HALF_PI;
 		skybox.render(camera);
 		
 		chunkManager.render(camera);

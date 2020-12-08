@@ -25,6 +25,7 @@ import com.travall.game.io.WorldIO.Packet;
 import com.travall.game.items.BlockItem;
 import com.travall.game.particles.BlockBreak;
 import com.travall.game.particles.ParicleSystem;
+import com.travall.game.renderer.Clouds;
 import com.travall.game.renderer.Picker;
 import com.travall.game.renderer.Skybox;
 import com.travall.game.renderer.block.UltimateTexture;
@@ -34,7 +35,6 @@ import com.travall.game.ui.utils.PosOffset;
 import com.travall.game.utils.BlockPos;
 import com.travall.game.utils.Properties;
 import com.travall.game.world.World;
-import com.travall.game.world.features.Clouds;
 
 public class TheGame extends ScreenAdapter {
 	
@@ -113,6 +113,7 @@ public class TheGame extends ScreenAdapter {
 		world.render(camera);
 		Picker.render(camera);
 		ParicleSystem.render();
+		clouds.render(camera);
 
 		if (debug) {
 			info.append('\n');
@@ -132,8 +133,6 @@ public class TheGame extends ScreenAdapter {
 		if (Inputs.isKeyJustPressed(Keys.ESCAPE)) {
 			main.setScreen(new WorldScreen(this));
 		}
-
-		clouds.render(camera);
 	}
 
 	private void update() {
