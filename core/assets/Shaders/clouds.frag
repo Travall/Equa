@@ -3,8 +3,11 @@
     precision lowp float;
 #endif
 
+//in float yPos;
+
 out vec4 color;
 
 void main() {
-	color = vec4(1.0,1.0,1.0,0.025);
+	//float a = 1.0 + yPos;
+	color = vec4(1.0, 1.0, 1.0, 0.02);
 }

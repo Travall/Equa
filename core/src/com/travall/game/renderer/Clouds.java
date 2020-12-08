@@ -2,6 +2,7 @@ package com.travall.game.renderer;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
@@ -26,13 +27,18 @@ public class Clouds implements Disposable
 
 	private final static int CLOUD_ROW = 200;
 	private final static int CLOUD_COUNT = CLOUD_ROW * CLOUD_ROW;
-	public int octaves = 6;
-	public double persistence = 1.0;
-	FastNoiseOctaves noise = new FastNoiseOctaves(octaves,persistence,1000);
+	public int octaves = 5;
+	public double persistence = 0.7;
+	FastNoiseOctaves noise = new FastNoiseOctaves(octaves,persistence, new Random());
 
 	float offsetX = 0;
 	float offsetY = 0;
 	float offsetTime = 0;
+	
+	public static final float DIST = CLOUD_ROW / 2;
+	public static final float SIZE = 2f; // 2f
+	public static final float SCALE = 5.5f; // 5.5f
+	public static final float POWER = 50f; // 40f
 
 	public Clouds() {
 
@@ -45,7 +51,7 @@ public class Clouds implements Disposable
 		sphere = build.end();
 
 		sphere.enableInstancedRendering(true, CLOUD_COUNT, 
-				new VertexAttribute(Usage.Position, 2, "i_offset"),new VertexAttribute(Usage.Generic, 1, "i_scale"));
+				new VertexAttribute(Usage.Position, 2, "offset"),new VertexAttribute(Usage.Generic, 1, "scale"));
 	}
 
 	FloatBuffer offsets = BufferUtils.newFloatBuffer(CLOUD_COUNT * 3);
@@ -53,26 +59,34 @@ public class Clouds implements Disposable
 	
 	public void render(PerspectiveCamera camera) {
 
-		octaves = (Gdx.input.isKeyJustPressed(Input.Keys.Y) ? octaves - 1 : octaves);
-		octaves = (Gdx.input.isKeyJustPressed(Input.Keys.U) ? octaves + 1 : octaves);
+		octaves = (Gdx.input.isKeyJustPressed(Keys.Y) ? octaves - 1 : octaves);
+		octaves = (Gdx.input.isKeyJustPressed(Keys.U) ? octaves + 1 : octaves);
 
-		persistence = (Gdx.input.isKeyJustPressed(Input.Keys.H) ? Math.round((persistence - 0.1) * 100.0) / 100.0 : persistence);
-		persistence = (Gdx.input.isKeyJustPressed(Input.Keys.J) ? Math.round((persistence + 0.1) * 100.0) / 100.0 : persistence);
+		persistence = (Gdx.input.isKeyJustPressed(Keys.H) ? Math.round((persistence - 0.05) * 100.0) / 100.0 : persistence);
+		persistence = (Gdx.input.isKeyJustPressed(Keys.J) ? Math.round((persistence + 0.05) * 100.0) / 100.0 : persistence);
 
-		if(Gdx.input.isKeyJustPressed(Input.Keys.Y) || Gdx.input.isKeyJustPressed(Input.Keys.U)
-			|| Gdx.input.isKeyJustPressed(Input.Keys.H) || Gdx.input.isKeyJustPressed(Input.Keys.J)) noise = new FastNoiseOctaves(octaves,persistence,1000);
+		if(Gdx.input.isKeyJustPressed(Keys.Y) || Gdx.input.isKeyJustPressed(Keys.U)
+		|| Gdx.input.isKeyJustPressed(Keys.H) || Gdx.input.isKeyJustPressed(Keys.J)) noise = new FastNoiseOctaves(octaves,persistence,1000);
 
+		
+		final float x1 = Math.round((camera.position.x+offsetX)/SIZE);
+		final float z1 = Math.round((camera.position.z+offsetY)/SIZE);
+			
 		offsets.clear();
-		for (int x = 1; x <= CLOUD_ROW; x++) {
-			for (int y = 1; y <= CLOUD_ROW; y++) {
-				float height = (noise.getNoise((x * 0.3f) + offsetX, (y * 0.3f) + offsetY, offsetTime)+0.03f);
-				if(height < 0.01) height = 0;
+		for (float x = -DIST+x1; x < DIST+x1; x++)
+		{
+			float xFix = (x-(offsetX/SIZE))*SIZE;
+			for (float z = -DIST+z1; z < DIST+z1; z++)
+			{				
+				float zFix = (z-(offsetY/SIZE))*SIZE;
+				float value = noise.getNoise(x/SCALE, z/SCALE, offsetTime) - 0.05f;
+				if (value > 0.01f) { // 0.4f
+					temp[0] = xFix;
+					temp[1] = zFix;
+					temp[2] = value * POWER;
 
-				temp[0] = x;
-				temp[1] = y;
-				temp[2] = height;
-
-				offsets.put(temp);
+					offsets.put(temp);
+				}
 			}
 		}
 
@@ -82,7 +96,7 @@ public class Clouds implements Disposable
 		gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		gl.glEnable(GL_BLEND);
 		shader.bind();
-		shader.setUniformMatrix("u_projTrans", camera.combined);
+		shader.setUniformMatrix("projTrans", camera.combined);
 
 		Gdx.gl.glEnable(GL_CULL_FACE);
 		Gdx.gl.glDepthMask(false);
@@ -90,8 +104,8 @@ public class Clouds implements Disposable
 		Gdx.gl.glDepthMask(true);
 		Gdx.gl.glDisable(GL_CULL_FACE);
 		
-		offsetX += 0.01f;
-		offsetY += 0.01f;
+		offsetX += 0.03f;
+		offsetY += 0.03f;
 		offsetTime += 0.01f;
 	}
 

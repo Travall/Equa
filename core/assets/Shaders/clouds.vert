@@ -3,15 +3,17 @@
     precision highp float;
 #endif
 
-in vec4 a_position;
+in vec3 a_position;
 
-in vec2 i_offset;
-in float i_scale;
+in vec2 offset;
+in float scale;
 
-uniform mat4 u_projTrans;
+//out float yPos;
+
+uniform mat4 projTrans;
 
 void main() {
-        vec4 offsetPos = vec4(i_offset.x / 1.5, 350, i_offset.y / 1.5, 1.0);
-        vec4 newPos = vec4( a_position.x * i_scale * 5.5, a_position.y * i_scale * 5.5, a_position.z * i_scale * 5.5, 1 ) + offsetPos;
-    	gl_Position = u_projTrans * newPos;
+	//yPos = a_position.y;
+	vec3 newPos = (a_position * scale) + vec3(offset.x, 200.0, offset.y);
+	gl_Position = projTrans * vec4(newPos, 1.0);
 }
