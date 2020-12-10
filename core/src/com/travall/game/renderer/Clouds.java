@@ -68,14 +68,14 @@ public class Clouds implements Disposable
 		gpu.move = 0.2f;
 		//float offset = 20.0f;
 		float shift = -0.05f;
-		float size = 30.0f;
+		float size = 40.0f;
 		
 		final Vector3 pos = camera.position;
 		
 		long a = System.currentTimeMillis();
 		reset();
 		int i = (CLOUD_COUNT-1) << 1;
-		queue.addLast(POOL.obtain().set(MathUtils.floor(pos.x)>>1, MathUtils.floor(pos.z)>>1));
+		queue.addLast(POOL.obtain().set(MathUtils.clamp(MathUtils.floor(pos.x)>>1, 0, 255), MathUtils.clamp(MathUtils.floor(pos.z)>>1, 0, 255)));
 		while (queue.notEmpty()) {
 			final GridPoint2 point = queue.removeFirst();
 			
@@ -115,7 +115,7 @@ public class Clouds implements Disposable
 			POOL.free(point);
 		}
 		sphere.setInstanceData(ARRAY);
-		System.out.println(System.currentTimeMillis() - a);
+		
 		
 		gpu.noise();
 		gpu.texture.bind();
@@ -128,10 +128,13 @@ public class Clouds implements Disposable
 		shader.setUniformf("size", size);
 		shader.setUniformf("rows", 512);
 		
-		shader.setUniformf("cloudPower",  0.8f);
 		shader.setUniformf("cloudClamp",  0.5f);
-		float yOffset = (200f - pos.y) * 0.02f;
-		shader.setUniformf("cloudOffset", -MathUtils.clamp(yOffset, -0.45f, -0.15f));
+		float yOffset = (200f - pos.y) * 0.015f;
+		float power = MathUtils.clamp((pos.y - 200f) * 0.1f, 0.0f, 1.0f);
+		
+		System.out.println(power);
+		shader.setUniformf("cloudPower",  MathUtils.lerp(1f, 0.5f, power));
+		shader.setUniformf("cloudOffset", -MathUtils.clamp(yOffset, -0.6f, 0f));
 
 		Gdx.gl.glCullFace(GL20.GL_FRONT);
 		Gdx.gl.glEnable(GL20.GL_CULL_FACE);

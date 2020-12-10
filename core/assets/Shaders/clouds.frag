@@ -14,5 +14,5 @@ uniform float cloudClamp;
 void main() {
 	float shade = (yPos + cloudOffset) * cloudPower;
 	float a = 1.0 - clamp(shade, 0.0, cloudClamp);
-	color = vec4(a, a, a, 0.04);
+	color = vec4(a, a, a, 0.05);
 }
