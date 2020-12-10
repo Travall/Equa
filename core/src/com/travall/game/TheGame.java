@@ -27,7 +27,6 @@ import com.travall.game.particles.BlockBreak;
 import com.travall.game.particles.ParicleSystem;
 import com.travall.game.renderer.Clouds;
 import com.travall.game.renderer.Picker;
-import com.travall.game.renderer.Skybox;
 import com.travall.game.renderer.block.UltimateTexture;
 import com.travall.game.renderer.vertices.VoxelTerrain;
 import com.travall.game.ui.actors.BlockSeletion;
@@ -126,10 +125,6 @@ public class TheGame extends ScreenAdapter {
 			info.append("Vel X: ").append(player.getVelocity().x).append('\n');
 			info.append("Vel Y: ").append(player.getVelocity().y).append('\n');
 			info.append("Vel Z: ").append(player.getVelocity().z).append('\n');
-			info.append('\n');
-			info.append("Octaves: ").append(clouds.octaves).append('\n');
-			info.append("Persistence: ").append(clouds.persistence).append('\n');
-
 			waterMark.setText(info);
 		} else {
 			waterMark.setText("Equa " + Main.VERSION);
@@ -200,6 +195,7 @@ public class TheGame extends ScreenAdapter {
 			return;
 		hasDispose = true;
 
+		clouds.dispose();
 		crosshairTex.dispose();
 		world.dispose();
 

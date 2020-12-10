@@ -3,11 +3,16 @@
     precision lowp float;
 #endif
 
-//in float yPos;
-
 out vec4 color;
 
+in float yPos;
+
+uniform float cloudPower;
+uniform float cloudOffset;
+uniform float cloudClamp;
+
 void main() {
-	//float a = 1.0 + yPos;
-	color = vec4(1.0, 1.0, 1.0, 0.02);
+	float shade = (yPos + cloudOffset) * cloudPower;
+	float a = 1.0 - clamp(shade, 0.0, cloudClamp);
+	color = vec4(a, a, a, 0.05);
 }

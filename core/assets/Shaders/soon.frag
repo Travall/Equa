@@ -11,5 +11,5 @@ void main()
 {
 	vec4 pix = texture2D(text, texCoords);
 	if (pix.a <= 0.0) discard;
-	gl_FragColor = texture2D(text, texCoords);
+	gl_FragColor = pix;
 }
