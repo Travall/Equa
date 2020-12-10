@@ -1,116 +1,151 @@
 package com.travall.game.renderer;
 
+import static com.badlogic.gdx.Gdx.files;
+import static com.badlogic.gdx.Gdx.gl;
+
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Mesh;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.VertexAttribute;
+import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.SphereShapeBuilder;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.utils.BufferUtils;
+import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
-import com.travall.game.utils.math.FastNoiseOctaves;
-
-import java.nio.FloatBuffer;
-import java.util.Random;
-
-import static com.badlogic.gdx.Gdx.files;
-import static com.badlogic.gdx.Gdx.gl;
-import static com.badlogic.gdx.graphics.GL20.*;
+import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.Queue;
 
 public class Clouds implements Disposable
 {
-
-	private ShaderProgram shader;
-	private Mesh sphere;
-
-	private final static int CLOUD_ROW = 200;
-	private final static int CLOUD_COUNT = CLOUD_ROW * CLOUD_ROW;
-	public int octaves = 5;
-	public double persistence = 0.7;
-	FastNoiseOctaves noise = new FastNoiseOctaves(octaves,persistence, new Random());
-
-	float offsetX = 0;
-	float offsetY = 0;
-	float offsetTime = 0;
 	
-	public static final float DIST = CLOUD_ROW / 2;
-	public static final float SIZE = 2f; // 2f
-	public static final float SCALE = 5.5f; // 5.5f
-	public static final float POWER = 50f; // 40f
+	final static int CLOUD_ROW = 256;
+	private final static int CLOUD_COUNT = CLOUD_ROW * CLOUD_ROW;
+	private static final float[] ARRAY = new float[CLOUD_COUNT << 1];
+
+	private final ShaderProgram shader;
+	private final Mesh sphere;
+	private final NoiseGPU gpu;
 
 	public Clouds() {
-
-		this.shader = new ShaderProgram(files.internal("Shaders/clouds.vert"), files.internal("Shaders/clouds.frag"));
+		shader = new ShaderProgram(files.internal("Shaders/clouds.vert"), files.internal("Shaders/clouds.frag"));
 		shader.bind();
 
 		MeshBuilder build = new MeshBuilder();
-		build.begin(VertexAttributes.Usage.Position, GL_TRIANGLES);
+		build.begin(VertexAttributes.Usage.Position, GL20.GL_TRIANGLES);
 		SphereShapeBuilder.build(build, 1f, 1f, 1f, 8, 6);
 		sphere = build.end();
-
-		sphere.enableInstancedRendering(true, CLOUD_COUNT, 
-				new VertexAttribute(Usage.Position, 2, "offset"),new VertexAttribute(Usage.Generic, 1, "scale"));
+		sphere.enableInstancedRendering(true, CLOUD_COUNT, new VertexAttribute(Usage.Position, 2, "offset"));
+		
+		gpu = new NoiseGPU();
 	}
-
-	FloatBuffer offsets = BufferUtils.newFloatBuffer(CLOUD_COUNT * 3);
-	float[] temp = new float[3];
+	
+	private static final Pool<GridPoint2> POOL = new Pool<GridPoint2>(CLOUD_ROW) {
+		protected GridPoint2 newObject() {
+			return new GridPoint2();
+		}
+	};
+	
+	private static boolean[][] BOOLS = new boolean[CLOUD_ROW][CLOUD_ROW];
+	private static void reset() {
+		for (int x = 0; x < CLOUD_ROW; x++)
+		for (int z = 0; z < CLOUD_ROW; z++) {
+			BOOLS[x][z] = false;
+		}
+	}
+	
+	private final Queue<GridPoint2> queue = new Queue<>(CLOUD_ROW);
 	
 	public void render(PerspectiveCamera camera) {
-
-		octaves = (Gdx.input.isKeyJustPressed(Keys.Y) ? octaves - 1 : octaves);
-		octaves = (Gdx.input.isKeyJustPressed(Keys.U) ? octaves + 1 : octaves);
-
-		persistence = (Gdx.input.isKeyJustPressed(Keys.H) ? Math.round((persistence - 0.05) * 100.0) / 100.0 : persistence);
-		persistence = (Gdx.input.isKeyJustPressed(Keys.J) ? Math.round((persistence + 0.05) * 100.0) / 100.0 : persistence);
-
-		if(Gdx.input.isKeyJustPressed(Keys.Y) || Gdx.input.isKeyJustPressed(Keys.U)
-		|| Gdx.input.isKeyJustPressed(Keys.H) || Gdx.input.isKeyJustPressed(Keys.J)) noise = new FastNoiseOctaves(octaves,persistence,1000);
-
 		
-		final float x1 = Math.round((camera.position.x+offsetX)/SIZE);
-		final float z1 = Math.round((camera.position.z+offsetY)/SIZE);
+		gpu.octave = 4;
+		gpu.scale = 3f;
+		gpu.gain = 0.5f;
+		gpu.move = 0.2f;
+		//float offset = 20.0f;
+		float shift = -0.05f;
+		float size = 30.0f;
+		
+		final Vector3 pos = camera.position;
+		
+		long a = System.currentTimeMillis();
+		reset();
+		int i = (CLOUD_COUNT-1) << 1;
+		queue.addLast(POOL.obtain().set(MathUtils.floor(pos.x)>>1, MathUtils.floor(pos.z)>>1));
+		while (queue.notEmpty()) {
+			final GridPoint2 point = queue.removeFirst();
 			
-		offsets.clear();
-		for (float x = -DIST+x1; x < DIST+x1; x++)
-		{
-			float xFix = (x-(offsetX/SIZE))*SIZE;
-			for (float z = -DIST+z1; z < DIST+z1; z++)
-			{				
-				float zFix = (z-(offsetY/SIZE))*SIZE;
-				float value = noise.getNoise(x/SCALE, z/SCALE, offsetTime) - 0.05f;
-				if (value > 0.01f) { // 0.4f
-					temp[0] = xFix;
-					temp[1] = zFix;
-					temp[2] = value * POWER;
-
-					offsets.put(temp);
-				}
+			final int x, z;
+			x = point.x;
+			z = point.y;
+			
+			if (x-1 >= 0 && !BOOLS[x-1][z]) {
+				queue.addLast(POOL.obtain().set(x-1, z));
+				BOOLS[x-1][z] = true;
+				ARRAY[i]   = x-1 << 1;
+				ARRAY[i+1] = z << 1;
+				i -= 2;
 			}
+			if (x+1 < CLOUD_ROW && !BOOLS[x+1][z]) {
+				queue.addLast(POOL.obtain().set(x+1, z));
+				BOOLS[x+1][z] = true;
+				ARRAY[i]   = x+1 << 1;
+				ARRAY[i+1] = z << 1;
+				i -= 2;
+			}
+			if (z-1 >= 0 && !BOOLS[x][z-1]) {
+				queue.addLast(POOL.obtain().set(x, z-1));
+				BOOLS[x][z-1] = true;
+				ARRAY[i]   = x << 1;
+				ARRAY[i+1] = z-1 << 1;
+				i -= 2;
+			}
+			if (z+1 < CLOUD_ROW && !BOOLS[x][z+1]) {
+				queue.addLast(POOL.obtain().set(x, z+1));
+				BOOLS[x][z+1] = true;
+				ARRAY[i]   = x << 1;
+				ARRAY[i+1] = z+1 << 1;
+				i -= 2;
+			}
+			
+			POOL.free(point);
 		}
-
-		offsets.flip();
-		sphere.setInstanceData(offsets);
+		sphere.setInstanceData(ARRAY);
+		System.out.println(System.currentTimeMillis() - a);
 		
-		gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		gl.glEnable(GL_BLEND);
+		gpu.noise();
+		gpu.texture.bind();
+		
+		gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		gl.glEnable(GL20.GL_BLEND);
 		shader.bind();
 		shader.setUniformMatrix("projTrans", camera.combined);
-
-		Gdx.gl.glEnable(GL_CULL_FACE);
-		Gdx.gl.glDepthMask(false);
-		sphere.render(shader, GL_TRIANGLES);
-		Gdx.gl.glDepthMask(true);
-		Gdx.gl.glDisable(GL_CULL_FACE);
+		shader.setUniformf("shift", shift);
+		shader.setUniformf("size", size);
+		shader.setUniformf("rows", 512);
 		
-		offsetX += 0.03f;
-		offsetY += 0.03f;
-		offsetTime += 0.01f;
+		shader.setUniformf("cloudPower",  0.8f);
+		shader.setUniformf("cloudClamp",  0.5f);
+		float yOffset = (200f - pos.y) * 0.02f;
+		shader.setUniformf("cloudOffset", -MathUtils.clamp(yOffset, -0.45f, -0.15f));
+
+		Gdx.gl.glCullFace(GL20.GL_FRONT);
+		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
+		Gdx.gl.glDepthMask(false);
+		sphere.render(shader, GL20.GL_TRIANGLES);
+		Gdx.gl.glDepthMask(true);
+		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
+		Gdx.gl.glCullFace(GL20.GL_BACK);
 	}
 
 	@Override
 	public void dispose() {
 		shader.dispose();
+		sphere.dispose();
+		gpu.dispose();
 	}
 }
